@@ -1,0 +1,9 @@
+
+xmonad.hs:21:1: Warning:
+    Module `XMonad.Hooks.ICCCMFocus' is deprecated:
+      XMonad.Hooks.ICCCMFocus: xmonad>0.10 core merged issue 177
+
+xmonad.hs:37:11: Warning:
+    In the use of `takeTopFocus'
+    (imported from XMonad.Hooks.ICCCMFocus):
+    Deprecated: "XMonad.Hooks.ICCCMFocus: xmonad>0.10 core merged issue 177"

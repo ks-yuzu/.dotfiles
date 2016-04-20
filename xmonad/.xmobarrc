@@ -1,0 +1,90 @@
+-- ~/.xmobarrc
+Config {
+--   font = "-misc-fixed-*-*-*-*-13-*-*-*-*-*-*-*"
+--  font = "xft:ProggyTiny:size=10"
+    font         = "xft:TakaoPGothic:size=10"
+  , bgColor      = "black"
+  , fgColor      = "#ddffff" --bbffff
+  , position     = Top
+  , lowerOnStart = True
+
+-- general behavior
+--  , allDesktops  = True
+  , pickBroadest = True
+
+-- display info
+  , commands = [
+      Run StdinReader
+
+    , Run Network "wlan1" [ "-L"       , "5"
+                          , "-H"       , "32"
+                          , "-m"       , "3"
+                          , "--low"    , "green"
+                          , "--normal" , "orange"
+                          , "--high"   , "red"
+                          ] 10
+    , Run Network "eth1"  [ "-L"       , "5"
+                          , "-H"       , "32"
+                          , "-m"       , "3"
+                          , "--low"    , "green"
+                          , "--normal" , "orange"
+                          , "--high"   , "red"
+                          ] 10
+    , Run DynNetwork      [ "-L"       , "5"
+                          , "-H"       , "32"
+                          , "-m"       , "3"
+                          , "--low"    , "green"
+                          , "--normal" , "orange"
+                          , "--high"   , "red"
+                          ] 10
+    , Run Cpu             [ "-L"       , "26"
+                          , "-H"       , "51"
+                          , "--low"    , "green"
+                          , "--normal" , "orange"
+                          , "--high"   , "red"
+                          ] 10
+    , Run MultiCpu        [ "-t"       , "cpu : <total0>%, <total1>%, <total2>%, <total3>%  "
+                          , "-m"       , "2"
+                          , "-L"       , "26"
+                          , "-H"       , "51"
+                          , "--low"    , "green"
+                          , "--normal" , "orange"
+                          , "--high"   , "red"
+                          ] 10
+    , Run Memory          [ "-t"       , "  mem: <usedratio>%  "
+                          , "-L"       , "40"
+                          , "-H"       , "80"
+                          , "-m"       , "2"
+                          , "--low"    , "green"
+                          , "--normal" , "orange"
+                          , "--high"   , "red"
+                          ] 10
+    , Run BatteryP        ["BAT1"]
+                          [ "-t"       , "  battery : <acstatus>  "
+                          , "-L"       , "30"
+                          , "-H"       , "70"
+                          , "-m"       , "3"
+                          , "--low"    , "red"
+                          , "--normal" , "orange"
+                          , "--high"   , "green"
+                          , "--"
+                                       , "-o" , "<left>% (<timeleft>)"
+                                       , "-O" , "<left>% (Charging)"
+                                       , "-i" , "<left>%"
+                          ] 60
+    , Run CoreTemp        [ "-t"       , "( <core0>℃ ) "
+                          , "-L"       , "45"
+                          , "-H"       , "65"
+                          , "-m"       , "2"
+                          , "--low"    , "green"
+                          , "--normal" , "orange"
+                          , "--high"   , "red"
+                          ] 60
+    , Run Date "  %a %b %_d %Y %H:%M:%S" "date" 10
+    -- , Run Com "uname" ["-s","-r"] "" 36000
+    -- , Run Weather "EGPF" ["-t",": C","-L","18","-H","25","--normal","green","--high","red","--low","lightblue"] 36000
+    ]
+  , sepChar = "%"
+  , alignSep = "}{"
+  , template = "%StdinReader% }{ %multicpu%%coretemp%≫%memory%≫  %dynnetwork%  ≫%battery%≫%date%"
+}

@@ -1,0 +1,32 @@
+# applications
+[APP : Visual Studio Code - vsc	]  /home/yuzu/apps/vsc/Code &
+[APP : Firefox - firefox        ]  firefox > /dev/null 2>&1 &
+[APP : Google-Chrome - chrome   ]  google-chrome-stable > /dev/null 2>&1 &
+
+# setting
+[SETTING : Edit .zshrc          ]  e ~/.dotfiles/zsh/init.zsh
+[SETTING : Edit alias.zsh       ]  e ~/.dotfiles/zsh/alias.zsh
+[SETTING : Edit startup.zsh     ]  e ~/.dotfiles/zsh/startup.zsh
+[SETTING : Edit peco.zsh        ]  e ~/.dotfiles/zsh/peco.zsh
+[SETTING : Edit path.zsh        ]  e ~/.dotfiles/zsh/path.zsh
+[SETTING : Edit tools.zsh       ]  e ~/.dotfiles/zsh/tools.zsh
+
+[SETTING : Edit .snippets       ]  e ~/.dotfiles/zsh/snippets.txt
+[SETTING : Edit init.el         ]  e ~/.emacs.d/init.el
+[RELOAD  : Reload .zshrc        ]  source ~/.zshrc
+
+# apt-get
+[APT-GET : apt-get install      ]  sudo apt-get install
+[APT-GET : apt-get update       ]  sudo apt-get update && sudo apt-get upgrade
+
+# kgu network
+[KGU-NET : connect fieldlab     ]  nmcli dev wifi connect fieldlab password 8f9xi4mv
+[KGU-NET : connect ksc-wired    ]  nmcli con up id KSC-WIRED
+[KGU-NET : connect kgu-wlan     ]  nmcli dev wifi connect KGU-WLAN
+
+# etc
+[ETC : CapsLock to Ctrl         ]  setxkbmap -option ctrl:nocaps
+[ETC : LANG -> JP               ]  export LANG=ja_JP.UTF-8
+[ETC : connect wlan             ]  nmcli dev wifi connect ---- password ----
+[ETC : wiki info                ]  nmcli dev wifi list
+[ETC : wiki info                ]  nmcli con list 
