@@ -28,3 +28,4 @@ export PATH=$PATH:/home/yuzu/.local/lib/python2.7/site-packages/powerline
 export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio1261/cplex/bin/x86-64_linux
 export LYNX_CFG=~/.lynx 
 
+export PATH=$PATH:/home/yuzu/bin
