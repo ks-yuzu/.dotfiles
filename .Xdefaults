@@ -53,7 +53,7 @@ URxvt.pointerBlank    : true
 
 !!Source http://github.com/altercation/solarized
 
-*background: #121212
+*background: #101009
 *foreground: #ffffff
 ! !!*fading: 40
 ! *fadeColor: #002b36
@@ -95,4 +95,4 @@ URxvt.pointerBlank    : true
 
 ! ! transparent
 urxvt*shading       : 80
-URxvt*inheritPixmap : true
+URxvt*inheritPixmap : false
