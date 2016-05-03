@@ -21,33 +21,39 @@ import Control.Monad (liftM2)
 import XMonad.Hooks.ICCCMFocus
 
 -- for Chrome full screent
-import XMonad.Hooks.EwmhDesktops
+-- import XMonad.Hooks.EwmhDesktops
 
 main :: IO()
 main = do
     myStatusBar <- spawnPipe "~/.cabal/bin/xmobar"
-    xmonad $ defaultConfig{
+    xmonad $ def{
         modMask     = myModMask,  -- mod1Mask : Alt,  mod4Mask : Super
         terminal    = "urxvt -e tmux",
         borderWidth = 1,
         layoutHook  = myLayoutHook,
         manageHook  = myManageHook,
+        startupHook = myStartupHook,
         logHook     = do
-          myLogHook myStatusBar
-          takeTopFocus,
-	startupHook = myStartupHook,
-        handleEventHook = fullscreenEventHook
+            myLogHook myStatusBar
+            takeTopFocus
+--        handleEventHook = fullscreenEventHook
     }
       `additionalKeysP` myAdditionalKeys
       `removeKeysP`     ["M-q"]
       
 
 myModMask = mod4Mask
-myLayoutHook = avoidStruts $ layoutHook defaultConfig
-myManageHook = manageDocks <+> manageHook defaultConfig
+myLayoutHook = avoidStruts $ layoutHook def
+myManageHook = manageDocks <+> manageHook def
 myLogHook h = dynamicLogWithPP xmobarPP {
     ppOutput = hPutStrLn h
 }
+
+myStartupHook = do
+  spawn "sleep 2 && emacs"
+  spawn "sleep 1 && urxvt -e tmux"
+-- spawn "dropbox.py start"
+
 
 myAdditionalKeys =
   [
@@ -67,10 +73,6 @@ myAdditionalKeys =
    ,("M-S-r"  , spawn "killall xmobar; xmonad --recompile && xmonad --restart")
   ]
 
-myStartupHook = do
-	spawn "emacs"
-        spawn "urxvt -e tmux"
-        spawn "dropbox.py start"
 
           
 -- -- setting default workspace
