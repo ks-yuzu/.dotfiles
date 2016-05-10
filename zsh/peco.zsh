@@ -93,7 +93,7 @@ function peco-pkill-all()
 {
     for pid in `ps -aux | peco | awk '{ print $2 }'`
 	do
-	    kill $pid
+	    sudo kill $pid
 		echo "killed ${pid}"
 	done
 }
