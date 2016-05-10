@@ -3,7 +3,6 @@
 alias labvpn='sudo /usr/sbin/openvpn /etc/openvpn/client.ovpn &'
 
 
-
 ##### scripts for nas #####
 
 export LAB_NAS_MOUNT_POINT_LOCAL='/mnt/labnas'
@@ -17,7 +16,6 @@ function inas()
 	fi
 	cd $LAB_NAS_MOUNT_POINT_LOCAL
 
-#	exec "/bin/zsh --exec \"trap 'uinas' EXIT\""
 }
 
 function uinas()
@@ -30,18 +28,7 @@ function uinas()
 	    sudo umount $LAB_NAS_MOUNT_POINT_LOCAL
         sudo rmdir $LAB_NAS_MOUNT_POINT_LOCAL
     fi
-	
-#	touch /tmp/test2.txt
 }
-
-function nothing() #trap test
-{
-	exit
-
-	ls /dev/sd* | grep -v 'sda' | peco
-	sudo fdisk -l /dev/sdb
-}
-
 
 
 ##### scripts for sshfs #####
@@ -67,6 +54,4 @@ function usshinas()
 	fi
 	sudo umount $LAB_NAS_MOUNT_POINT_SSH
     sudo rmdir $LAB_NAS_MOUNT_POINT_SSH
-	
-#	touch /tmp/test2.txt
 }
