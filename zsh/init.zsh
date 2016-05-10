@@ -57,6 +57,12 @@ setopt interactive_comments
 # The following lines were added by compinstall
 zstyle :compinstall filename '/home/yuzu/.zshrc'
 
+# emacs shell mode
+if [ -n "$INSIDE_EMACS" ]; then
+    export EDITOR=emacsclient
+    unset zle_bracketed_paste  # This line
+fi
+
 
 #### [ 分割設定ファイル ]
 source ~/.dotfiles/zsh/prompt.zsh
@@ -66,8 +72,10 @@ source ~/.dotfiles/zsh/startup.zsh
 source ~/.dotfiles/zsh/path.zsh
 source ~/.dotfiles/zsh/tools.zsh
 source ~/.dotfiles/zsh/title.zsh
+source ~/.dotfiles/zsh/lab.zsh
 
 source ~/.dotfiles/zsh/completion/_acap.zsh
 source ~/.dotfiles/zsh/completion/_ilpbind.zsh
 source ~/.dotfiles/zsh/completion/_peco.zsh
+
 . /home/yuzu/.zprofile
