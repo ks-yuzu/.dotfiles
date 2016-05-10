@@ -15,7 +15,6 @@ function inas()
 			 -o iocharset=utf8,username=root,password=snoopy2015,file_mode=0755,dir_mode=0755,uid=$(id -u),gid=$(id -g)
 	fi
 	cd $LAB_NAS_MOUNT_POINT_LOCAL
-
 }
 
 function uinas()
@@ -37,8 +36,8 @@ export LAB_NAS_MOUNT_POINT_SSH='/mnt/ssh-labnas'
 
 function sshinas()
 {
-    sudo mkdir $LAB_NAS_MOUNT_POINT_SSH
     if [ $(mount -v | grep $LAB_NAS_MOUNT_POINT_SSH | wc -l)  -eq '0' ];then
+        sudo mkdir $LAB_NAS_MOUNT_POINT_SSH
         sudo sshfs \
              yuzu@192.168.0.10:$LAB_NAS_MOUNT_POINT_LOCAL \
              $LAB_NAS_MOUNT_POINT_SSH \
@@ -52,6 +51,8 @@ function usshinas()
 	if [ $(pwd | grep $LAB_NAS_MOUNT_POINT_SSH | wc -l)  -eq '1' ];then
 		cd > /dev/null
 	fi
-	sudo umount $LAB_NAS_MOUNT_POINT_SSH
-    sudo rmdir $LAB_NAS_MOUNT_POINT_SSH
+    if [ $(mount -v | grep $LAB_NAS_MOUNT_POINT_LOCAL | wc -l)  -ge '1' ];then
+	    sudo umount $LAB_NAS_MOUNT_POINT_SSH
+        sudo rmdir $LAB_NAS_MOUNT_POINT_SSH
+    fi
 }
