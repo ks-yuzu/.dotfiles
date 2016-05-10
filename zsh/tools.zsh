@@ -79,34 +79,6 @@ function bak()
 	cp -r $1 $1.bak$i
 }
 
-function inas()
-{
-	if [ $(mount -v | grep ishiuraLab-nas | wc -l)  -eq '0' ];then
-		sudo mount -t cifs //192.168.0.16/disk1 /mnt/ishiuraLab-nas/ \
-			-o iocharset=utf8,username=root,password=snoopy2015,file_mode=0755,dir_mode=0755
-	fi
-	cd /mnt/ishiuraLab-nas/
-
-#	exec "/bin/zsh --exec \"trap 'uinas' EXIT\""
-}
-
-function uinas()
-{
-	if [ $(pwd | grep ishiuraLab-nas | wc -l)  -eq '1' ];then
-		cd
-	fi
-	sudo umount /mnt/ishiuraLab-nas/
-	
-	touch /tmp/test2.txt
-}
-
-function nothing()
-{
-	exit
-
-	ls /dev/sd* | grep -v 'sda' | peco
-	sudo fdisk -l /dev/sdb
-}
 
 function setBrightness-usage()
 {
