@@ -3,9 +3,11 @@
 ###################
 alias ls='ls -F --show-control-chars --color=auto'
 alias la='ls -a'
-alias ll='ls -l'
+alias ll='ls -l --si --time-style=long-iso'
+# alias ll='ls -l'
 alias ltr='ls -l -tr'
-alias lal='ls -al --color=auto'
+alias lal='ls -l --almost-all --si --time-style=long-iso'
+# alias lal='ls -al --color=auto'
 alias laltr='ls -al -tr --color=auto'
 
 alias mv='mv -i'
@@ -40,6 +42,11 @@ alias -g NL='>/dev/null 2>&1 &'
 
 alias pm-suspend="echo \"[alias] 'pm-suspend' does not work well on Ubuntu14.04\""
 alias sshdius="sshpass -p feketerigo ssh -l stu3522 dius02.ksc.kwansei.ac.jp"
+
+
+alias sdedit="java -jar ~/bin/sdedit-4.2-beta7.jar $*"
+alias plantuml="java -jar ~/bin/plantuml.jar $*"
+
 
 function cd() { builtin cd $@ && ls; }
 
