@@ -1,12 +1,15 @@
 ## hls
 export PATH=$PATH:/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64
 export PATH=$PATH:/home/yuzu/tools/ccap/bin
-export LIBDIR=/home/yuzu/ccap/tools/ccaplib 
+export LIBDIR=/home/yuzu/tools/ccap/ccaplib 
 export PATH=$PATH:/home/yuzu/tools/mips-elf/gcc-4.8.2/bin
-export LD_LIBRARY_PATH=/home/yuzu/tools/mpc-1.0.2/lib:/home/yuzu/tools/mpfr-3.1.2/lib:/home/yuzu/tools/gmp-6.0.0/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/yuzu/tools/mpc-1.0.2/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/yuzu/tools/mpfr-3.1.2/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/yuzu/tools/gmp-6.0.0/lib:$LD_LIBRARY_PATH
 
 ## plenv
 export PERL_CPANM_OPT="--local-lib=~/perl5"
+export PATH=$HOME/.plenv/bin:$PATH
 export PATH=$HOME/perl5/bin:$PATH
 export PERL5LIB=$HOME/perl5/lib/perl5:$PERL5LIB
 
