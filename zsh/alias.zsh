@@ -28,7 +28,8 @@ alias ed='emacs --daemon'
 
 alias gitst='git status'
 
-alias open='gnome-open'
+alias op='xdg-open'
+alias open='xdg-open'
 
 # suffix alias
 alias -s txt='cat'
@@ -51,15 +52,17 @@ alias plantuml="java -jar ~/bin/plantuml.jar $*"
 function cd() { builtin cd $@ && ls; }
 
 
-# 標準出力をクリップボードにコピーする
-# mollifier delta blog : http://mollifier.hatenablog.com/entry/20100317/p1
-if which pbcopy >/dev/null 2>&1 ; then    # Mac
-    alias -g clip='pbcopy'
-elif which xsel >/dev/null 2>&1 ; then    # Linux
-    alias -g clip='xsel --input --clipboard'
-elif which putclip >/dev/null 2>&1 ; then # Cygwin
-    alias -g clip='putclip'	      
-fi
+# copy stdin to clipboard
+# ref : http://mollifier.hatenablog.com/entry/20100317/p1
+#if which pbcopy >/dev/null 2>&1 ; then    # Mac
+#    alias -g clip="echo 'test'"
+#        alias -g clip='pbcopy'
+    if [ which xsel >/dev/null 2>&1 ]; && alias -g clip='xsel --input --clipboard'
+#    elif which putclip >/dev/null 2>&1 ; then # Cygwin
+#        alias -g clip='putclip'	      
+#fi
+
+
 
 
 # iab (グローバルエイリアス展開)
