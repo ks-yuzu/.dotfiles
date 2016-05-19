@@ -107,7 +107,7 @@ function peco-get-fullpath()
     local fullpath
 	fullpath=$(find `pwd` -maxdepth 1 -mindepth 1 | peco)
     echo "${fullpath}" | clip
-	echo "copied ${fullpath}"
+	echo ${fullpath}
 }
 alias fullpath="peco-get-fullpath"
 
