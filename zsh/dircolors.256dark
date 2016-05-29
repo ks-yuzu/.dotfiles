@@ -223,6 +223,8 @@ LINK 00;38;5;37 # symbolic link. (If you set this to 'target' instead of a
 .xls		 	 00;38;5;41
 .xlsx		 	 00;38;5;46
 .ods		 	 00;38;5;48
+.pde		 	 00;38;5;87
+.java		 	 00;38;5;196
 
 
 
