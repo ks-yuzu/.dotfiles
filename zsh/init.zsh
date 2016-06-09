@@ -65,17 +65,15 @@ fi
 
 
 #### [ 分割設定ファイル ]
-source ~/.dotfiles/zsh/prompt.zsh
-source ~/.dotfiles/zsh/alias.zsh
-source ~/.dotfiles/zsh/peco.zsh
-source ~/.dotfiles/zsh/startup.zsh
-source ~/.dotfiles/zsh/path.zsh
-source ~/.dotfiles/zsh/tools.zsh
-source ~/.dotfiles/zsh/title.zsh
-source ~/.dotfiles/zsh/lab.zsh
 
-source ~/.dotfiles/zsh/completion/_acap.zsh
-source ~/.dotfiles/zsh/completion/_ilpbind.zsh
-source ~/.dotfiles/zsh/completion/_peco.zsh
+for i in `find \`dirname $0\` -maxdepth 1 -mindepth 1 | grep '\.zsh$' | grep -v 'init.zsh'`
+do
+    source $i
+done
+
+for i in `find \`dirname $0\`/completion -maxdepth 1 -mindepth 1 | grep '\.zsh$'`
+do
+    source $i
+done
 
 . /home/yuzu/.zprofile
