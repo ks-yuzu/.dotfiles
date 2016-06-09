@@ -76,4 +76,4 @@ do
     source $i
 done
 
-. /home/yuzu/.zprofile
+. ${HOME}/.zprofile
