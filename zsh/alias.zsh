@@ -16,16 +16,18 @@ alias rm='rm -i'
 
 alias tmux='tmux -2'
 
-alias conky='conky -b NL'
-alias guake='guake &'
+#alias conky='conky -b NL'
+#alias guake='guake &'
 
 alias acap='acap.pl'
 alias ise='ise NL'
 
 alias e='emacsclient -n'
 alias ekill="emacsclient -e '(kill-emacs)'"
-alias ed='emacs --daemon'
+#alias ed='emacs --daemon'
 
+alias gita='git add'
+alias gitc='git commit -m'
 alias gitst='git status'
 
 alias op='xdg-open'
@@ -33,7 +35,7 @@ alias open='xdg-open'
 
 # suffix alias
 alias -s txt='cat'
-alias -s html='google-chrome'
+alias -s html='google-chrome-stable'
 alias -s pdf='evince'
 
 # global alias
