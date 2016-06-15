@@ -10,6 +10,7 @@
 [SETTING : Edit peco.zsh        ]  e ~/.dotfiles/zsh/peco.zsh
 [SETTING : Edit path.zsh        ]  e ~/.dotfiles/zsh/path.zsh
 [SETTING : Edit tools.zsh       ]  e ~/.dotfiles/zsh/tools.zsh
+[SETTING : Edit tools.zsh       ]  e ~/.dotfiles/zsh/lab.zsh
 
 [SETTING : Edit .snippets       ]  e ~/.dotfiles/zsh/snippets.txt
 [SETTING : Edit init.el         ]  e ~/.emacs.d/init.el
