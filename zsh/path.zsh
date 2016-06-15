@@ -1,11 +1,12 @@
 ## hls
-export PATH=$PATH:/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64
-export PATH=$PATH:/home/yuzu/tools/ccap/bin
-export LIBDIR=/home/yuzu/tools/ccap/ccaplib 
-export PATH=$PATH:/home/yuzu/tools/mips-elf/gcc-4.8.2/bin
-export LD_LIBRARY_PATH=/home/yuzu/tools/mpc-1.0.2/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/home/yuzu/tools/mpfr-3.1.2/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/home/yuzu/tools/gmp-6.0.0/lib:$LD_LIBRARY_PATH
+export PATH=$PATH:$HOME/bin/Xilinx/14.7/ISE_DS/ISE/bin/lin64
+export PATH=$PATH:$HOME/tools/ccap/bin
+export LIBDIR=$HOME/tools/ccap/ccaplib 
+export PATH=$PATH:$HOME/tools/mips-elf/gcc-4.8.2/bin
+export LD_LIBRARY_PATH=$HOME/tools/mpc-1.0.2/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$HOME/tools/mpfr-3.1.2/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$HOME/tools/gmp-6.0.0/lib:$LD_LIBRARY_PATH
+export SOFT_FP_DIR=$HOME/tools/gcc-4.8.2/tmp/mips-elf/soft-float/el/libgcc
 
 ## plenv
 export PERL_CPANM_OPT="--local-lib=~/perl5"
@@ -26,9 +27,9 @@ export PATH=$PATH:$HOME/.cabal/bin
 # export CLASSPATH=$CLASSPATH:/usr/share/java/mysql-connector-java-5.1.28.jar # jdbc
 
 ## others
-export PATH=$PATH:/home/yuzu/.local/lib/python2.7/site-packages/powerline
+export PATH=$PATH:$HOME/.local/lib/python2.7/site-packages/powerline
 #export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio124/cplex/bin/x86-64_sles10_4.1
 export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio1261/cplex/bin/x86-64_linux
 export LYNX_CFG=~/.lynx 
 
-export PATH=$PATH:/home/yuzu/bin
+export PATH=$HOME/bin:$PATH
