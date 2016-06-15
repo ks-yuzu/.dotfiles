@@ -3,6 +3,22 @@
 alias labvpn='sudo /usr/sbin/openvpn /etc/openvpn/client.ovpn &'
 
 
+function gitlab-open
+{
+    if [ $(ps aux | grep ssh | grep 192.218.172.60:8080 | wc -l) -eq 0 ]; then
+        ssh -fN -L9999:192.218.172.60:8080 60
+    fi
+
+    firefox localhost:9999
+}
+
+function gitlab-close
+{
+    local pid=$(ps -aux | grep ssh | grep 192.218.172.60:8080 | peco | awk '{print $2}' )
+    kill $pid && echo killed $pid
+}
+
+
 ##### scripts for nas #####
 
 export LAB_NAS_MOUNT_POINT_LOCAL='/mnt/labnas'
