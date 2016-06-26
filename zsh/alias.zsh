@@ -27,7 +27,8 @@ alias ekill="emacsclient -e '(kill-emacs)'"
 #alias ed='emacs --daemon'
 
 alias gita='git add'
-alias gitc='git commit -m'
+alias gitc='git commit -v'
+alias gitcm='git commit -v -m'
 alias gitst='git status'
 
 alias op='xdg-open'
@@ -103,3 +104,12 @@ zle -N magic-abbrev-expand
 zle -N no-magic-abbrev-expand
 bindkey " " magic-abbrev-expand
 bindkey "^x " no-magic-abbrev-expand
+
+
+kill-processing () {
+    for pid in `ps -aux | grep '[/]bin/sh /home/yuzu/bin/processing/processing-java --force --sketch=' | awk '{ print $2 }'`
+    do
+        sudo kill $pid
+        echo "killed ${pid}"
+    done
+}
