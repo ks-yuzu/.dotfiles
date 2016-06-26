@@ -33,3 +33,5 @@ export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio1261/cplex/bin/x86-64_linux
 export LYNX_CFG=~/.lynx 
 
 export PATH=$HOME/bin:$PATH
+
+export EDITOR='emacsclient -t'
