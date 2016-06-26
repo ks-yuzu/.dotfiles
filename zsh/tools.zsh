@@ -116,49 +116,19 @@ function setBrightness()
 	echo ${value} | sudo tee ${prefix}/brightness >/dev/null
 }
 
-function texcompile()
+
+
+function mount-usb-exfat()
 {
-    basename=$1                 # tex-file name
-    filename=${basename%.*}     # no suffix
+    mount -t "exfat" -o "uhelper=udisks2,nodev,nosuid,uid=1000,gid=1000,iocharset=utf8,namecase=0,errors=remount-ro,umask=0077" "/dev/sdb1" "/mnt/usb"
+}
 
-    export TEXINPUTS=$TEXINPUTS:./:~/works/styles
+function mount-usb-fat32()
+{
+    mount -t "fat32" -o "uhelper=udisks2,nodev,nosuid,uid=1000,gid=1000,iocharset=utf8,namecase=0,errors=remount-ro,umask=0077" "/dev/sdb1" "/mnt/usb"
+}
 
-    if [ -f ${filename}.tex ]; then
-        if [ $(file $basename | grep UTF-8 | wc -l) -lt 1 ]; then
-            echo '[ convert to UTF-8     ]'
-            nkf -w --overwrite $basename
-        else
-            echo '[ check encode (UTF-8) ]'
-        fi
-
-        if [ -f /tmp/$filename.tex ]; then
-            rm -f /tmp/${filename}.tex
-        fi
-        cp ${filename}.tex /tmp
-        pushd . > /dev/null
-        cd /tmp > /dev/null
-        echo '[ generate tex -> dvi  ]'
-        platex ${filename}.tex      # tex -> dvi
-    else
-        echo "file : '${filename}.tex' does not exist."
-        return
-    fi
-
-    if [ -f ${filename}.dvi ]; then
-        dvipdfmx ${filename}.dvi 2> /dev/null   # dvi -> pdf
-        echo '[ generate dvi -> pdf  ]'
-    else
-        echo "file : '/tmp/${filename}.dvi' does not exist."
-        return
-    fi
-
-    if [ -f ${filename}.pdf ]; then
-        popd > /dev/null 2>&1
-        rm -f ${filename}.pdf 2> /dev/null
-        cp /tmp/${filename}.pdf ./
-        # echo '[ open generated pdf   ]'
-        # evince ${filename}.pdf &  # open pdf
-    else
-        echo "file : '/tmp/${filename}.pdf' does not exist."
-    fi  
+function mount-usb-ntfs()
+{
+    mount -t "ntfs" -o "uhelper=udisks2,nodev,nosuid,uid=1000,gid=1000,iocharset=utf8,namecase=0,errors=remount-ro,umask=0077" "/dev/sdb1" "/mnt/usb"
 }
