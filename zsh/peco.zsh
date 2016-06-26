@@ -165,6 +165,24 @@ function peco-git-add()
 zle -N peco-git-add
 bindkey "^g^a" peco-git-add
 
+# peco-git-diff
+function peco-git-diff()
+{
+    local SELECTED_FILE_TO_ADD="$(git status --porcelain | \
+                                  grep '^ *M' | \
+                                  peco --query "$LBUFFER" | \
+                                  awk -F ' ' '{print $NF}')"
+    if [ -n "$SELECTED_FILE_TO_ADD" ]; then
+      BUFFER="git diff $(echo "$SELECTED_FILE_TO_ADD" | tr '\n' ' ')"
+      CURSOR=$#BUFFER
+    fi
+    zle accept-line
+    # zle clear-screen
+}
+zle -N peco-git-diff
+bindkey "^g^d" peco-git-diff
+
+
 function peco-pcd()
 {
 	local path=$(cat -)
@@ -213,3 +231,10 @@ function sp()
       printf "[ %-9s ] $1\n", $3;
     ' | grep -vE 'bitbucket|gitlab|lab-router' | peco | sed -e 's/^\[.*\] //g')
 }
+
+function peco-nmcli()
+{
+    nmcli $(nmcli 2>&1 | sed -e '/Usage/,/OBJECT/d' | peco | perl -pe 's/[\[\]]//g' | awk '{print $1}')   
+}
+zle -N peco-nmcli
+bindkey '^x^r' peco-nmcli
