@@ -50,7 +50,7 @@ myLogHook h = dynamicLogWithPP xmobarPP {
 }
 
 myStartupHook = do
-  spawn "sleep 2 && emacs"
+  spawn "sleep 1 && emacs"
   spawn "sleep 1 && urxvt -e tmux"
 -- spawn "dropbox.py start"
 
