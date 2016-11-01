@@ -1,7 +1,4 @@
 # applications
-[APP : Visual Studio Code - vsc	]  /home/yuzu/apps/vsc/Code &
-[APP : Firefox - firefox        ]  firefox > /dev/null 2>&1 &
-[APP : Google-Chrome - chrome   ]  google-chrome-stable > /dev/null 2>&1 &
 
 # setting
 [SETTING : Edit .zshrc          ]  e ~/.dotfiles/zsh/init.zsh
@@ -15,10 +12,11 @@
 [SETTING : Edit .snippets       ]  e ~/.dotfiles/zsh/snippets.txt
 [SETTING : Edit init.el         ]  e ~/.emacs.d/init.el
 [RELOAD  : Reload .zshrc        ]  source ~/.zshrc
+[COMPILE : Compile .zshrc       ]  zcompile ~/.zshrc
 
-# apt-get
-[APT-GET : apt-get install      ]  sudo apt-get install
-[APT-GET : apt-get update       ]  sudo apt-get update && sudo apt-get upgrade
+# apt
+[APT     : apt     install      ]  sudo apt install
+[APT     : apt     update       ]  sudo apt update && sudo apt upgrade
 
 # kgu network
 [KGU-NET : connect fieldlab     ]  nmcli dev wifi connect fieldlab password 8f9xi4mv
