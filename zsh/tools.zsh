@@ -15,13 +15,6 @@ function battery-pc()
 	echo "Battery : $percentage%"
 }
 
-function kscproxy()
-{
-	export http_proxy="http://proxy.ksc.kwansei.ac.jp:8080"
-	export https_proxy="https://proxy.ksc.kwansei.ac.jp:8080"
-}
-
-
 function cc()
 {
 	perl -E "print ($*)"
@@ -80,7 +73,7 @@ function bak()
 }
 
 
-function setBrightness-usage()
+function set-brightness-usage()
 {
 	echo "usage:" >&2
 	echo "   setBrightness <value>" >&2
@@ -88,7 +81,7 @@ function setBrightness-usage()
 	return
 }
 
-function setBrightness()
+function set-brightness()
 {
 	prefix="/sys/class/backlight/intel_backlight"
 
@@ -131,4 +124,25 @@ function mount-usb-fat32()
 function mount-usb-ntfs()
 {
     mount -t "ntfs" -o "uhelper=udisks2,nodev,nosuid,uid=1000,gid=1000,iocharset=utf8,namecase=0,errors=remount-ro,umask=0077" "/dev/sdb1" "/mnt/usb"
+}
+
+function win10()
+{
+    remmina &
+    sudo kvm -hda ~/kvm/win10_x64.qcow2 -boot c -m 2048 -vnc :0 -monitor stdio -usbdevice tablet
+}
+
+function task()
+{
+    less
+}
+
+function tree()
+{
+    pwd;find . | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/|  /g'
+}
+
+function cal-year()
+{
+    cal $(date --iso-8601 | perl -aF- -e 'print $F[0]');
 }
