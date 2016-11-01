@@ -9,3 +9,4 @@ sudo ln -s ~/.dotfiles/.tmux.conf       ~/.tmux.conf
 sudo ln -s ~/.dotfiles/.peco            ~/.peco
 sudo ln -s ~/.dotfiles/.Xresources      ~/.Xresources
 sudo ln -s ~/.dotfiles/.Xdefaults       ~/.Xdefaults
+sudo ln -s ~/.dotfiles/.gitconfig       ~/.gitconfig
