@@ -1,0 +1,19 @@
+[user]
+    email = yuuki.oosako@kwansei.ac.jp
+    name = Yuuki Oosako
+
+[core]
+    editor = "/usr/local/bin/emacsclient" --alternate-editor /usr/local/bin/emacs
+
+[push]
+	default = current
+    # simple : (デフォルト) upstream が設定されていて, それが同名のブランチ名の時のみ push
+    # current: 現在のブランチをリモートに同名で push. upstream を設定していなくても push
+
+[color]
+	ui = auto
+
+[alias]
+  graph-mini = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+  graph = log --graph --all --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+  graph-rich = log --graph --all --pretty=format:'%C(red reverse)%d%Creset%C(white reverse) %h% Creset %C(green reverse) %an %Creset %C(cyan)%ar%Creset%n%C(white bold)%w(80)%s%Creset%n%n%w(80,2,2)%b' --abbrev-commit --date=relative --name-status
