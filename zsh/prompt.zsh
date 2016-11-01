@@ -1,23 +1,71 @@
+## tmux info disp
+function disp-tmux-info()
+{
+    if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
+    
+    local NUM_SESSIONS=$(tmux list-sessions | wc -l)
+    local NUM_WINDOWS=$( tmux list-windows  | wc -l)
+
+    local CURR_SESSION_ID=$(tmux display -p '#S')
+    local CURR_WINDOW_ID=$( tmux display -p '#I')
+
+    local CURR_SESSION_NUM=$(tmux ls  | grep -n "^$CURR_SESSION_ID" | perl -ne 'print /^(\d+)/')
+    local CURR_WINDOW_NUM=$( tmux lsw | grep -n "^$CURR_WINDOW_ID"  | perl -ne 'print /^(\d+)/')
+
+    echo -n "W $CURR_WINDOW_NUM/$NUM_WINDOWS (WID:$CURR_WINDOW_ID), S $CURR_SESSION_NUM/$NUM_SESSIONS (SID:$CURR_SESSION_ID)"
+}
+
+function disp-tmux-info-mini()
+{
+    
+    if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
+
+    local NUM_SESSIONS=$(tmux list-sessions | wc -l)
+    local NUM_WINDOWS=$( tmux list-windows  | wc -l)
+
+    local CURR_SESSION_ID=$(tmux display -p '#S')
+    local CURR_WINDOW_ID=$( tmux display -p '#I')
+
+    local CURR_SESSION_NUM=$(tmux ls  | grep -n "^$CURR_SESSION_ID" | perl -ne 'print /^(\d+)/')
+    local CURR_WINDOW_NUM=$( tmux lsw | grep -n "^$CURR_WINDOW_ID"  | perl -ne 'print /^(\d+)/')
+
+    echo -n "W:$CURR_WINDOW_NUM/$NUM_WINDOWS S:$CURR_SESSION_NUM/$NUM_SESSIONS"
+}
+
+function disp-tmux-info-for-prompt()
+{
+    if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
+    echo -n "["
+    echo -n $(disp-tmux-info-mini)
+    echo -n "] "
+}
+
+
+
+
 ## prompt
 
-local name="%F{green}%n@%m%f"
-local cdir="%F{yellow}%~%f"
-local endl=$'\n'
-local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
+function update-prompt()
+{
+    local tmuxinfo="%F{magenta}$(disp-tmux-info-for-prompt)%f"
+    local name="%F{green}%n@%m%f"
+    local cdir="%F{yellow}%~%f"
+    local endl=$'\n'
+    local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
 
-# local numSession=$(tmux list-sessions | wc -l)
-# local currentSession=$(tmux list-sessions | grep attached)
+    PROMPT="$name $tmuxinfo$cdir $endl$mark"
+}
 
-PROMPT="$name $cdir $endl$mark"
+add-zsh-hook precmd update-prompt
 
 
-# r prompt
+# rev prompt
 autoload -Uz vcs_info
 autoload -Uz colors
 colors
 
 zstyle ':vcs_info:*' enable git
-zstyle ':vcs_info:*' max-exports 6 # formatに入る変数の最大数
+zstyle ':vcs_info:*' max-exports 6 # max number of variables in format
 zstyle ':vcs_info:git:*' check-for-changes true
 zstyle ':vcs_info:git:*' formats '%b@%r' '%c' '%u'
 zstyle ':vcs_info:git:*' actionformats '%b@%r|%a' '%c' '%u'
@@ -31,18 +79,34 @@ function vcs_echo
     st=`git status 2> /dev/null`
     if [[ -z "$st" ]]; then return; fi
     branch="$vcs_info_msg_0_"
-    if   [[ -n "$vcs_info_msg_1_" ]]; then color=${fg[yellow]} #staged
-    elif [[ -n "$vcs_info_msg_2_" ]]; then color=${fg[red]} #unstaged
-    elif [[ -n `echo "$st" | grep "^Untracked"` ]]; then color=${fg[cyan]} # untracked
-    else color=${fg[green]}
+    if   [[ -n "$vcs_info_msg_1_" ]];                then color=${fg[yellow]} # staged
+    elif [[ -n "$vcs_info_msg_2_" ]];                then color=${fg[red]}    # unstaged
+    elif [[ -n $(echo "$st" | grep "^Untracked") ]]; then color=${fg[cyan]}   # untracked
+    else                                                  color=${fg[green]}
     fi
     echo "%{$color%}$branch%{$reset_color%}" | sed -e s/@/"%F{white}@%f%{$color%}"/
 }
-RPROMPT='[`vcs_echo``relative-path`]'
+
+function get-git-path-for-prompt
+{
+    local rpath=$(get-path-from-git-root)
+    if [[ $rpath != '' ]]; then
+		echo " $rpath"
+	fi
+}
+
+RPROMPT='[$(vcs_echo)$(get-git-path-for-prompt)]'
 
 
+## period
+function show-time()
+{
+    echo ""
+    LC_ALL=c date | perl -pe 's/^(.*)$/(\1)/'
+}
 
-
+PERIOD=30
+add-zsh-hook periodic show-time
 
 
 ## rev-prompt
@@ -113,13 +177,11 @@ RPROMPT='[`vcs_echo``relative-path`]'
 #         echo "$color$name$action%f%b"
 # }
 
-function relative-path
+function get-path-from-git-root
 {
-	local rpath=`git rev-parse --show-prefix 2> /dev/null`
-	if [[ $rpath != '' ]]; then
-		echo " $rpath"
-	fi
+	git rev-parse --show-prefix 2> /dev/null
 }
+
 
 # remake prompt-meswhen showing prompt
 # setopt prompt_subst
