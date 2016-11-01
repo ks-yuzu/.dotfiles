@@ -1,2 +1,7 @@
 Emacs*useXIM: false
 Emacs24*useXIM: false
+
+! Tgif.Times-Roman: -adobe-times-medium-r-normal--%d-*
+
+Tgif.InitialFont: Inconsolata
+Tgif.DoubleByteInputMethod: fcirx-skk
