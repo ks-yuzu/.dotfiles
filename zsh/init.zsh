@@ -55,7 +55,7 @@ setopt interactive_comments
 
 # End of lines configured by zsh-newuser-install
 # The following lines were added by compinstall
-zstyle :compinstall filename '/home/yuzu/.zshrc'
+zstyle :compinstall filename "$HOME/.zshrc"
 
 # emacs shell mode
 if [ -n "$INSIDE_EMACS" ]; then
