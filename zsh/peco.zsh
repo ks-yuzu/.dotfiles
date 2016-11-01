@@ -99,6 +99,17 @@ function peco-pkill-all()
 }
 alias pka="peco-pkill-all"
 
+# peco-process-kill-all
+function peco-pkill-all-force()
+{
+    for pid in `ps -aux | peco | awk '{ print $2 }'`
+	do
+	    sudo kill -9 $pid
+		echo "killed ${pid}"
+	done
+}
+alias pka9="peco-pkill-all-force"
+
 
 
 # peco-get-fullpath
@@ -106,7 +117,7 @@ function peco-get-fullpath()
 {
     local fullpath
 	fullpath=$(find `pwd` -maxdepth 1 -mindepth 1 | peco)
-    echo "${fullpath}" | clip
+    echo "${fullpath}" | xsel --input --clipboard
 	echo ${fullpath}
 }
 alias fullpath="peco-get-fullpath"
@@ -149,39 +160,6 @@ function peco-wlcon()
 alias wlcon="peco-wlcon"
 
 
-# peco-git-add
-function peco-git-add()
-{
-    local SELECTED_FILE_TO_ADD="$(git status --porcelain | \
-                                  peco --query "$LBUFFER" | \
-                                  awk -F ' ' '{print $NF}')"
-    if [ -n "$SELECTED_FILE_TO_ADD" ]; then
-      BUFFER="git add $(echo "$SELECTED_FILE_TO_ADD" | tr '\n' ' ')"
-      CURSOR=$#BUFFER
-    fi
-    zle accept-line
-    # zle clear-screen
-}
-zle -N peco-git-add
-bindkey "^g^a" peco-git-add
-
-# peco-git-diff
-function peco-git-diff()
-{
-    local SELECTED_FILE_TO_ADD="$(git status --porcelain | \
-                                  grep '^ *M' | \
-                                  peco --query "$LBUFFER" | \
-                                  awk -F ' ' '{print $NF}')"
-    if [ -n "$SELECTED_FILE_TO_ADD" ]; then
-      BUFFER="git diff $(echo "$SELECTED_FILE_TO_ADD" | tr '\n' ' ')"
-      CURSOR=$#BUFFER
-    fi
-    zle accept-line
-    # zle clear-screen
-}
-zle -N peco-git-diff
-bindkey "^g^d" peco-git-diff
-
 
 function peco-pcd()
 {
@@ -199,7 +177,8 @@ function peco-pcd()
 zle -N peco-pcd
 #bindkey '' pcd
 
-function pecorm()
+
+function rmpeco()
 {
     rm $(ls -a | peco)
 }
@@ -226,10 +205,12 @@ bindkey '^\' peco-ssh
 
 function sp()
 {
-    ssh $(grep -E '^Host' /home/yuzu/.ssh/config | perl -ne '
-      m/Host\s+.*?(\S+)(\s+(\S+))?/;
-      printf "[ %-9s ] $1\n", $3;
-    ' | grep -vE 'bitbucket|gitlab|lab-router' | peco | sed -e 's/^\[.*\] //g')
+    ssh $(grep -E '^Host' $HOME/.ssh/config | \
+          perl -ne 'm/Host\s+.*?(\S+)(\s+(\S+))?/;
+                    printf "[ %-9s ] $1\n", $3;' | \
+          grep -vE 'bitbucket|gitlab|lab-router' | \
+          peco                                   | \
+          sed -e 's/^\[.*\] //g')
 }
 
 function peco-nmcli()
@@ -238,3 +219,11 @@ function peco-nmcli()
 }
 zle -N peco-nmcli
 bindkey '^x^r' peco-nmcli
+
+
+function peco-file() {
+    ls -l --almost-all --si --time-style=long-iso $1 \
+        | grep -P -v 'total [^ ]*' \
+        | peco \
+        | perl -alE 'say $F[7]'
+}
