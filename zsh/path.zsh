@@ -1,8 +1,8 @@
 ## hls
-export PATH=$PATH:$HOME/bin/Xilinx/14.7/ISE_DS/ISE/bin/lin64
-export PATH=$PATH:$HOME/tools/ccap/bin
+export PATH=$HOME/bin/Xilinx/14.7/ISE_DS/ISE/bin/lin64:$PATH
+export PATH=$HOME/tools/ccap/bin:$PATH
 export LIBDIR=$HOME/tools/ccap/ccaplib 
-export PATH=$PATH:$HOME/tools/mips-elf/gcc-4.8.2/bin
+export PATH=$HOME/tools/mips-elf/gcc-4.8.2/bin:$PATH
 export LD_LIBRARY_PATH=$HOME/tools/mpc-1.0.2/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$HOME/tools/mpfr-3.1.2/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$HOME/tools/gmp-6.0.0/lib:$LD_LIBRARY_PATH
@@ -13,9 +13,11 @@ export PERL_CPANM_OPT="--local-lib=~/perl5"
 export PATH=$HOME/.plenv/bin:$PATH
 export PATH=$HOME/perl5/bin:$PATH
 export PERL5LIB=$HOME/perl5/lib/perl5:$PERL5LIB
+export PERL5LIB=$HOME/.plenv/versions/5.24.0/lib/perl5:$PERL5LIB
+export PLENV_VERSION=$(plenv version | awk '{print $1}')
 
 ## cabal
-export PATH=$PATH:$HOME/.cabal/bin
+export PATH=$HOME/.cabal/bin:$PATH
 
 ## java
 # export TOMCAT_HOME=/usr/share/tomcat6
@@ -28,10 +30,6 @@ export PATH=$PATH:$HOME/.cabal/bin
 
 ## others
 export PATH=$PATH:$HOME/.local/lib/python2.7/site-packages/powerline
-#export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio124/cplex/bin/x86-64_sles10_4.1
 export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio1261/cplex/bin/x86-64_linux
-export LYNX_CFG=~/.lynx 
-
 export PATH=$HOME/bin:$PATH
-
-export EDITOR='emacsclient -t'
+export PATH=$HOME/bin/processing/:$PATH
