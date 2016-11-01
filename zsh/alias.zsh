@@ -47,12 +47,12 @@ alias -g NL='>/dev/null 2>&1 &'
 alias pm-suspend="echo \"[alias] 'pm-suspend' does not work well on Ubuntu14.04\""
 alias sshdius="sshpass -p feketerigo ssh -l stu3522 dius02.ksc.kwansei.ac.jp"
 
-
 alias sdedit="java -jar ~/bin/sdedit-4.2-beta7.jar $*"
 alias plantuml="java -jar ~/bin/plantuml.jar $*"
 
 
 function cd() { builtin cd $@ && ls; }
+alias cdt='cd ..'
 
 
 # copy stdin to clipboard
@@ -64,8 +64,6 @@ function cd() { builtin cd $@ && ls; }
 #    elif which putclip >/dev/null 2>&1 ; then # Cygwin
 #        alias -g clip='putclip'	      
 #fi
-
-
 
 
 # iab (グローバルエイリアス展開)
