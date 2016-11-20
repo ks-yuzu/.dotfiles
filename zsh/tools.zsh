@@ -23,7 +23,7 @@ function cc()
 function mdisp()
 {
     selected=$(
-		cat <<EOF |
+		/bin/cat <<EOF |
 [ built-in | HDMI ] xrandr --output eDP1 --auto --output HDMI1 --auto --right-of eDP1
 [ HDMI | built-in ] xrandr --output HDMI1 --auto --output eDP1 --auto --right-of HDMI1
 [    same (HDMI)  ] xrandr --output HDMI1 --auto --same-as eDP1
