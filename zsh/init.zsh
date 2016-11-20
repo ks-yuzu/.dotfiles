@@ -16,14 +16,14 @@ setopt brace_ccl				# {a-c} -> a b c
 
 #### [ key ]
 if [ $(type setxkbmap | grep 'setxkbmap is' | wc -l) -ge 1 ]; then
-    setxkbmap -option ctrl:nocaps	# caps lock -> ctrl
+    setxkbmap -option ctrl:nocaps    # caps lock -> ctrl
 else
     echo '"setxkbmap" not fount'
 fi
 
-setopt ignore_eof				# Ctrl+Dでzshを終了しない
+setopt ignore_eof				     # Ctrl+Dでzshを終了しない
 
-bindkey -e 						# emacs like
+bindkey -e                           # emacs like
 bindkey "\e[Z" reverse-menu-complete # enable Shift-Tab
 
 
