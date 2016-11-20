@@ -526,3 +526,21 @@ key.setCaretKey("C-a", function (ev) { ev.target.ksMarked ? goDoCommand("cmd_sel
 key.setCaretKey("C-e", function (ev) { ev.target.ksMarked ? goDoCommand("cmd_selectEndLine") : command.endLine(ev); }, 'キャレットを行末へ移動', false);
 key.setCaretKey("M-<", function (ev) { ev.target.ksMarked ? goDoCommand("cmd_selectTop") : command.moveTop(ev); }, 'キャレットをページ先頭へ移動', false);
 key.setCaretKey("M->", function (ev) { ev.target.ksMarked ? goDoCommand("cmd_selectBottom") : command.moveBottom(ev); }, 'キャレットをページ末尾へ移動', false);
+
+
+// HoK
+key.setViewKey('e', function (aEvent, aArg) {
+    ext.exec("hok-start-foreground-mode", aArg);
+}, 'Hit a Hint を開始', true);
+
+key.setViewKey('E', function (aEvent, aArg) {
+    ext.exec("hok-start-background-mode", aArg);
+}, 'リンクをバックグラウンドで開く Hit a Hint を開始', true);
+
+key.setViewKey(';', function (aEvent, aArg) {
+    ext.exec("hok-start-extended-mode", aArg);
+}, 'HoK - 拡張ヒントモード', true);
+
+key.setViewKey(['C-c', 'C-e'], function (aEvent, aArg) {
+    ext.exec("hok-start-continuous-mode", aArg);
+}, 'リンクを連続して開く Hit a Hint を開始', true);
