@@ -544,3 +544,17 @@ key.setViewKey(';', function (aEvent, aArg) {
 key.setViewKey(['C-c', 'C-e'], function (aEvent, aArg) {
     ext.exec("hok-start-continuous-mode", aArg);
 }, 'リンクを連続して開く Hit a Hint を開始', true);
+
+
+// bmany
+key.setViewKey([':', 'b'], function (ev, arg) {
+    ext.exec("bmany-list-all-bookmarks", arg, ev);
+}, "bmany - ブックマークを一覧表示");
+
+key.setViewKey([':', 'B'], function (ev, arg) {
+    ext.exec("bmany-list-bookmarklets", arg, ev);
+}, "bmany - ブックマークレットを一覧表示");
+
+key.setViewKey([':', 'k'], function (ev, arg) {
+    ext.exec("bmany-list-bookmarks-with-keyword", arg, ev);
+}, "bmany - キーワード付きブックマークを一覧表示");
