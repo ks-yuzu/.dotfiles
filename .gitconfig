@@ -3,7 +3,7 @@
     name = Yuuki Oosako
 
 [core]
-    editor = "/usr/local/bin/emacsclient" --alternate-editor /usr/local/bin/emacs
+    editor = "/usr/local/bin/emacsclient" -n --alternate-editor /usr/local/bin/emacs
 
 [push]
 	default = current
@@ -13,7 +13,16 @@
 [color]
 	ui = auto
 
+[diff]
+	compactionHeuristic = true
+
+[pager]
+        log  = diff-highlight | less -n
+        show = diff-highlight | less -n
+        diff = diff-highlight | less -n
+
 [alias]
   graph-mini = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
   graph = log --graph --all --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
   graph-rich = log --graph --all --pretty=format:'%C(red reverse)%d%Creset%C(white reverse) %h% Creset %C(green reverse) %an %Creset %C(cyan)%ar%Creset%n%C(white bold)%w(80)%s%Creset%n%n%w(80,2,2)%b' --abbrev-commit --date=relative --name-status
+
