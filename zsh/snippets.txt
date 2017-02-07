@@ -1,9 +1,11 @@
 # cd
+[CD : move to repos             ]  cd $(locate '.git' | grep -P '\.git$' | grep -v '\.plenv' | peco | sed -e 's/\.git$//')
 [CD : move to enpit git         ]  cd ~/works/lab/astem/kuechip/
 [CD : move to enpit git         ]  cd ~/works/lab/enpit/git
 [CD : move to rtos dir          ]  cd ~/works/lab/rtos
-[CD : move to rtos dir          ]  cd ~/works/lab/report
-[CD : move to rtos dir          ]  cd ~/works/lab/study/01.The_first_step_of_CLI
+[CD : move to report dir        ]  cd ~/works/lab/report
+[CD : move to study dir         ]  cd ~/works/lab/study/01.The_first_step_of_CLI
+
 
 # setting
 [SETTING : Edit .zshrc          ]  e ~/.dotfiles/zsh/init.zsh
@@ -19,14 +21,17 @@
 [RELOAD  : Reload .zshrc        ]  source ~/.zshrc
 [COMPILE : Compile .zshrc       ]  zcompile ~/.zshrc
 
+
 # apt
 [APT     : apt     install      ]  sudo apt install
 [APT     : apt     update       ]  sudo apt update && sudo apt upgrade
+
 
 # kgu network
 [KGU-NET : connect fieldlab     ]  nmcli dev wifi connect fieldlab password 8f9xi4mv
 [KGU-NET : connect ksc-wired    ]  nmcli con up id KSC-WIRED
 [KGU-NET : connect kgu-wlan     ]  nmcli dev wifi connect KGU-WLAN
+
 
 # kuechip
 [Open : kuechip specification   ]  xdg-open '~/works/lab/astem/kuechip/specification/151127_KUECHIP3F_InstructionSet.pdf'
@@ -37,6 +42,8 @@
 [ETC : CapsLock to Ctrl         ]  setxkbmap -option ctrl:nocaps
 [ETC : LANG -> JP               ]  export LANG=ja_JP.UTF-8
 [ETC : connect wlan             ]  nmcli dev wifi connect ---- password ----
-[ETC : wiki info                ]  nmcli dev wifi list
-[ETC : wiki info                ]  nmcli con list 
+[ETC : wifi info                ]  nmcli dev wifi list
+[ETC : connection info          ]  nmcli con list
+[ETC : VNC                      ]  remmina
+[ETC : scanner                  ]  
 
