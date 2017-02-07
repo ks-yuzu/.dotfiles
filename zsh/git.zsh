@@ -21,6 +21,11 @@ function peco-git-diff()
     pushd 2> /dev/null
     cd $GIT_ROOT 2> /dev/null
 
+    if [ $(git status --porcelain | wc -l) -eq 0 ]; then
+        echo $(git status | perl -pe 's/On branch (.*)/[branch: $1] /')
+        return
+    fi
+    
     local SELECTED_FILE_TO_DIFF="$(git status --porcelain | \
                                   grep '^ *M' | \
                                   peco --query "$LBUFFER" | \
