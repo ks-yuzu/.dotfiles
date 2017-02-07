@@ -10,6 +10,10 @@ alias lal='ls -l --almost-all --si --time-style=long-iso'
 # alias lal='ls -al --color=auto'
 alias laltr='ls -al -tr --color=auto'
 
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
 alias mv='mv -i'
 alias cp='cp -i'
 alias rm='rm -i'
@@ -18,9 +22,6 @@ alias tmux='tmux -2'
 
 #alias conky='conky -b NL'
 #alias guake='guake &'
-
-alias acap='acap.pl'
-alias ise='ise NL'
 
 alias e='emacsclient -n'
 alias ekill="emacsclient -e '(kill-emacs)'"
@@ -34,12 +35,12 @@ alias gitst='git status'
 alias op='xdg-open'
 alias open='xdg-open'
 
-# suffix alias
+# ===== suffix alias =====
 alias -s txt='cat'
 alias -s html='google-chrome-stable'
 alias -s pdf='evince'
 
-# global alias
+# ===== global alias =====
 # alias -g G='| grep'
 # alias -g L='| less'
 alias -g NL='>/dev/null 2>&1 &'
@@ -102,12 +103,3 @@ zle -N magic-abbrev-expand
 zle -N no-magic-abbrev-expand
 bindkey " " magic-abbrev-expand
 bindkey "^x " no-magic-abbrev-expand
-
-
-kill-processing () {
-    for pid in `ps -aux | grep '[/]bin/sh /home/yuzu/bin/processing/processing-java --force --sketch=' | awk '{ print $2 }'`
-    do
-        sudo kill $pid
-        echo "killed ${pid}"
-    done
-}
