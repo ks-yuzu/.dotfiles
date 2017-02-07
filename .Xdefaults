@@ -29,7 +29,7 @@ URxvt.lineSpace:            2
 !! Fonts
 URxvt.allow_bold    : true
 URxvt*font          : xft:Ricty:bold:size=10.5:antialias=true
-URxvt*boldFont      : xft:Ricty:bold:size=11:antialias=true
+URxvt*boldFont      : xft:Ricty:bold:size=10.5:antialias=true
 
 ! Fix font space
 URxvt*letterSpace   : -1
