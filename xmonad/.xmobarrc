@@ -2,11 +2,12 @@
 Config {
 --   font = "-misc-fixed-*-*-*-*-13-*-*-*-*-*-*-*"
 --  font = "xft:ProggyTiny:size=10"
-    font         = "xft:TakaoPGothic:size=10"
-  , bgColor      = "black"
-  , fgColor      = "#ddffff" --bbffff
-  , position     = Top
-  , lowerOnStart = True
+    font             = "xft:TakaoPGothic:size=10"
+  , bgColor          = "black"
+  , fgColor          = "#ddffff" -- bbffff
+  , position         = Top
+  , lowerOnStart     = True
+  , overrideRedirect = False     -- not to hidden xmobar
 
 -- general behavior
 --  , allDesktops  = True
