@@ -50,9 +50,9 @@ myLogHook h = dynamicLogWithPP xmobarPP {
 }
 
 myStartupHook = do
-  spawn "sleep 1 && emacs"
-  spawn "sleep 1 && urxvt -e tmux"
--- spawn "dropbox.py start"
+  spawn "sleep 0.1 && emacs"
+  spawn "sleep 0.1 && urxvt -e tmux"
+  spawn "dropbox.py start"
 
 
 myAdditionalKeys =
@@ -83,3 +83,18 @@ myAdditionalKeys =
 --     ]
 --     where viewShift = doF . liftM2 (.) W.view W.shift
 
+
+
+
+
+-- 95 ：login:Penguin：2016/04/04(月) 22:39:38.92 ID:amRINh5A
+--     と思ったら、これだとfull layoutの際にxmobarが隠れないままになる。
+
+--     myEventHook = handleEventHook defaultConfig <+> docksEventHook
+
+--     こいつを、main = do 以下に追加で直りやした。
+
+-- 96 ：login:Penguin：2016/04/04(月) 23:40:29.61 ID:msihTCeC
+--     >>93-95
+--     docksEventHookで正解みたいですね
+--     こっちも直りました 
