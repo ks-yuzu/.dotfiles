@@ -60,7 +60,7 @@ function uinas()
 ##### scripts for nas with sshfs #####
 export SSH_USER='yuzu'
 export LAB_NAS_MOUNT_POINT_SSH='/mnt/ssh-labnas'
-export LAB_SERVER10_KEY_PATH="$HOME/.ssh/ex_computer/id_ed25519_excomputer"
+export LAB_SERVER10_KEY_PATH="$HOME/.ssh/lab/id_ed25519_excomputer"
 export LAB_SERVER_IP='192.218.172.58'
 #export LAB_SERVER_IP='192.168.0.10'
 
