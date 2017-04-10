@@ -1,3 +1,5 @@
+autoload -Uz add-zsh-hook
+
 ## tmux info disp
 function disp-tmux-info()
 {
