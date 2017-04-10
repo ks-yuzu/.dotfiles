@@ -46,7 +46,6 @@ alias -s pdf='evince'
 alias -g NL='>/dev/null 2>&1 &'
 
 alias pm-suspend="echo \"[alias] 'pm-suspend' does not work well on Ubuntu14.04\""
-alias sshdius="sshpass -p feketerigo ssh -l stu3522 dius02.ksc.kwansei.ac.jp"
 
 alias sdedit="java -jar ~/bin/sdedit-4.2-beta7.jar $*"
 alias plantuml="java -jar ~/bin/plantuml.jar $*"
