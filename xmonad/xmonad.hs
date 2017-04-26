@@ -8,6 +8,9 @@ import XMonad.Hooks.ManageDocks
 import XMonad.Util.Run  -- spawnPipe, hPutStrLn
 import XMonad.Util.EZConfig  --additionalKeys
 
+-- config
+import XMonad.Config.Desktop
+
 -- WS
 import qualified XMonad.StackSet as W
 import XMonad.Util.WorkspaceCompare
@@ -26,17 +29,17 @@ import XMonad.Hooks.ICCCMFocus
 main :: IO()
 main = do
     myStatusBar <- spawnPipe "~/.cabal/bin/xmobar"
-    xmonad $ def{
+    xmonad $ desktopConfig {
         modMask     = myModMask,  -- mod1Mask : Alt,  mod4Mask : Super
         terminal    = "urxvt -e tmux",
         borderWidth = 1,
         layoutHook  = myLayoutHook,
         manageHook  = myManageHook,
         startupHook = myStartupHook,
+        handleEventHook = docksEventHook <+> handleEventHook desktopConfig,
         logHook     = do
             myLogHook myStatusBar
             takeTopFocus
---        handleEventHook = fullscreenEventHook
     }
       `additionalKeysP` myAdditionalKeys
       `removeKeysP`     ["M-q"]
@@ -44,7 +47,7 @@ main = do
 
 myModMask = mod4Mask
 myLayoutHook = avoidStruts $ layoutHook def
-myManageHook = manageDocks <+> manageHook def
+myManageHook = manageDocks <+> manageHook desktopConfig
 myLogHook h = dynamicLogWithPP xmobarPP {
     ppOutput = hPutStrLn h
 }

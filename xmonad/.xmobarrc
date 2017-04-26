@@ -6,12 +6,13 @@ Config {
   , bgColor          = "black"
   , fgColor          = "#ddffff" -- bbffff
   , position         = Top
-  , lowerOnStart     = True
-  , overrideRedirect = False     -- not to hidden xmobar
-
 -- general behavior
---  , allDesktops  = True
-  , pickBroadest = True
+  , lowerOnStart     = True
+  , hideOnStart      = False
+  , allDesktops      = True
+  , overrideRedirect = False     -- not to hidden xmobar
+  , pickBroadest     = False
+  , persistent       = True
 
 -- display info
   , commands = [
