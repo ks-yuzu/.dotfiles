@@ -147,7 +147,12 @@ function win10()
 
 function task()
 {
-    less
+    less ~/Dropbox/todo.org
+}
+
+function taske()
+{
+    e ~/Dropbox/todo.org
 }
 
 function tree()
