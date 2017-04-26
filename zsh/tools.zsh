@@ -35,14 +35,16 @@ function mdisp()
 {
     selected=$(
 		/bin/cat <<EOF |
-[ built-in | HDMI ] xrandr --output eDP1 --auto --output HDMI1 --auto --right-of eDP1
-[ HDMI | built-in ] xrandr --output HDMI1 --auto --output eDP1 --auto --right-of HDMI1
-[    same (HDMI)  ] xrandr --output HDMI1 --auto --same-as eDP1
-[ built-in | VGA  ] xrandr --output eDP1 --auto --output DP1 --auto --right-of eDP1
-[  VGA | built-in ] xrandr --output DP1 --auto --output eDP1 --auto --right-of DP1
-[    same  (VGA)  ] xrandr --output DP1 --auto --same-as eDP1
-[     HDMI off    ] xrandr --output HDMI1 --off
-[     VGA  off    ] xrandr --output DP1 --off
+[ built-in | HDMI ] xrandr --output eDP-1 --auto --output DP-1 --auto --right-of eDP-1
+[ HDMI | built-in ] xrandr --output DP-1 --auto --output eDP-1 --auto --right-of DP-1
+[    same (HDMI)  ] xrandr --output DP-1 --auto --same-as eDP-1
+[     HDMI off    ] xrandr --output DP-1 --off
+[ built-in | VGA  ] xrandr --output eDP-1 --auto --output DP-2 --auto --right-of eDP-1
+[  VGA | built-in ] xrandr --output DP-2 --auto --output eDP-1 --auto --right-of DP-2
+[    same  (VGA)  ] xrandr --output DP-2 --auto --same-as eDP-1
+[     VGA  off    ] xrandr --output DP-2 --off
+[  VGA  FULL-HD   ] xrandr --addmode DP-2 1920x1080
+[  HDMI FULL-HD   ] xrandr --addmode DP-1 1920x1080
 EOF
 		peco )
 
