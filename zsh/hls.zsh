@@ -1,8 +1,7 @@
 alias acap='acap.pl -Dall --remain-linked-object -l synthesized/'
+alias ise='ise >/dev/null 2>&1 &'
 
-alias ise='ise NL'
-alias vivado="${HOME}/bin/Xilinx/Vivado/2016.4/bin/vivado"
-
+export PATH=${HOME}/opt/Vivado/2016.4/bin:$PATH
 
 function clean-acap {
     local dir='.'

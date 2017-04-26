@@ -35,6 +35,8 @@ alias gitst='git status'
 alias op='xdg-open'
 alias open='xdg-open'
 
+alias octave='octave --no-gui'
+
 # ===== suffix alias =====
 alias -s txt='cat'
 alias -s html='google-chrome-stable'
