@@ -89,7 +89,7 @@ function bak()
 function set-brightness-usage()
 {
 	echo "usage:" >&2
-	echo "   setBrightness <value>" >&2
+	echo "   set-brightness <value>" >&2
 	echo "   <value> is an integer between 20 and 100." >&2
 	return
 }
@@ -105,14 +105,14 @@ function set-brightness()
 
 	## check argument
 	if [ -z "${@}" ]; then
-		setBrightness-usage
+		set-brightness-usage
 		return
 	fi
 
 	## Parse the first argument. (Non-numeric : zero)
 	value=$(echo ${1:?} | awk '{print $1*1}')
 	if [ ${value} -gt 100 -o ${value} -lt 20 ]; then
-		setBrightness-usage
+		set-brightness-usage
 		return
 	fi
 
