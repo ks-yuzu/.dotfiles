@@ -17,8 +17,19 @@ function battery-pc()
 
 function cc()
 {
-	perl -E "print ($*)"
+    if type perl6 > /dev/null 2>&1; then
+        perl6 -e "say ($*)"
+    else
+        perl -E "print ($*)"
+    fi
 }
+
+
+function cc5()
+{
+    perl -E "print ($*)"
+}
+
 
 function mdisp()
 {
