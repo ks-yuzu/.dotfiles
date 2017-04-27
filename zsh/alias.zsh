@@ -37,6 +37,10 @@ alias open='xdg-open'
 
 alias octave='octave --no-gui'
 
+alias gcc='gcc -Wall std=c11'
+alias gcc='g++ -Wall std=c++17'
+
+
 # ===== suffix alias =====
 alias -s txt='cat'
 alias -s html='google-chrome-stable'
