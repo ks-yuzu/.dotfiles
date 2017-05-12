@@ -145,16 +145,6 @@ function win10()
     sudo kvm -hda ~/kvm/win10_x64.qcow2 -boot c -m 2048 -vnc :0 -monitor stdio -usbdevice tablet
 }
 
-function task()
-{
-    less ~/Dropbox/todo.org
-}
-
-function taske()
-{
-    e ~/Dropbox/todo.org
-}
-
 function tree()
 {
     pwd;find . | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/|  /g'
@@ -163,4 +153,14 @@ function tree()
 function cal-year()
 {
     cal $(date --iso-8601 | perl -aF- -e 'print $F[0]');
+}
+
+function dict()
+{
+    hw -A 1 -w --color --no-line-number $1 ~/dicts/gene-utf8.txt | head | sed -e 's/^.*://g'
+}
+ 
+function lock()
+{
+    dm-tool loack
 }
