@@ -1,0 +1,6 @@
+[ todo  ]  emacsclient -n ~/dropbox/todo.org
+[ lab   ]  emacsclient -n ~/works/lab/note.org
+[ astem ]  emacsclient -n ~/works/lab/astem/todo.org
+[ tutor ]  emacsclient -n ~/works/tutor/note.org
+[ EDIT  ]  emacsclient -n ~/.dotfiles/zsh/note-files.txt
+
