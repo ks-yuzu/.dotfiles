@@ -45,4 +45,4 @@
 [ETC     : wifi info             ]  nmcli dev wifi list
 [ETC     : connection info       ]  nmcli con list
 [ETC     : VNC                   ]  remmina
-[ETC     : scanner               ]  scscangearmp2
+[ETC     : scanner               ]  scangearmp2
