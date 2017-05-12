@@ -1,3 +1,8 @@
+# peco の存在チェック
+if [ ! ${+commands[peco]} ]; then
+    return
+fi
+
 # peco-history
 function peco-select-history()
 {
@@ -180,9 +185,13 @@ zle -N peco-pcd
 
 function rmpeco()
 {
-    rm $(ls -a | peco)
+    rm $(ls --almost-all | peco)
 }
 
+function rmpeco-rf()
+{
+    rm -rf $(ls --almost-all | peco)
+}
 
 function peco-ssh () {
   local selected_host=$(awk '
@@ -227,3 +236,33 @@ function peco-file() {
         | peco \
         | perl -alE 'say $F[7]'
 }
+
+
+
+# peco snippet
+function peco-open-todo()
+{
+    local snippets="$HOME/.dotfiles/zsh/note-files.txt"
+
+    if [ ! -e "$snippets" ]; then
+        echo "$snippets is not found." >&2
+        return 1
+    fi
+
+    local line="$(grep -v "^#" "$snippets" | peco --query "$LBUFFER")"
+    if [ -z "$line" ]; then
+        return 1
+    fi
+    
+    local snippet="$(echo "$line" | sed "s/^\[[^]]*\] *//g")"
+    if [ -z "$snippet" ]; then
+        return 1
+    fi
+
+    BUFFER=$snippet
+    zle clear-screen
+}
+
+zle -N peco-open-todo
+bindkey '^xt' peco-open-todo
+
