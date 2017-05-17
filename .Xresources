@@ -1,7 +1,22 @@
-Emacs*useXIM: false
-Emacs24*useXIM: false
+! Emacs*useXIM: false
+! Emacs24*useXIM: false
+! Emacs*useXIM: true
+! Emacs24*useXIM: true
+
 
 ! Tgif.Times-Roman: -adobe-times-medium-r-normal--%d-*
+! Tgif.InitialFont: Inconsolata
+! Tgif.DoubleByteInputMethod: fcitx-skk
 
-Tgif.InitialFont: Inconsolata
-Tgif.DoubleByteInputMethod: fcirx-skk
+URxvt.perl-ext-common: xim-onthespot
+URxvt.inputMethod: fcitx
+URxvt.preeditType: OnTheSpot
+
+XTerm*background: black
+XTerm*foreground: white
+
+XTerm*faceSize: 12              ! フォントサイズ
+XTerm*faceName: Ricty           ! フォント
+XTerm*faceNameDoublesize: Ricty ! フォント (マルチバイト文字)
+XTerm*fontDoublesize: true
+XTerm*useXIM: false
