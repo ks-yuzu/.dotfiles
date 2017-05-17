@@ -224,7 +224,7 @@ function sp()
 
 function peco-nmcli()
 {
-    nmcli $(nmcli 2>&1 | sed -e '/Usage/,/OBJECT/d' | peco | perl -pe 's/[\[\]]//g' | awk '{print $1}')   
+    nmcli $(nmcli 2>&1 | sed -e '/Usage/,/OBJECT/d' | perl -pe 's/[\[\]]//g' | peco | awk '{print $1}')   
 }
 zle -N peco-nmcli
 bindkey '^x^r' peco-nmcli
