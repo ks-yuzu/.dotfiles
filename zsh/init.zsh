@@ -1,3 +1,6 @@
+# cd -[tab]で過去のディレクトリに移動
+setopt auto_pushd
+
 #### [ completion ]
 # auto-complete
 autoload -Uz compinit
@@ -26,8 +29,6 @@ fi
 
 # xmodmap
 [ -f ~/.Xmodmap ] && xmodmap ~/.Xmodmap
-
-
 
 #### [ color ]
 eval $(dircolors ~/.dotfiles/zsh/dircolors.256dark) # ls color

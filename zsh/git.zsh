@@ -18,7 +18,6 @@ function peco-git-diff()
     local O_PWD=$(pwd)
     local GIT_ROOT=$(perl -e "print '$O_PWD' . '/..' x $(get-git-dir-depth)")
 
-    pushd 2> /dev/null
     cd $GIT_ROOT 2> /dev/null
 
     if [ $(git status --porcelain | wc -l) -eq 0 ]; then
@@ -36,7 +35,7 @@ function peco-git-diff()
         echo 'Not found the file.'
     fi
 
-    popd > /dev/null
+    cd $O_PWD > /dev/null
     zle reset-prompt
 }
 zle -N peco-git-diff

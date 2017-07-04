@@ -1,4 +1,4 @@
-alias acap='acap.pl -Dall --remain-linked-object -l synthesized/'
+alias acap='acap.pl -Z1 -Dall -v3 -A --remain-linked-object -l synthesized/ --visualize-cdfg --enable-inlining'
 alias ise='ise >/dev/null 2>&1 &'
 
 export PATH=${HOME}/opt/Vivado/2016.4/bin:$PATH

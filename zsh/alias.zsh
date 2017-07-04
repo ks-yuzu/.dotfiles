@@ -37,8 +37,10 @@ alias open='xdg-open'
 
 alias octave='octave --no-gui'
 
-alias gcc='gcc -Wall std=c11'
-alias gcc='g++ -Wall std=c++17'
+alias gcc='gcc -Wall -std=c11'
+alias g++='g++ -Wall -std=c++17'
+
+alias cdiff='colordiff'
 
 
 # ===== suffix alias =====

@@ -15,16 +15,6 @@ function battery-pc()
 	echo "Battery : $percentage%"
 }
 
-function cc()
-{
-    if type perl6 > /dev/null 2>&1; then
-        perl6 -e "say ($*)"
-    else
-        perl -E "print ($*)"
-    fi
-}
-
-
 function cc5()
 {
     perl -E "print ($*)"
@@ -55,35 +45,6 @@ EOF
 }
 zle -N mdisp
 bindkey '^x^m' mdisp
-
-
-function bak()
-{
-	if [ ! -e $1 ]; then
-		echo "[error] $1 does not exist."
-		return -1;
-	fi
-
-	local i=1
-	while [ $i -lt 100 ]; do
-		local num=$i
-		if [ $num -eq 1 ];then
-			num=''
-		fi
-
-		if [ -e $1.bak$num ]; then
-			i=$(( i + 1 ))	  
-		else
-			break;
-		fi;
-	done
-
-	if [ $i -eq '1' ];then
-		i=''
-	fi
-
-	cp -r $1 $1.bak$i
-}
 
 
 function set-brightness-usage()

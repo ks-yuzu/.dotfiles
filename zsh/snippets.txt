@@ -1,5 +1,6 @@
 # cd
-[CD      : move to repos         ]  cd $(locate '.git' | grep -P '\.git$' | grep -v '\.plenv' | peco | sed -e 's/\.git$//')
+[CD      : move to repos         ]  cd $(locate '.git' | perl -nE '/^(.*)\.git$/ and say $1' | peco)
+[CD      : move to rtos synth    ]  cd ~/works/lab/rtos/toppers/asp3_macosx_xcode-20160515/work
 [CD      : move to kuechip git   ]  cd ~/works/lab/astem/kuechip/
 [CD      : move to enpit git     ]  cd ~/works/lab/enpit/git
 [CD      : move to rtos dir      ]  cd ~/works/lab/rtos
@@ -29,14 +30,15 @@
 
 # kgu network
 [KGU-NET : connect fieldlab      ]  nmcli dev wifi connect fieldlab password 8f9xi4mv
-[KGU-NET : connect ksc-wired     ]  nmcli con up id KSC-WIRED
 [KGU-NET : connect kgu-wlan      ]  nmcli dev wifi connect KGU-WLAN
-
+[KGU-NET : connect ksc-wired     ]  nmcli con up id KSC-WIRED
 
 # kuechip
-[Open    : kuechip specification ]  xdg-open '~/works/lab/astem/kuechip/specification/151127_KUECHIP3F_InstructionSet.pdf'
-[Open    : kuechip specification ]  xdg-open '~/works/lab/astem/kuechip/specification/KUECHIP2_リファレンスマニュアル.pdf'
+[Open    : kuechip specification ]  evince '~/works/lab/astem/kuechip/specification/151127_KUECHIP3F_InstructionSet.pdf'
+[Open    : kuechip specification ]  evince '~/works/lab/astem/kuechip/specification/KUECHIP2_リファレンスマニュアル.pdf'
 
+# rtos
+[ DOCUMENT : TOPPERS             ]  evince ~/works/lab/rtos/documents/tgki_spec-300.pdf
 
 # etc
 [ETC     : CapsLock to Ctrl      ]  setxkbmap -option ctrl:nocaps
@@ -46,3 +48,4 @@
 [ETC     : connection info       ]  nmcli con list
 [ETC     : VNC                   ]  remmina
 [ETC     : scanner               ]  scangearmp2
+[ETC     : network               ]  sudo nethogs wlp2s0
