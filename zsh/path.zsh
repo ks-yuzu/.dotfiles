@@ -1,20 +1,13 @@
-## hls
-export PATH=$HOME/bin/Xilinx/14.7/ISE_DS/ISE/bin/lin64:$PATH
-export PATH=$HOME/tools/ccap/bin:$PATH
-export LIBDIR=$HOME/tools/ccap/ccaplib 
-export PATH=$HOME/tools/mips-elf/gcc-4.8.2/bin:$PATH
-export LD_LIBRARY_PATH=$HOME/tools/mpc-1.0.2/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=$HOME/tools/mpfr-3.1.2/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=$HOME/tools/gmp-6.0.0/lib:$LD_LIBRARY_PATH
-export SOFT_FP_DIR=$HOME/tools/gcc-4.8.2/tmp/mips-elf/soft-float/el/libgcc
-
 ## plenv
-export PERL_CPANM_OPT="--local-lib=~/perl5"
-export PATH=$HOME/.plenv/bin:$PATH
-export PATH=$HOME/perl5/bin:$PATH
-export PERL5LIB=$HOME/perl5/lib/perl5:$PERL5LIB
-export PERL5LIB=$HOME/.plenv/versions/5.24.0/lib/perl5:$PERL5LIB
+PERL_LOCAL_LIB="$HOME/perl5"
 export PLENV_VERSION=$(plenv version | awk '{print $1}')
+export PERL_CPANM_OPT="--local-lib=${PERL_LOCAL_LIB}"
+
+export PATH=${PERL_LOCAL_LIB}/bin:$PATH
+export PERL5LIB=${PERL_LOCAL_LIB}/lib/perl5:$PERL5LIB
+export PATH=${PLENV_ROOT}/bin:$PATH
+export PERL5LIB=${PLENV_ROOT}/versions/${PLENV_VERSION}/lib/perl5:$PERL5LIB
+
 
 ## cabal
 export PATH=$HOME/.cabal/bin:$PATH
