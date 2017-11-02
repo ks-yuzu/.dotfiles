@@ -1,12 +1,14 @@
 ## plenv
 PERL_LOCAL_LIB="$HOME/perl5"
-export PLENV_VERSION=$(plenv version | awk '{print $1}')
-export PERL_CPANM_OPT="--local-lib=${PERL_LOCAL_LIB}"
-
 export PATH=${PERL_LOCAL_LIB}/bin:$PATH
 export PERL5LIB=${PERL_LOCAL_LIB}/lib/perl5:$PERL5LIB
-export PATH=${PLENV_ROOT}/bin:$PATH
-export PERL5LIB=${PLENV_ROOT}/versions/${PLENV_VERSION}/lib/perl5:$PERL5LIB
+
+if [ -x "`which plenv`" ]; then
+  export PLENV_VERSION=$(plenv version | awk '{print $1}')
+  export PERL_CPANM_OPT="--local-lib=${PERL_LOCAL_LIB}"
+  export PATH=${PLENV_ROOT}/bin:$PATH
+  export PERL5LIB=${PLENV_ROOT}/versions/${PLENV_VERSION}/lib/perl5:$PERL5LIB
+fi
 
 
 ## cabal
