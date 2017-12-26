@@ -1,12 +1,19 @@
 {
-  "Keymap":
-  {
-    "C-g": "peco.Cancel",
+  "Keymap": {
+    "M-f": "peco.ForwardWord",
+    "M-b": "peco.BackwardWord",
+    
+    "M-d": "peco.DeleteForwardWord",
+    "M-h": "peco.DeleteBackwardWord",
+   
     "C-v": "peco.SelectNextPage",
-    "M-v": "peco.SelectPreviousPage"
+    "M-v": "peco.SelectPreviousPage",
+
+    "C-l": "peco.DeleteAll",
+
+    "C-g": "peco.Cancel"
   },
-  "Style":
-  {
+  "Style": {
     "Query": ["yellow", "bold"]
   }
 }
