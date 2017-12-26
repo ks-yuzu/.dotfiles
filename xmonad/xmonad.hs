@@ -23,13 +23,21 @@ import Control.Monad (liftM2)
 -- for Java Swing
 import XMonad.Hooks.ICCCMFocus
 
--- for Chrome full screent
--- import XMonad.Hooks.EwmhDesktops
+import Graphics.X11.ExtraTypes.XF86 (
+  xF86XK_AudioRaiseVolume,
+  xF86XK_AudioLowerVolume,
+  xF86XK_AudioMute,
+  xF86XK_MonBrightnessDown,
+  xF86XK_MonBrightnessUp
+  )
+
+-- for libreoffice 
+import XMonad.Hooks.EwmhDesktops
 
 main :: IO()
 main = do
     myStatusBar <- spawnPipe "~/.cabal/bin/xmobar"
-    xmonad $ desktopConfig {
+    xmonad $ ewmh desktopConfig {
         modMask     = myModMask,  -- mod1Mask : Alt,  mod4Mask : Super
         terminal    = "urxvt -e tmux",
         borderWidth = 1,
@@ -41,7 +49,7 @@ main = do
             myLogHook myStatusBar
             takeTopFocus
     }
-      `additionalKeysP` myAdditionalKeys
+      `additionalKeys` myAdditionalKeys
       `removeKeysP`     ["M-q"]
       
 
@@ -53,27 +61,34 @@ myLogHook h = dynamicLogWithPP xmobarPP {
 }
 
 myStartupHook = do
-  spawn "sleep 0.1 && emacs"
-  spawn "sleep 0.1 && urxvt -e tmux"
+  spawn "emacs"
+  spawn "urxvt -e tmux"
   spawn "dropbox.py start"
+  -- spawn "sleep 0.1 && emacs"
+  -- spawn "sleep 0.1 && urxvt -e tmux"
 
 
 myAdditionalKeys =
   [
    -- key binding
-    ("M-S-n"  , moveTo Next NonEmptyWS)
-   ,("M-S-p"  , moveTo Prev NonEmptyWS)
-   ,("M-C-S-n", do t <- findWorkspace getSortByIndex Next EmptyWS 1
-                   (windows . W.shift) t
-                   (windows . W.greedyView) t
-    )
-   ,("M-C-S-p", do t <- findWorkspace getSortByIndex Prev EmptyWS 1
-                   (windows . W.shift) t
-                   (windows . W.greedyView) t
-    )
-   ,("C-M-n"  , shiftTo Next EmptyWS)
-   ,("C-M-p"  , shiftTo Prev EmptyWS)
-   ,("M-S-r"  , spawn "killall xmobar; xmonad --recompile && xmonad --restart")
+   --  ("M-S-n"  , moveTo Next NonEmptyWS)
+   -- ,("M-S-p"  , moveTo Prev NonEmptyWS)
+   -- ,("M-C-S-n", do t <- findWorkspace getSortByIndex Next EmptyWS 1
+   --                 (windows . W.shift) t
+   --                 (windows . W.greedyView) t
+   --  )
+   -- ,("M-C-S-p", do t <- findWorkspace getSortByIndex Prev EmptyWS 1
+   --                 (windows . W.shift) t
+   --                 (windows . W.greedyView) t
+   --  )
+   -- ,("C-M-n"  , shiftTo Next EmptyWS)
+   -- ,("C-M-p"  , shiftTo Prev EmptyWS)
+   -- ,("M-S-r"  , spawn "killall xmobar; xmonad --recompile && xmonad --restart")
+    ((0, xF86XK_AudioLowerVolume ), unsafeSpawn "amixer set Master 2dB-")
+   ,((0, xF86XK_AudioRaiseVolume ), unsafeSpawn "amixer set Master 2dB+")
+   ,((0, xF86XK_AudioMute        ), unsafeSpawn "amixer -D pulse set Master 1+ toggle")
+   ,((0, xF86XK_MonBrightnessDown), unsafeSpawn "sudo brightness --dec 5")
+   ,((0, xF86XK_MonBrightnessUp  ), unsafeSpawn "sudo brightness --inc 5")
   ]
 
 
