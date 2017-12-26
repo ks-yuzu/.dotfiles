@@ -159,8 +159,8 @@ bindkey '^x^f' peco-cd
 # peco-nmcli-wifi-connect
 function peco-wlcon()
 {
-	local ssid=$(nmcli dev wifi list | tail -n +2 | peco --query "$*" | awk '{print $1}' | sed "s/'//g")
-	print -z "nmcli dev wifi connect \"${ssid}\" password\ "
+	local ssid=$(nmcli dev wifi list | tail -n +2 | peco --query "$*" | awk '{print $1}')
+	print -z "nmcli dev wifi connect \"${ssid}\" password "
 }
 alias wlcon="peco-wlcon"
 
@@ -216,10 +216,10 @@ function sp()
 {
     ssh $(grep -E '^Host' $HOME/.ssh/config | \
           perl -ne 'm/Host\s+.*?(\S+)(\s+(\S+))?/;
-                    printf "[ %-9s ] $1\n", $3;' | \
+                    printf "[ %-15s ] $1\n", $3;' | \
           grep -vE 'bitbucket|gitlab|lab-router' | \
           peco                                   | \
-          sed -e 's/^\[.*\] //g')
+          sed -e 's/^\[.*\]\s*//g')
 }
 
 function peco-nmcli()
