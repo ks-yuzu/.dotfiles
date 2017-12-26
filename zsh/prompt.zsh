@@ -74,31 +74,35 @@ zstyle ':vcs_info:git:*' actionformats '%b@%r|%a' '%c' '%u'
 
 setopt prompt_subst
 
+function rprompt
+{
+    local repo=$(vcs_echo)
+    local dir=$(get-path-from-git-root)
+    if [ ! -z $repo -o ! -z $dir ]; then
+        echo "[$repo /$dir]"
+    elif [ ! -z $repo -o -z $dir ]; then
+        echo "[$repo /]"
+    fi
+
+}
+
 function vcs_echo
 {
-    local st branch color
     STY= LANG=en_US.UTF-8 vcs_info
-    st=`git status 2> /dev/null`
+    local st=`git status 2> /dev/null`
     if [[ -z "$st" ]]; then return; fi
-    branch="$vcs_info_msg_0_"
+    local branch="$vcs_info_msg_0_"
+    local color
     if   [[ -n "$vcs_info_msg_1_" ]];                then color=${fg[yellow]} # staged
     elif [[ -n "$vcs_info_msg_2_" ]];                then color=${fg[red]}    # unstaged
     elif [[ -n $(echo "$st" | grep "^Untracked") ]]; then color=${fg[cyan]}   # untracked
     else                                                  color=${fg[green]}
     fi
+
     echo "%{$color%}$branch%{$reset_color%}" | sed -e s/@/"%F{white}@%f%{$color%}"/
 }
 
-function get-git-path-for-prompt
-{
-    local rpath=$(get-path-from-git-root)
-    if [[ $rpath != '' ]]; then
-		echo " $rpath"
-	fi
-}
-
-RPROMPT='[$(vcs_echo)$(get-git-path-for-prompt)]'
-
+RPROMPT='$(rprompt)'
 
 ## period
 function show-time()
