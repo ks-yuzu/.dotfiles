@@ -39,7 +39,7 @@ function disp-tmux-info-for-prompt()
     if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
     echo -n "["
     echo -n $(disp-tmux-info-mini)
-    echo -n "] "
+    echo -n "]"
 }
 
 
@@ -55,7 +55,13 @@ function update-prompt()
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
 
-    PROMPT="$name $tmuxinfo$cdir $endl$mark"
+    local limit=''
+    if [ ! -z $STS_EXPIRATION_UNIXTIME ]; then
+       limit="($(($STS_EXPIRATION_UNIXTIME - $(date +%s))))"
+    fi
+
+    local sts="sts:${STS_ALIAS_SHORT:-(none)}$limit"
+    PROMPT="$name $tmuxinfo $sts $cdir $endl$mark"
 }
 
 add-zsh-hook precmd update-prompt
