@@ -106,3 +106,6 @@ eventtap:start()
 
 
 remapKey({'ctrl'}, 'j', keyCode('kana'))
+
+-- note
+-- AquaSKK 総合と ascii だけだと動かなかったが, "ひらがな" を追加すると動く
