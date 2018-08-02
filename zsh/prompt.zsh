@@ -57,10 +57,17 @@ function update-prompt()
 
     local limit=''
     if [ ! -z $STS_EXPIRATION_UNIXTIME ]; then
-       limit="($(($STS_EXPIRATION_UNIXTIME - $(date +%s))))"
+       lefttime="$(($STS_EXPIRATION_UNIXTIME - $(date +%s)))"
+       
+       if [ $lefttime -gt 0 ]; then
+           limit="($lefttime)"
+       else
+           limit="(%F{red}expired%f)"
+       fi
     fi
 
     local sts="sts:${STS_ALIAS_SHORT:-(none)}$limit"
+
     PROMPT="$name $tmuxinfo $sts $cdir $endl$mark"
 }
 
