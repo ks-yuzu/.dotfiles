@@ -228,8 +228,13 @@ LINK 00;38;5;37 # symbolic link. (If you set this to 'target' instead of a
 .pde		 	 00;38;5;87
 .java		 	 00;38;5;196
 .pl			 	 00;38;5;14
+.pm			 	 00;38;5;45
+.t			 	 00;38;5;38
 .v               00;38;5;171
+.vh              00;38;5;171
+.vt              00;38;5;171
 .html            00;38;5;81
+.docx            00;38;5;12
 
 
 # "unimportant" files as logs and backups (base01)
