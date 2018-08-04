@@ -62,7 +62,7 @@ bindkey "^ga" peco-git-add
 ## git checkout
 function peco-git-checkout()
 {
-    git checkout `git branch | peco | sed -e "s/\* //g" | awk "{print \$1}"`
+    git checkout $(git branch -a | peco | sed -e 's/^..//g' -e '/->/d' -e 's|remotes/origin/||g' | awk '!a[$0]++')
     zle reset-prompt
 }
 zle -N peco-git-checkout
@@ -72,7 +72,7 @@ bindkey "^go" peco-git-checkout
 ## git commit -v
 function __git-commit()
 {
-    git commit -v
+    git commit
     zle reset-prompt
 }
 zle -N __git-commit
