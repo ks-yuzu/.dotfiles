@@ -5,6 +5,8 @@
 import XMonad
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.ManageDocks   (ToggleStruts(..),avoidStruts,docks,manageDocks)
+import XMonad.Hooks.ManageHelpers
 import XMonad.Util.Run  -- spawnPipe, hPutStrLn
 import XMonad.Util.EZConfig  --additionalKeys
 
@@ -37,12 +39,15 @@ import XMonad.Hooks.EwmhDesktops
 main :: IO()
 main = do
     myStatusBar <- spawnPipe "~/.cabal/bin/xmobar"
-    xmonad $ ewmh desktopConfig {
+    -- xmonad $ ewmh desktopConfig {
+    xmonad $ docks desktopConfig {
         modMask     = myModMask,  -- mod1Mask : Alt,  mod4Mask : Super
         terminal    = "urxvt -e tmux",
         borderWidth = 1,
+        normalBorderColor  = "#777777",  -- 非アクティブウィンドウの枠色
+        focusedBorderColor = "#ff4500",  -- アクティブウィンドウの枠色
         layoutHook  = myLayoutHook,
-        manageHook  = myManageHook,
+        manageHook  = myManageHook <+> myManageHookFloat,
         startupHook = myStartupHook,
         handleEventHook = docksEventHook <+> handleEventHook desktopConfig,
         logHook     = do
@@ -50,6 +55,7 @@ main = do
             takeTopFocus
     }
       `additionalKeys` myAdditionalKeys
+      `additionalKeysP` myAdditionalKeysP
       `removeKeysP`     ["M-q"]
       
 
@@ -64,9 +70,7 @@ myStartupHook = do
   spawn "emacs"
   spawn "urxvt -e tmux"
   spawn "dropbox.py start"
-  -- spawn "sleep 0.1 && emacs"
-  -- spawn "sleep 0.1 && urxvt -e tmux"
-
+  spawn "hsetroot -solid '#000000' && xcompmgr"
 
 myAdditionalKeys =
   [
@@ -92,6 +96,51 @@ myAdditionalKeys =
   ]
 
 
+myAdditionalKeysP =
+  [
+   -- key binding
+   --  ("M-S-n"  , moveTo Next NonEmptyWS)
+   -- ,("M-S-p"  , moveTo Prev NonEmptyWS)
+   -- ,("M-C-S-n", do t <- findWorkspace getSortByIndex Next EmptyWS 1
+   --                 (windows . W.shift) t
+   --                 (windows . W.greedyView) t
+   --  )
+   -- ,("M-C-S-p", do t <- findWorkspace getSortByIndex Prev EmptyWS 1
+   --                 (windows . W.shift) t
+   --                 (windows . W.greedyView) t
+   --  )
+   -- ,("C-M-n"  , shiftTo Next EmptyWS)
+   -- ,("C-M-p"  , shiftTo Prev EmptyWS)
+     ("M-S-k"  , spawn "/usr/local/bin/screenkey --no-systray")
+    ,("M-S-l"  , spawn "ps aux | grep '[s]creenkey' | awk '{print $2}' | xargs kill")
+    ,("M-S-r"  , spawn "killall xmobar; xmonad --recompile && xmonad --restart")
+  ]
+
+
+myManageHookFloat = composeAll
+    [
+      className =? "Gimp"             --> doFloat
+    -- , className =? "Tk"               --> doFloat
+    -- , className =? "mplayer2"         --> doCenterFloat
+    -- , className =? "mpv"              --> doCenterFloat
+    -- , className =? "feh"              --> doCenterFloat
+    -- , className =? "Display.im6"      --> doCenterFloat
+    -- , className =? "Shutter"          --> doCenterFloat
+    -- , className =? "Thunar"           --> doCenterFloat
+    -- , className =? "Nautilus"         --> doCenterFloat
+    -- , className =? "Plugin-container" --> doCenterFloat
+         -- className =? "Screenkey"        --> (doRectFloat $ W.RationalRect 0.0 0.9 0.5 0.1)
+    -- , className =? "Websearch"        --> doCenterFloat
+    -- , className =? "XClock"           --> doSideFloat NE
+    -- , title     =? "Speedbar"         --> doCenterFloat
+    -- , title     =? "urxvt_float"      --> doSideFloat SC
+    -- , isFullscreen                    --> doFullFloat
+    -- , isDialog                        --> doCenterFloat
+    -- , stringProperty "WM_NAME" =? "LINE" --> (doRectFloat $ W.RationalRect 0.60 0.1 0.39 0.82)
+    -- , stringProperty "WM_NAME" =? "Google Keep" --> (doRectFloat $ W.RationalRect 0.3 0.1 0.4 0.82)
+    -- , stringProperty "WM_NAME" =? "tmptex.pdf - 1/1 (96 dpi)" --> (doRectFloat $ W.RationalRect 0.29 0.25 0.42 0.5)
+    -- , stringProperty "WM_NAME" =? "Figure 1" --> doFloat
+    ]
           
 -- -- setting default workspace
 -- myManageHookShift = composeAll
