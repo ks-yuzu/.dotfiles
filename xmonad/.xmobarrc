@@ -1,18 +1,19 @@
 -- ~/.xmobarrc
 Config {
---   font = "-misc-fixed-*-*-*-*-13-*-*-*-*-*-*-*"
---  font = "xft:ProggyTiny:size=10"
-    font             = "xft:TakaoPGothic:size=10"
+    -- font             = "-misc-fixed-*-*-*-*-13-*-*-*-*-*-*-*"
+    -- font             = "xft:ProggyTiny:size=10"
+    -- font             = "xft:TakaoGothic:size=10"
+    font             = "xft:Myrica:size=10,TakaoGothic:size=10,NotoEmoji:size=10,Ricty:size=10"
   , bgColor          = "black"
-  , fgColor          = "#ddffff" -- bbffff
+  , fgColor          = "#eeffff" -- bbffff
   , position         = Top
 -- general behavior
-  , lowerOnStart     = True
+  , lowerOnStart     = False
   , hideOnStart      = False
-  , allDesktops      = True
   , overrideRedirect = False     -- not to hidden xmobar
-  , pickBroadest     = False
   , persistent       = True
+  , allDesktops      = True
+  , pickBroadest     = False
 
 -- display info
   , commands = [
@@ -32,28 +33,40 @@ Config {
                           , "--normal" , "orange"
                           , "--high"   , "red"
                           ] 10
-    , Run DynNetwork      [ "-L"       , "5"
+    , Run DynNetwork      [ "-t"       , "<dev>: ⬆<tx>KB/s ⬇<rx>KB/s"
+                          , "-L"       , "5"
                           , "-H"       , "32"
-                          , "-m"       , "3"
+                          , "-m"       , "2"
                           , "--low"    , "green"
                           , "--normal" , "orange"
                           , "--high"   , "red"
                           ] 10
-    , Run Cpu             [ "-L"       , "26"
-                          , "-H"       , "51"
+    -- , Run Wireless "wlp2s0"
+    --                       [ "-t"       , "<essid> <quality>"
+    --                       , "-a"       , "l"
+    --                       , "-L"       , "50"
+    --                       , "-H"       , "75"
+    --                       , "--low"    , "red"
+    --                       , "--normal" , "yellow"
+    --                       , "--high"   , "green"
+    --                       ] 10
+    , Run Com "sh"        [ "/usr/local/bin/xmobar-wireless.sh"
+                          ] "mywireless" 10
+    , Run Cpu             [ "-L"       , "30"
+                          , "-H"       , "55"
                           , "--low"    , "green"
                           , "--normal" , "orange"
                           , "--high"   , "red"
                           ] 10
     , Run MultiCpu        [ "-t"       , "cpu : <total0>%, <total1>%, <total2>%, <total3>%  "
-                          , "-m"       , "2"
-                          , "-L"       , "26"
-                          , "-H"       , "51"
+                          , "-w"       , "3"
+                          , "-L"       , "30"
+                          , "-H"       , "55"
                           , "--low"    , "green"
                           , "--normal" , "orange"
                           , "--high"   , "red"
                           ] 10
-    , Run Memory          [ "-t"       , "  mem: <usedratio>%  "
+    , Run Memory          [ "-t"       , "mem: <usedratio>%"
                           , "-L"       , "40"
                           , "-H"       , "80"
                           , "-m"       , "2"
@@ -62,7 +75,7 @@ Config {
                           , "--high"   , "red"
                           ] 10
     , Run BatteryP        ["BAT1"]
-                          [ "-t"       , "  battery : <acstatus>  "
+                          [ "-t"       , "battery : <acstatus>"
                           , "-L"       , "30"
                           , "-H"       , "70"
                           , "-m"       , "3"
@@ -71,22 +84,27 @@ Config {
                           , "--high"   , "green"
                           , "--"
                                        , "-o" , "<left>% (<timeleft>)"
-                                       , "-O" , "<left>% (Charging)"
+                                       , "-O" , "<left>% (<timeleft>) <fc=yellow>⚡</fc>"
                                        , "-i" , "<left>%"
-                          ] 60
-    , Run CoreTemp        [ "-t"       , "( <core0>℃ ) "
+                          ] 30
+    , Run CoreTemp        [ "-t"       , "( <core0>℃ )"
                           , "-L"       , "45"
                           , "-H"       , "65"
                           , "-m"       , "2"
                           , "--low"    , "green"
                           , "--normal" , "orange"
                           , "--high"   , "red"
-                          ] 60
-    , Run Date "  %a %b %_d %Y %H:%M:%S" "date" 10
+                          ] 30
+    , Run DiskIO          [ ("/", "disk-io: <read> <write>")
+                          ] [] 10
+    , Run Com "/home/yuzu/.plenv/shims/perl"
+                          [ "/home/yuzu/scripts/util/xmobar-mail.pl"
+                          ] "mymail" 300
+    , Run Date            "%Y-%m-%0d (%a) %H:%M:%S" "date" 10
     -- , Run Com "uname" ["-s","-r"] "" 36000
     -- , Run Weather "EGPF" ["-t",": C","-L","18","-H","25","--normal","green","--high","red","--low","lightblue"] 36000
     ]
   , sepChar = "%"
   , alignSep = "}{"
-  , template = "%StdinReader% }{ %multicpu%%coretemp%≫%memory%≫  %dynnetwork%  ≫%battery%≫%date%"
+  , template = "%StdinReader% }{ %multicpu%  %coretemp%   ≫   %memory%   ≫   net: %dynnetwork%  |  %mywireless%   ≫   %battery%   ≫   %mymail%   ≫   %date%"
 }

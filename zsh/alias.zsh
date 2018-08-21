@@ -37,10 +37,12 @@ alias open='xdg-open'
 
 alias octave='octave --no-gui'
 
-alias gcc='gcc -Wall -std=c11'
-alias g++='g++ -Wall -std=c++17'
+alias gcc='gcc -Wall -Wextra -std=c11                               -Winline'
+alias g++='g++ -Wall -Wextra -std=c++17 -Weffc++ -Wsuggest-override -Winline'
 
 alias cdiff='colordiff'
+
+alias dropbox='dropbox.py $(dropbox.py help | grep -P "^ " | peco | awk "{print \$1}")'
 
 
 # ===== suffix alias =====

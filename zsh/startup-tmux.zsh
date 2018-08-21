@@ -6,11 +6,11 @@ if [[ -n "${REMOTEHOST}${SSH_CONNECTION}" && -z "$TMUX" && -z "$STY" ]] && type 
         MSG=$1
         while :
         do
-            echo -n "${MSG} [Y/N]: "
+            echo -n "${MSG} [Y/n]: "
             read ans
             case $ans in
-                [yY]) return 0 ;;
-                [nN]) return 1 ;;
+                "" | "y" | "Y" | "yes" | "Yes" | "YES" ) return 0 ;;
+                *                                      ) return 1 ;;
             esac
         done
     }

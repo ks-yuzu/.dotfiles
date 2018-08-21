@@ -1,0 +1,49 @@
+set -g prefix C-t
+unbind C-b
+
+# set-window-option -g mode-keys emacs
+set -g mode-keys emacs
+
+bind r source-file ~/.tmux.conf \; display "Reloaded!"
+
+# 256色端末を使用する
+set -g default-terminal "screen-256color"
+
+# ステータスバーの色を設定する
+set -g status-fg white
+set -g status-bg black
+
+# | でペインを縦に分割する
+bind | split-window -h
+
+# - でペインを横に分割する
+bind - split-window -v
+
+# Vimのキーバインドでペインを移動する
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+bind -r C-h select-window -t :-
+bind -r C-l select-window -t :+
+
+# Vimのキーバインドでペインをリサイズする
+bind -r H resize-pane -L 5
+bind -r J resize-pane -D 5
+bind -r K resize-pane -U 5
+bind -r L resize-pane -R 5
+
+# ## クリップボード共有を有効にする
+# using in Mac OS X ($ brew install reattach-to-user-namespace)
+set -g default-command "reattach-to-user-namespace -l zsh"
+
+# コピーモード (Emacs のバインド)
+# Mac OS X
+#  iTerm2 -> Preferences -> “Applications in terminal may access clipboard”にチェックしないと動かない
+bind -T copy-mode-emacs M-w send-keys -X copy-pipe "reattach-to-user-namespace pbcopy"
+bind -T copy-mode-emacs C-w send-keys -X copy-pipe "reattach-to-user-namespace pbcopy"
+bind -n                 C-y run-shell 'tmux set-buffer -- "$(pbpaste)"; tmux paste-buffer'
+
+
+# TODO: OS 毎の分岐設定
+# https://www.muratayusuke.com/2015/01/24/tmux%E3%81%AE%E3%82%B3%E3%83%92-%E3%83%98-%E3%81%A8%E3%82%AF%E3%83%AA%E3%83%83%E3%83%95-%E3%83%9B-%E3%83%BC%E3%83%88-%E3%81%AE%E9%80%A3%E6%90%BA%E3%82%92-%E5%90%8C%E3%81%97-tmux-conf%E3%81%A6/
