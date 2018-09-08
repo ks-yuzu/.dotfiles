@@ -4,22 +4,23 @@
 
 [core]
     editor = /usr/local/bin/emacsclient -n --alternate-editor /usr/local/bin/emacs
+    # editor = vim
 
 [push]
-	default = current
+    default = current
     # simple : (デフォルト) upstream が設定されていて, それが同名のブランチ名の時のみ push
     # current: 現在のブランチをリモートに同名で push. upstream を設定していなくても push
 
 [color]
-	ui = auto
+    ui = auto
 
 [diff]
-	compactionHeuristic = true
+    compactionHeuristic = true
 
 [pager]
-        log  = diff-highlight | less -n
-        show = diff-highlight | less -n
-        diff = diff-highlight | less -n
+    # log  = diff-highlight | less -n
+    # show = diff-highlight | less -n
+    # diff = diff-highlight | less -n
 
 [alias]
   graph-mini = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
