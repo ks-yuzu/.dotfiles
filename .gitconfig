@@ -4,23 +4,24 @@
 
 [core]
     editor = /usr/local/bin/emacsclient -n --alternate-editor /usr/local/bin/emacs
+    # editor = vim
 	attributesfile = /home/yuzu/.gitattributes_global
 
 [push]
-	default = current
+    default = current
     # simple : (デフォルト) upstream が設定されていて, それが同名のブランチ名の時のみ push
     # current: 現在のブランチをリモートに同名で push. upstream を設定していなくても push
 
 [color]
-	ui = auto
+    ui = auto
 
 [diff]
-	compactionHeuristic = true
+    compactionHeuristic = true
 
 [pager]
-        log  = diff-highlight | less -n
-        show = diff-highlight | less -n
-        diff = diff-highlight | less -n
+    # log  = diff-highlight | less -n
+    # show = diff-highlight | less -n
+    # diff = diff-highlight | less -n
 
 [alias]
   graph = log --graph --all --pretty=format:'%C(green)%cd%C(reset) %C(red)%h%C(reset) %C(yellow bold)%d%C(reset) %C(bold)%s%C(reset) %C(blue bold)<%an>%C(reset)' --abbrev-commit --date=format:'%Y-%m-%d %H:%M'
