@@ -1,15 +1,21 @@
 #!/usr/bin/zsh
 
-touch ~/.zshrc
-echo 'source ~/.dotfiles/zsh/init.zsh' > ~/.zshrc
+echo 'source ~/.dotfiles/zsh/init.zsh' >> ~/.zshrc
 
-sudo ln -s ~/.dotfiles/xmonad/          ~/.xmonad
-sudo ln -s ~/.dotfiles/xmonad/.xmobarrc ~/.xmobarrc
-sudo ln -s ~/.dotfiles/.tmux.conf       ~/.tmux.conf
-sudo ln -s ~/.dotfiles/.peco            ~/.peco
-sudo ln -s ~/.dotfiles/.Xresources      ~/.Xresources
-sudo ln -s ~/.dotfiles/.Xdefaults       ~/.Xdefaults
-sudo ln -s ~/.dotfiles/.gitconfig       ~/.gitconfig
+## terminal
+ln -s ~/.dotfiles/.tmux.conf       ~/.tmux.conf
+ln -s ~/.dotfiles/.peco            ~/.peco
+
+## git
+ln -s ~/.dotfiles/.gitconfig       ~/.gitconfig
+ln -s ~/.dotfiles/.gitattributes_global ~/.gitattributes_global
+
+## X
+ln -s ~/.dotfiles/xmonad/          ~/.xmonad
+ln -s ~/.dotfiles/xmonad/.xmobarrc ~/.xmobarrc
+ln -s ~/.dotfiles/.Xresources      ~/.Xresources
+ln -s ~/.dotfiles/.Xdefaults       ~/.Xdefaults
+
 
 ## Mac home
 # .chunkwm_plugins            -> .dotfiles/chunkwm/.chunkwm_plugins/
