@@ -8,7 +8,7 @@ alias labvpn='sudo /usr/sbin/openvpn /etc/openvpn/client.ovpn &'
 function gitlab-open
 {
     if [ $(ps aux | grep ssh | grep 192.218.172.56:80 | wc -l) -eq 0 ]; then
-        ssh -fN -L9999:192.218.172.56:80 lab60
+        ssh -fN -L9999:192.218.172.56:80 lab-g56
     fi
 
     firefox localhost:9999
@@ -36,8 +36,10 @@ function inas()
 
     # mount
 	if [ $(mount -v | grep $LAB_NAS_MOUNT_POINT_LOCAL | wc -l)  -eq '0' ];then
+        # Linux Kernel 4.13 から SMB 3.0 がデフォルトCIFSになっている.
+        # SMB 3.0 では NAS に接続できなかったため, SMB 1.0 で接続する.
 		sudo mount -t cifs //192.168.0.16/disk1 $LAB_NAS_MOUNT_POINT_LOCAL \
-			 -o iocharset=utf8,username=user,password=pass,file_mode=0755,dir_mode=0755,uid=$(id -u),gid=$(id -g)
+			 -o iocharset=utf8,username=user,password=pass,file_mode=0755,dir_mode=0755,uid=$(id -u),gid=$(id -g),vers=1.0
 	fi
 
 	cd $LAB_NAS_MOUNT_POINT_LOCAL
