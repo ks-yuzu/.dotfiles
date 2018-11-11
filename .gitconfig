@@ -4,6 +4,7 @@
 
 [core]
     editor = /usr/local/bin/emacsclient -n --alternate-editor /usr/local/bin/emacs
+	attributesfile = /home/yuzu/.gitattributes_global
 
 [push]
 	default = current
