@@ -19,27 +19,26 @@ function disp-tmux-info()
 
 function disp-tmux-info-mini()
 {
-    
-    if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
-
-    local NUM_SESSIONS=$(tmux list-sessions | wc -l)
-    local NUM_WINDOWS=$( tmux list-windows  | wc -l)
-
-    local CURR_SESSION_ID=$(tmux display -p '#S')
-    local CURR_WINDOW_ID=$( tmux display -p '#I')
-
-    local CURR_SESSION_NUM=$(tmux ls  | grep -n "^$CURR_SESSION_ID" | perl -ne 'print /^(\d+)/')
-    local CURR_WINDOW_NUM=$( tmux lsw | grep -n "^$CURR_WINDOW_ID"  | perl -ne 'print /^(\d+)/')
-
-    echo -n "W:$CURR_WINDOW_NUM/$NUM_WINDOWS S:$CURR_SESSION_NUM/$NUM_SESSIONS"
+##    if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
+##
+##    local NUM_SESSIONS=$(tmux list-sessions | wc -l)
+##    local NUM_WINDOWS=$( tmux list-windows  | wc -l)
+##
+##    local CURR_SESSION_ID=$(tmux display -p '#S')
+##    local CURR_WINDOW_ID=$( tmux display -p '#I')
+##
+##    local CURR_SESSION_NUM=$(tmux ls  | grep -n "^$CURR_SESSION_ID" | perl -ne 'print /^(\d+)/')
+##    local CURR_WINDOW_NUM=$( tmux lsw | grep -n "^$CURR_WINDOW_ID"  | perl -ne 'print /^(\d+)/')
+##
+##    echo -n "W:$CURR_WINDOW_NUM/$NUM_WINDOWS S:$CURR_SESSION_NUM/$NUM_SESSIONS"
 }
 
 function disp-tmux-info-for-prompt()
 {
-    if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
-    echo -n "["
-    echo -n $(disp-tmux-info-mini)
-    echo -n "]"
+##    if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
+##    echo -n "["
+##    echo -n $(disp-tmux-info-mini)
+##    echo -n "]"
 }
 
 
@@ -55,20 +54,21 @@ function update-prompt()
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
 
-    local limit=''
-    if [ ! -z $STS_EXPIRATION_UNIXTIME ]; then
-       lefttime="$(($STS_EXPIRATION_UNIXTIME - $(date +%s)))"
-       
-       if [ $lefttime -gt 0 ]; then
-           limit="($lefttime)"
-       else
-           limit="(%F{red}expired%f)"
-       fi
-    fi
+    #local limit=''
+    #if [ ! -z $STS_EXPIRATION_UNIXTIME ]; then
+    #   lefttime="$(($STS_EXPIRATION_UNIXTIME - $(date +%s)))"
+    #   
+    #   if [ $lefttime -gt 0 ]; then
+    #       limit="($lefttime)"
+    #   else
+    #       limit="(%F{red}expired%f)"
+    #   fi
+    #fi
 
-    local sts="sts:${STS_ALIAS_SHORT:-(none)}$limit"
+    #local sts="sts:${STS_ALIAS_SHORT:-(none)}$limit"
 
-    PROMPT="$name $tmuxinfo $sts $cdir $endl$mark"
+    #PROMPT="$name $tmuxinfo $sts $cdir $endl$mark"
+    PROMPT="$name $tmuxinfo $cdir $endl$mark"
 }
 
 add-zsh-hook precmd update-prompt
@@ -96,7 +96,6 @@ function rprompt
     elif [ ! -z $repo -o -z $dir ]; then
         echo "[$repo /]"
     fi
-
 }
 
 function vcs_echo
