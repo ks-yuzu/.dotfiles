@@ -31,6 +31,11 @@ fi
 [ -f ~/.Xmodmap ] && xmodmap ~/.Xmodmap
 
 #### [ color ]
+# mac でも dircolors を使うために coreutils (GNU ls) を有効にする
+if [ "$(uname)" = 'Darwin' ]; then
+    export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
+fi
+
 eval $(dircolors ~/.dotfiles/zsh/dircolors.256dark) # ls color
 
 # completion coloring
