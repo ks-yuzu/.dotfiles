@@ -253,7 +253,7 @@ function peco-file() {
 
 
 
-# peco snippet
+# peco todo
 function peco-open-todo()
 {
     local snippets="$HOME/.dotfiles/zsh/note-files.txt"
