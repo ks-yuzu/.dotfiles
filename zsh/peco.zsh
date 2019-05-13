@@ -280,3 +280,19 @@ function peco-open-todo()
 zle -N peco-open-todo
 bindkey '^xt' peco-open-todo
 
+
+
+# peco make
+function peco-make()
+{
+    local recipe=$(ggrep -P '^\S+:' Makefile | sed 's/:.*$//g' | peco)
+    if [ -n "$recipe" ]; then
+        BUFFER="make ${recipe}"
+        zle accept-line
+    fi
+    zle clear-screen
+}
+
+zle -N peco-make
+bindkey '^[m' peco-make
+
