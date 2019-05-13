@@ -7,6 +7,10 @@
 [CD      : move to report dir    ]  cd ~/works/lab/report
 [CD      : move to study dir     ]  cd ~/works/lab/study/01.The_first_step_of_CLI
 
+# one liner
+[ONE LINER: docker-compose bash  ] docker exec -it $(docker-compose ps | tail -n +3 | peco | awk '{print $1}' | xargs docker-compose ps -q) bash
+[ONE LINER: report -> daily (-)  ] ls ~/works/gree/training-report/ | peco | xargs cat | ggrep -P '^h\d' | perl -pe 's/^h(\d). //; $_="  " x ($1-1) . "- $_"'
+[ONE LINER: report -> daily (#)  ] ls ~/works/gree/training-report/ | peco | xargs cat | ggrep -P '^h\d' | perl -pe 's/^h([12]). // and $_="#" x ($1+2) . " $_"; s/^\s*h[3-9]. // and $_ = "  " x ($1-2)."- ".$_'
 
 # setting
 [SETTING : Edit .zshrc           ]  e ~/.dotfiles/zsh/init.zsh
