@@ -52,4 +52,6 @@
 [ETC     : connection info       ]  nmcli con list
 [ETC     : VNC                   ]  remmina
 [ETC     : scanner               ]  scangearmp2
+[ETC     : tcpdump               ]  sudo tcpdump -i lo0 -s0 -X src port 22 or dst port 22
 [ETC     : network               ]  sudo nethogs wlp2s0
+[ETC     : PATH S                ]  perl -wle 'do { print qq/(setenv "$_" "$ENV{$_}")/ if exists $ENV{$_} } for @ARGV' PATH  VIRTUAL_ENV
