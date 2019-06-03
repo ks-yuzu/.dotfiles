@@ -1,0 +1,50 @@
+# unmap all
+
+# [ scroll ]
+map <c-f> scrollFullPageDown
+map <c-b> scrollFullPageUp
+map <c-n> scrollDown
+map <c-p> scrollPageUp
+map ¯     scrollToTop    # map <a-<> scrollToTop
+map ˘     scrollToBottom # map <a->> scrollToBottom
+
+
+# [ edit ]
+map f focusInput
+
+
+# [ search ]
+map <c-s> enterFindMode
+map <c-S> performFind
+map <c-r> performBackwardsFind
+map <c-R> performBackwardsFind
+
+
+
+# [ navigation ]
+unmap H
+map F goForward
+
+unmap L
+map B goBack
+
+map <c-g><c-o> openCopiedUrlInCurrentTab
+map <c-g><c-O> openCopiedUrlInNewTab
+
+
+# [ tab ]
+map <c-t>      createTab
+map <c-x><c-f> createTa
+map <c-x><c-k> removeTab
+
+unmap J
+map h previousTab
+
+unmap K
+map l nextTab
+
+
+
+# [ hit a hint ]
+map e LinkHints.activateMode
+map E LinkHints.activateModeToOpenInNewTab
