@@ -1,6 +1,9 @@
 set -g prefix C-t
 unbind C-b
 
+## scroll
+set-option -g history-limit 100000
+
 # set-window-option -g mode-keys emacs
 set -g mode-keys emacs
 
@@ -16,6 +19,8 @@ set -g status-bg black
 # M-p M-n
 bind -n M-n next-window
 bind -n M-p previous-window
+bind -n M-[ next-window
+bind -n M-] previous-window
 
 # | でペインを縦に分割する
 bind | split-window -h
@@ -46,8 +51,9 @@ set -g default-command "reattach-to-user-namespace -l zsh"
 #  iTerm2 -> Preferences -> “Applications in terminal may access clipboard”にチェックしないと動かない
 bind -T copy-mode-emacs M-w send-keys -X copy-pipe "reattach-to-user-namespace pbcopy"
 bind -T copy-mode-emacs C-w send-keys -X copy-pipe "reattach-to-user-namespace pbcopy"
-bind -n                 C-y run-shell 'tmux set-buffer -- "$(pbpaste)"; tmux paste-buffer'
-
+# bind -n                 C-y run-shell "[ $(pbpaste | perl -0pe 's/\n$//m' | grep -c '') -gt 1 ] && (echo '[warn] multi-line paste!! continue? (y/N): '; read -q && : || return); tmux set-buffer -- \"$(pbpaste)\"; tmux paste-buffer"
+bind -n C-y run-shell "[ $(pbpaste | perl -0pe 's/\n*$//m' | grep -c '') -gt 1 ] && (echo '[warn] multi-line paste!!\nuse C-t C-y to paste the following text forcibly\n-----'; pbpaste) || (tmux set-buffer -- \"$(pbpaste)\" && tmux paste-buffer)"
+bind    C-y run-shell "tmux set-buffer -- \"$(pbpaste)\"; tmux paste-buffer"
 
 # TODO: OS 毎の分岐設定
 # https://www.muratayusuke.com/2015/01/24/tmux%E3%81%AE%E3%82%B3%E3%83%92-%E3%83%98-%E3%81%A8%E3%82%AF%E3%83%AA%E3%83%83%E3%83%95-%E3%83%9B-%E3%83%BC%E3%83%88-%E3%81%AE%E9%80%A3%E6%90%BA%E3%82%92-%E5%90%8C%E3%81%97-tmux-conf%E3%81%A6/
