@@ -38,7 +38,7 @@ import XMonad.Hooks.EwmhDesktops
 
 main :: IO()
 main = do
-    myStatusBar <- spawnPipe "~/.cabal/bin/xmobar"
+    myStatusBar <- spawnPipe "/usr/bin/xmobar"
     -- xmonad $ ewmh desktopConfig {
     xmonad $ docks desktopConfig {
         modMask     = myModMask,  -- mod1Mask : Alt,  mod4Mask : Super
@@ -57,7 +57,7 @@ main = do
       `additionalKeys` myAdditionalKeys
       `additionalKeysP` myAdditionalKeysP
       `removeKeysP`     ["M-q"]
-      
+
 
 myModMask = mod4Mask
 myLayoutHook = avoidStruts $ layoutHook def
@@ -67,10 +67,12 @@ myLogHook h = dynamicLogWithPP xmobarPP {
 }
 
 myStartupHook = do
-  spawn "emacs"
-  spawn "urxvt -e tmux"
-  spawn "dropbox.py start"
+  spawn "(ps aux | grep '[e]macs') || emacs"
+  spawn "(ps aux | grep '[u]rxvt') || urxvt -e tmux"
+  -- tmux attach -t $(tmux list-sessions | head -n1 | perl -ne '/^(\d+)/ and print $1')
   spawn "hsetroot -solid '#000000' && xcompmgr"
+  spawn "xhost +SI:localuser:root && sudo xkeysnail .xkeysnail-config.py"
+  spawn "dropbox.py start"
 
 myAdditionalKeys =
   [
@@ -111,7 +113,7 @@ myAdditionalKeysP =
    --  )
    -- ,("C-M-n"  , shiftTo Next EmptyWS)
    -- ,("C-M-p"  , shiftTo Prev EmptyWS)
-     ("M-S-k"  , spawn "/usr/local/bin/screenkey --no-systray")
+     ("M-S-k"  , spawn "/usr/bin/screenkey --no-systray")
     ,("M-S-l"  , spawn "ps aux | grep '[s]creenkey' | awk '{print $2}' | xargs kill")
     ,("M-S-r"  , spawn "killall xmobar; xmonad --recompile && xmonad --restart")
   ]
@@ -141,7 +143,7 @@ myManageHookFloat = composeAll
     -- , stringProperty "WM_NAME" =? "tmptex.pdf - 1/1 (96 dpi)" --> (doRectFloat $ W.RationalRect 0.29 0.25 0.42 0.5)
     -- , stringProperty "WM_NAME" =? "Figure 1" --> doFloat
     ]
-          
+
 -- -- setting default workspace
 -- myManageHookShift = composeAll
 --     [ className =? "Firefox"                --> viewShift "2"

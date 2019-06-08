@@ -3,7 +3,7 @@ Config {
     -- font             = "-misc-fixed-*-*-*-*-13-*-*-*-*-*-*-*"
     -- font             = "xft:ProggyTiny:size=10"
     -- font             = "xft:TakaoGothic:size=10"
-    font             = "xft:Myrica:size=10,TakaoGothic:size=10,NotoEmoji:size=10,Ricty:size=10"
+    font             = "xft:Myrica:size=10.5,TakaoGothic:size=10.5,NotoEmoji:size=10.5,Ricty:size=10.5"
   , bgColor          = "black"
   , fgColor          = "#eeffff" -- bbffff
   , position         = Top
@@ -50,7 +50,7 @@ Config {
     --                       , "--normal" , "yellow"
     --                       , "--high"   , "green"
     --                       ] 10
-    , Run Com "sh"        [ "/usr/local/bin/xmobar-wireless.sh"
+    , Run Com "sh"        [ "/home/yuzu/scripts/util/xmobar-wireless.sh"
                           ] "mywireless" 10
     , Run Cpu             [ "-L"       , "30"
                           , "-H"       , "55"
@@ -106,5 +106,5 @@ Config {
     ]
   , sepChar = "%"
   , alignSep = "}{"
-  , template = "%StdinReader% }{ %multicpu%  %coretemp%   ≫   %memory%   ≫   net: %dynnetwork%  |  %mywireless%   ≫   %battery%   ≫   %mymail%   ≫   %date%"
+  , template = "%StdinReader% }{ %multicpu%  %coretemp%   ≫   %memory%   ≫   net: %dynnetwork%  |  %mywireless%   ≫   %battery%   ≫   %date%"
 }
