@@ -10,9 +10,11 @@ if [ -x "`which plenv`" ]; then
   export PERL5LIB=${PLENV_ROOT}/versions/${PLENV_VERSION}/lib/perl5:$PERL5LIB
 fi
 
+## node
+export PATH=$HOME/.nodebrew/current/bin:$PATH
 
 ## cabal
-export PATH=$HOME/.cabal/bin:$PATH
+# export PATH=$HOME/.cabal/bin:$PATH
 
 ## java
 # export TOMCAT_HOME=/usr/share/tomcat6
