@@ -87,20 +87,14 @@ alias ssh='perl -e '\''$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); $ts = qx/
 
 
 
-# copy stdin to clipboard
-# ref : http://mollifier.hatenablog.com/entry/20100317/p1
-# if [ which xsel    >/dev/null 2>&1 ]; && alias -g clip='xsel --input --clipboard'
-# if [ which pbcopy  >/dev/null 2>&1 ]; && alias -g clip='pbcopy'
-# if [ which putclip >/dev/null 2>&1 ]; && alias -g clip='putclip'
+## copy stdin to clipboard
+# which xsel    >/dev/null 2>&1 && alias -g clip='xsel --input --clipboard' # Mac
+# which pbcopy  >/dev/null 2>&1 && alias -g clip='pbcopy'                   # Linux
+# which putclip >/dev/null 2>&1 && alias -g clip='putclip'                  # Cygwin
+which xsel    >/dev/null 2>&1 && alias -g clip='tee >(xsel --input --clipboard)' # Mac
+which pbcopy  >/dev/null 2>&1 && alias -g clip='tee >(pbcopy)'                   # Linux
+which putclip >/dev/null 2>&1 && alias -g clip='tee >(putclip)'                  # Cygwin
 
-
-if which pbcopy >/dev/null 2>&1 ; then # Mac
-    alias -g clip=' tee >(pbcopy)'
-elif which xsel >/dev/null 2>&1 ; then # Linux
-    alias -g clip=' tee >(xsel --input --clipboard)'
-elif which putclip >/dev/null 2>&1 ; then # Cygwin
-    alias -g clip=' tee >(putclip)'
-fi
 
 
 # iab (グローバルエイリアス展開)
