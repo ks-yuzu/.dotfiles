@@ -1,52 +1,51 @@
 # cd
-[CD      : move to repos         ]  cd $(locate '.git' | perl -nE '/^(.*)\.git$/ and say $1' | peco)
+[CD:       move to repos            ]  cd $(locate '.git' | perl -nE '/^(.*)\.git$/ and say $1' | peco)
 
 # one liner
-[ONE LINER: docker-compose bash  ] docker exec -it $(docker-compose ps | tail -n +3 | peco | awk '{print $1}' | xargs docker-compose ps -q) bash
-[ONE LINER: report -> daily (-)  ] ls ~/works/gree/training-report/ | peco | xargs cat | ggrep -P '^h\d' | perl -pe 's/^h(\d). //; $_="  " x ($1-1) . "- $_"'
-[ONE LINER: report -> daily (#)  ] ls ~/works/gree/training-report/ | peco | xargs cat | ggrep -P '^h\d' | perl -pe 's/^h([12]). // and $_="#" x ($1+2) . " $_"; s/^\s*h[3-9]. // and $_ = "  " x ($1-2)."- ".$_'
+[DOCKER: docker container bash      ]  docker ps | tail -n +2 | peco | cut -d' ' -f1 | xargs -o -I{} docker exec -it {} bash
+[DOCKER: docker container exited    ]  docker ps -a --filter 'status=exited' | tail -n +2 | peco | cut -d' ' -f1 | xargs docker commit -m 'exited' | cut -d: -f2 | xargs -o -I{} docker run --rm -it {} bash
+[DOCKER: docker-compose bash        ]  docker-compose ps | tail -n +3 | peco | cut -d' ' -f1 | xargs docker-compose ps -q | xargs -o -I{} docker exec -it {} bash
+[DOCKER: docker-compose bash exited ]  docker-compose ps --filter 'status=exited' | tail -n +3 | peco | cut -d' ' -f1 | xargs docker commit -m 'exited' | cut -d: -f2 | xargs -o -I{} docker run --rm -it {} bash
+[DOCKER: docker smart bash          ]  (test -f docker-compose.yml && (docker-compose ps | tail -n +3) || (docker ps | tail -n +2)) | peco | cut -d' ' -f1 | xargs -o -I{} docker exec -it {} bash
+[DOCKER: docker smart bash exited   ]  (test -f docker-compose.yml && (docker-compose ps --filter 'status=exited' | tail -n +3) || (docker ps -a --filter 'status=exited' | tail -n +2)) | peco | cut -d' ' -f1 | xargs docker commit -m 'exited' | cut -d: -f2 | xargs -o -I{} docker run --rm -it {} bash
+
+[REPORT:  report -> daily (-)       ]  find ~/works/gree/training-report -maxdepth 1 | sort -r | peco | xargs cat | ggrep -P '^h\d' | perl -pe 's/^h(\d). //; $_="  " x ($1-1) . "- $_"'
+[REPORT:  report -> daily (#)       ]  ls ~/works/gree/training-report/ | peco | xargs cat | ggrep -P '^h\d' | perl -pe 's/^h([12]). // and $_="#" x ($1+2) . " $_"; s/^\s*h[3-9]. // and $_ = "  " x ($1-2)."- ".$_'
 
 # setting
-[SETTING : Edit .zshrc           ]  e ~/.dotfiles/zsh/init.zsh
-[SETTING : Edit alias.zsh        ]  e ~/.dotfiles/zsh/alias.zsh
-[SETTING : Edit startup.zsh      ]  e ~/.dotfiles/zsh/startup.zsh
-[SETTING : Edit peco.zsh         ]  e ~/.dotfiles/zsh/peco.zsh
-[SETTING : Edit path.zsh         ]  e ~/.dotfiles/zsh/path.zsh
-[SETTING : Edit tools.zsh        ]  e ~/.dotfiles/zsh/tools.zsh
-[SETTING : Edit tools.zsh        ]  e ~/.dotfiles/zsh/lab.zsh
+[SETTING:  Edit .zshrc              ]  e ~/.dotfiles/zsh/init.zsh
+[SETTING:  Edit alias.zsh           ]  e ~/.dotfiles/zsh/alias.zsh
+[SETTING:  Edit startup.zsh         ]  e ~/.dotfiles/zsh/startup.zsh
+[SETTING:  Edit peco.zsh            ]  e ~/.dotfiles/zsh/peco.zsh
+[SETTING:  Edit path.zsh            ]  e ~/.dotfiles/zsh/path.zsh
+[SETTING:  Edit tools.zsh           ]  e ~/.dotfiles/zsh/tools.zsh
+[SETTING:  Edit tools.zsh           ]  e ~/.dotfiles/zsh/lab.zsh
+[SETTING:  Edit this snippets       ]  e ~/.dotfiles/zsh/snippets.txt
+[SETTING:  Edit init.el             ]  e ~/.emacs.d/init.el
+[RELOAD :  Reload .zshrc            ]  source ~/.zshrc
+[COMPILE:  Compile .zshrc           ]  zcompile ~/.zshrc
 
-[SETTING : Edit this snippets    ]  e ~/.dotfiles/zsh/snippets.txt
-[SETTING : Edit init.el          ]  e ~/.emacs.d/init.el
-[RELOAD  : Reload .zshrc         ]  source ~/.zshrc
-[COMPILE : Compile .zshrc        ]  zcompile ~/.zshrc
+# etc
+[ETC:      CapsLock to Ctrl         ]  setxkbmap -option ctrl:nocaps
+[ETC:      LANG -> JP               ]  export LANG=ja_JP.UTF-8
+[ETC:      VNC                      ]  remmina
+[ETC:      scanner                  ]  scangearmp2
+[ETC:      tcpdump                  ]  sudo tcpdump -i lo0 -s0 -X src port 22 or dst port 22
+[ETC:      network                  ]  sudo nethogs wlp2s0
+[ETC:      PATH S-expression        ]  perl -wle 'do { print qq/(setenv "$_" "$ENV{$_}")/ if exists $ENV{$_} } for @ARGV' PATH  VIRTUAL_ENV
 
 
-# apt
-[APT     : apt install           ]  sudo apt install
-[APT     : apt update            ]  sudo apt update && sudo apt upgrade
+[AWS:      set aws account id       ]  export AWS_ACCOUNT_ID=023282341704; eval `stsenv`
+[AWS:      select EC2 instance      ]  stsaws ec2 describe-instances | jq ' .Reservations[] | .Instances[] | .Tags[] | select(.Key == "Name").Value'
 
-
-# kgu network
-[KGU-NET : connect fieldlab      ]  nmcli dev wifi connect fieldlab password 8f9xi4mv
-[KGU-NET : connect kgu-wlan      ]  nmcli dev wifi connect KGU-WLAN
-[KGU-NET : connect ksc-wired     ]  nmcli con up id KSC-WIRED
-
-# kuechip
-[Open    : kuechip specification ]  evince '~/works/lab/astem/kuechip/specification/151127_KUECHIP3F_InstructionSet.pdf'
-[Open    : kuechip specification ]  evince '~/works/lab/astem/kuechip/specification/KUECHIP2_リファレンスマニュアル.pdf'
-
-# rtos
-[ DOCUMENT : TOPPERS             ]  evince ~/works/lab/rtos/documents/tgki_spec-300.pdf
 
 # etc
 [ETC     : CapsLock to Ctrl      ]  setxkbmap -option ctrl:nocaps
 [ETC     : LANG -> JP            ]  export LANG=ja_JP.UTF-8
-[ETC     : connect wlan          ]  nmcli dev wifi connect ---- password ----
-[ETC     : wifi info             ]  nmcli dev wifi list
-[ETC     : connection info       ]  nmcli con list
 [ETC     : VNC                   ]  remmina
 [ETC     : scanner               ]  scangearmp2
 [ETC     : tcpdump               ]  sudo tcpdump -i lo0 -s0 -X src port 22 or dst port 22
 [ETC     : network               ]  sudo nethogs wlp2s0
 [ETC     : PATH S                ]  perl -wle 'do { print qq/(setenv "$_" "$ENV{$_}")/ if exists $ENV{$_} } for @ARGV' PATH  VIRTUAL_ENV
 [ETC     : start xkeysnail       ]  xhost +SI:localuser:root && sudo xkeysnail .xkeysnail-config.py
+

@@ -2,7 +2,7 @@
 function git-status()
 {
     # if [ "$(git rev-parse --is-inside-work-tree 2> /dev/null)" = 'true' ]; then
-        echo git status -sb 
+        echo git status -sb
         git status -sb
         echo ''
     # fi
@@ -24,7 +24,7 @@ function peco-git-diff()
         echo $(git status | perl -pe 's/On branch (.*)/[branch: $1] /')
         return
     fi
-    
+
     local SELECTED_FILE_TO_DIFF="$(git status --porcelain | \
                                   grep '^ *M' | \
                                   peco --query "$LBUFFER" | \
@@ -42,7 +42,7 @@ zle -N peco-git-diff
 bindkey "^gd" peco-git-diff
 
 
-## git add 
+## git add
 function peco-git-add()
 {
     local SELECTED_FILE_TO_ADD="$(git status --short | \
@@ -69,10 +69,30 @@ zle -N peco-git-checkout
 bindkey "^go" peco-git-checkout
 
 
+## git graph
+function __git-graph()
+{
+    git log --graph --all --pretty=format:'%C(green)%cd%C(reset) %C(red)%h%C(reset) %C(yellow bold)%d%C(reset) %C(bold)%s%C(reset) %C(blue bold)<%an>%C(reset)' --abbrev-commit --date=format:'%Y-%m-%d %H:%M'
+    zle reset-prompt
+}
+zle -N __git-graph
+bindkey "^gg" __git-graph
+
+
+## git graph rich
+function __git-graph-rich()
+{
+    git log --graph --all --pretty=format:'%C(red reverse)%d%Creset%C(white reverse) %h% Creset %C(green reverse) %an %Creset %C(cyan bold)%ad (%ar)%Creset%n%C(white bold)%w(80)%s%Creset%n%n%w(80,2,2)%b' --abbrev-commit --date=format:'%Y-%m-%d %H:%M:%S' --name-status
+    zle reset-prompt
+}
+zle -N __git-graph-rich
+bindkey "^g^g" __git-graph-rich
+
+
 ## git commit -v
 function __git-commit()
 {
-    git commit
+    git commit -v
     zle reset-prompt
 }
 zle -N __git-commit

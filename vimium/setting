@@ -14,6 +14,7 @@ map f focusInput
 
 
 # [ search ]
+map <m-f> enterFindMode
 map <c-s> enterFindMode
 map <c-S> performFind
 map <c-r> performBackwardsFind

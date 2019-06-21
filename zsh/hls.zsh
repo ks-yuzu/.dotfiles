@@ -1,3 +1,10 @@
+# acap.pl の存在チェック
+if [ ! ${+commands[acap.pl]} ]; then
+    return
+fi
+
+
+
 # vivado
 export PATH=${HOME}/opt/Vivado/2016.4/bin:$PATH
 

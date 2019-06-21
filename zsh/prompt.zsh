@@ -4,7 +4,7 @@ autoload -Uz add-zsh-hook
 function disp-tmux-info()
 {
     if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
-    
+
     local NUM_SESSIONS=$(tmux list-sessions | wc -l)
     local NUM_WINDOWS=$( tmux list-windows  | wc -l)
 
@@ -19,8 +19,7 @@ function disp-tmux-info()
 
 function disp-tmux-info-mini()
 {
-    
-    if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
+    grep screen <<<$TERM > /dev/null || return
 
     local NUM_SESSIONS=$(tmux list-sessions | wc -l)
     local NUM_WINDOWS=$( tmux list-windows  | wc -l)
@@ -36,39 +35,44 @@ function disp-tmux-info-mini()
 
 function disp-tmux-info-for-prompt()
 {
-    if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
+    grep screen <<<$TERM > /dev/null || return
     echo -n "["
     echo -n $(disp-tmux-info-mini)
-    echo -n "]"
+    echo -n "] "
 }
 
 
 
 
 ## prompt
-
 function update-prompt()
 {
+    local name="%F{green}%n@%m%f "
     local tmuxinfo="%F{magenta}$(disp-tmux-info-for-prompt)%f"
-    local name="%F{green}%n@%m%f"
-    local cdir="%F{yellow}%~%f"
+    local cdir="%F{yellow}%~%f "
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
 
-    local limit=''
-    if [ ! -z $STS_EXPIRATION_UNIXTIME ]; then
-       lefttime="$(($STS_EXPIRATION_UNIXTIME - $(date +%s)))"
-       
-       if [ $lefttime -gt 0 ]; then
-           limit="($lefttime)"
-       else
-           limit="(%F{red}expired%f)"
-       fi
+
+    local face=''
+    local info=''
+    if [ -z $STS_ALIAS_SHORT ]; then
+        face='(-ω-)zzz'
+    else
+        local lefttime="$(($STS_EXPIRATION_UNIXTIME - $(date +%s)))"
+
+        if [ $lefttime -gt 0 ]; then
+            face="('ω')"
+            info=" $STS_ALIAS_SHORT($lefttime)"
+        else
+            face='(>_<)'
+            info=" $STS_ALIAS_SHORT(%F{red}expired%f)"
+        fi
     fi
 
-    local sts="sts:${STS_ALIAS_SHORT:-(none)}$limit"
+    local sts="sts:${face}${info} "
 
-    PROMPT="$name $tmuxinfo $sts $cdir $endl$mark"
+    PROMPT="${name}${tmuxinfo}${sts}${cdir}${endl}${mark}"
 }
 
 add-zsh-hook precmd update-prompt
@@ -89,12 +93,19 @@ setopt prompt_subst
 
 function rprompt
 {
+    local st=$(git status 2> /dev/null)
+    if [[ -z "$st" ]]; then return; fi
+
     local repo=$(vcs_echo)
     local dir=$(get-path-from-git-root)
+
+    local current_branch=$(git branch | grep '^*' | cut -d' ' -f2 | grep -v '(HEAD')
+    local ahead_count=$(test ! -z "$current_branch" && git rev-list --count origin/${current_branch}..${current_branch} | perl -ne '/(\d+)/ and $1 and print " +$1"')
+
     if [ ! -z $repo -o ! -z $dir ]; then
-        echo "[$repo /$dir]"
+        echo "[$repo /$dir$ahead_count]"
     elif [ ! -z $repo -o -z $dir ]; then
-        echo "[$repo /]"
+        echo "[$repo /$ahead_count]"
     fi
 
 }
@@ -102,8 +113,8 @@ function rprompt
 function vcs_echo
 {
     STY= LANG=en_US.UTF-8 vcs_info
-    local st=`git status 2> /dev/null`
-    if [[ -z "$st" ]]; then return; fi
+    # local st=`git status 2> /dev/null`
+    # if [[ -z "$st" ]]; then return; fi
     local branch="$vcs_info_msg_0_"
     local color
     if   [[ -n "$vcs_info_msg_1_" ]];                then color=${fg[yellow]} # staged

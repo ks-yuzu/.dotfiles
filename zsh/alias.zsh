@@ -32,8 +32,10 @@ alias gitc='git commit -v'
 alias gitcm='git commit -v -m'
 alias gitst='git status'
 
-alias op='xdg-open'
-alias open='xdg-open'
+if which xdg-open >/dev/null 2>&1 ; then # Linux
+    alias op='xdg-open'
+    alias open='xdg-open'
+fi
 
 alias octave='octave --no-gui'
 
@@ -64,16 +66,41 @@ alias plantuml="java -jar ~/bin/plantuml.jar $*"
 function cd() { builtin cd $@ && ls; }
 alias cdt='cd ..'
 
+alias ssh='perl -e '\''$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); $ts = qx/date --iso-8601=seconds/; chomp $ts; exec "script ~/works/ssh-log/ssh-${ts}-${args}.log /usr/bin/ssh @ARGV"'\'''
+
+# function ssh() {
+#   /usr/bin/env perl -e <<'EOF' $@
+# use v5.12;
+# use warnings;
+
+# use utf8;
+# use open IO => qw/:encoding(UTF-8) :std/;
+
+# my $args = join '_', (grep { $_ !~ /^\-/ } @ARGV);
+
+# my $timestamp = qx/date --iso-8601=seconds/;
+# chomp $timestamp;
+
+# exec "script ~/works/ssh-log/ssh-${timestamp}-${args}.log /usr/bin/ssh @ARGV"
+# EOF
+# }
+
+
 
 # copy stdin to clipboard
 # ref : http://mollifier.hatenablog.com/entry/20100317/p1
-#if which pbcopy >/dev/null 2>&1 ; then    # Mac
-#    alias -g clip="echo 'test'"
-#        alias -g clip='pbcopy'
-    if [ which xsel >/dev/null 2>&1 ]; && alias -g clip='xsel --input --clipboard'
-#    elif which putclip >/dev/null 2>&1 ; then # Cygwin
-#        alias -g clip='putclip'	      
-#fi
+# if [ which xsel    >/dev/null 2>&1 ]; && alias -g clip='xsel --input --clipboard'
+# if [ which pbcopy  >/dev/null 2>&1 ]; && alias -g clip='pbcopy'
+# if [ which putclip >/dev/null 2>&1 ]; && alias -g clip='putclip'
+
+
+if which pbcopy >/dev/null 2>&1 ; then # Mac
+    alias -g clip=' tee >(pbcopy)'
+elif which xsel >/dev/null 2>&1 ; then # Linux
+    alias -g clip=' tee >(xsel --input --clipboard)'
+elif which putclip >/dev/null 2>&1 ; then # Cygwin
+    alias -g clip=' tee >(putclip)'
+fi
 
 
 # iab (グローバルエイリアス展開)
@@ -112,3 +139,4 @@ zle -N magic-abbrev-expand
 zle -N no-magic-abbrev-expand
 bindkey " " magic-abbrev-expand
 bindkey "^x " no-magic-abbrev-expand
+

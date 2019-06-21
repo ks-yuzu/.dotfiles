@@ -26,8 +26,9 @@ export PATH=$HOME/.nodebrew/current/bin:$PATH
 # export CLASSPATH=$CLASSPATH:/usr/share/java/mysql-connector-java-5.1.28.jar # jdbc
 
 ## others
-export PATH=$PATH:$HOME/.local/lib/python2.7/site-packages/powerline
-export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio1261/cplex/bin/x86-64_linux
+# export PATH=$PATH:$HOME/.local/lib/python2.7/site-packages/powerline
+# export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio1261/cplex/bin/x86-64_linux
 export PATH=$HOME/bin:$PATH
 export PATH=$HOME/opt:$PATH
-export PATH=$HOME/bin/processing/:$PATH
+# export PATH=$HOME/bin/processing/:$PATH
+

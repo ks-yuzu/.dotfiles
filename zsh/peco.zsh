@@ -98,7 +98,7 @@ alias pk="peco-pkill"
 # peco-process-kill-all
 function peco-pkill-all()
 {
-    for pid in `ps -aux | peco | awk '{ print $2 }'`
+    for pid in `ps aux | peco | awk '{ print $2 }'`
     do
         kill $pid
         echo "killed ${pid}"
@@ -110,7 +110,7 @@ alias pka="peco-pkill-all"
 # peco-process-kill-all
 function peco-pkill-all-force()
 {
-    for pid in `ps -aux | peco | awk '{ print $2 }'`
+    for pid in `ps aux | peco | awk '{ print $2 }'`
     do
         sudo kill -9 $pid
         echo "killed ${pid}"
@@ -124,8 +124,16 @@ alias pka9="peco-pkill-all-force"
 function peco-get-fullpath()
 {
     local fullpath
-    fullpath=$(find `pwd` -maxdepth 1 -mindepth 1 | peco)
-    echo "${fullpath}" | xsel --input --clipboard
+    if [ ! -z "$1" ]; then
+        if [ -f $1 ]; then
+            fullpath=`pwd`/$1
+        else
+            fullpath=$(find `pwd`/$1 -maxdepth 1 -mindepth 1 | peco)
+        fi
+    else
+        fullpath=$(find `pwd` -maxdepth 1 -mindepth 1 | peco)
+    fi
+    echo "${fullpath}" | pbcopy
     echo ${fullpath}
 }
 alias fullpath="peco-get-fullpath"

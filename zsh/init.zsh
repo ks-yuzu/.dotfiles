@@ -24,7 +24,9 @@ setopt ignore_eof                            # Ctrl+Dでzshを終了しない
 
 # CapsLock -> ctrl
 if (( ${+commands[setxkbmap]} )); then
-    setxkbmap -option ctrl:nocaps
+    if [[ "$(uname)" != 'Darwin' ]]; then
+        setxkbmap -option ctrl:nocaps
+    fi
 fi
 
 # xmodmap
