@@ -1,7 +1,8 @@
 # peco の存在チェック
-if [ ! ${+commands[peco]} ]; then
-    return
-fi
+# if [ ! ${+commands[peco]} ]; then
+#     return
+# fi
+
 
 
 # peco-history
