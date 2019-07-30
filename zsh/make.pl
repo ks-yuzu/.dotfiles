@@ -26,10 +26,11 @@ sub build {
 
   my @zshfiles = path($SOURCE_DIR)->children(qr/\.zsh/);
   for my $zshfile ( sort @zshfiles ) {
-    say sprintf "[%s] %-30s",
+    say sprintf "* %-30s %s",
+      $zshfile->basename,
       ($zshfile->basename =~ /\.zsh$/ ? color('green').'enabled '.color('reset')
-                                      : color('red').'disabled'.color('reset')),
-      $zshfile->basename;
+                                      : color('red').'disabled'.color('reset'));
+
 
     if ( $zshfile->basename =~ /\.zsh$/ ) {
       path($JOINED_SRC)->append($zshfile->lines)
