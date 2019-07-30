@@ -6,6 +6,9 @@ cmd + alt + ctrl - r : khd -e "reload"
 # cmd - return : open -na /Applications/Kitty.app
 
 
+# open terminal
+ctrl + alt - return: ~/bin/launch-iterm2.sh
+
 # focus window
 alt - h : chunkc tiling::window --focus west
 alt - j : chunkc tiling::window --focus south
@@ -107,10 +110,10 @@ ctrl + cmd - 2  : chunkc tiling::window --send-to-monitor 2; chunkc tiling::moni
 ctrl + cmd - 3  : chunkc tiling::window --send-to-monitor 3; chunkc tiling::monitor -f 3
 
 # increase region size
-shift + alt - a : chunkc tiling::window --use-temporary-ratio 0.05 --adjust-window-edge west
-shift + alt - s : chunkc tiling::window --use-temporary-ratio 0.05 --adjust-window-edge south
-shift + alt - w : chunkc tiling::window --use-temporary-ratio 0.05 --adjust-window-edge north
-shift + alt - d : chunkc tiling::window --use-temporary-ratio 0.05 --adjust-window-edge east
+# shift + alt - a : chunkc tiling::window --use-temporary-ratio 0.05 --adjust-window-edge west
+# shift + alt - s : chunkc tiling::window --use-temporary-ratio 0.05 --adjust-window-edge south
+# shift + alt - w : chunkc tiling::window --use-temporary-ratio 0.05 --adjust-window-edge north
+# shift + alt - d : chunkc tiling::window --use-temporary-ratio 0.05 --adjust-window-edge east
 
 # decrease region size
 shift + cmd - a : chunkc tiling::window --use-temporary-ratio -0.05 --adjust-window-edge west
@@ -175,3 +178,8 @@ ctrl + alt - w : chunkc tiling::desktop --deserialize ~/.chunkwm_layouts/dev_1
 cmd - 7 : khd -p "shift + alt - 7"
 cmd - 8 : khd -p "shift + alt - 8"
 cmd - 9 : khd -p "shift + alt - 9"
+
+# stop に時間がかかる & しばらく入力を受け付けない問題があるので一度 kill -9 してしまう
+# alt + shift - d : PID=$(ps aux | grep '[d]ebounce' | awk '{print $2}'); kill -STOP $PID; sleep 10; kill -CONT $PID
+alt + shift - d : ps aux | grep '[d]ebounce' | awk '{print $2}' | xargs kill -9;\
+                  open -a /Users/yuki.osako/repo/debounce-mac/debounce
