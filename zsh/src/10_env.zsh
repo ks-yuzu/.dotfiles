@@ -1,4 +1,4 @@
-export LYNX_CFG=~/.lynx 
+export LYNX_CFG=~/.lynx
 export EDITOR='emacsclient -t'
 export CVSEDITOR="${EDITOR}"
 export SVN_EDITOR="${EDITOR}"

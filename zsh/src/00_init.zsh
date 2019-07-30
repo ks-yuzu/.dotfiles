@@ -3,8 +3,8 @@ setopt auto_pushd
 
 #### [ completion ]
 # auto-complete
-# → make dist で更新
-# autoload -Uz compinit && compinit -u
+autoload -Uz compinit && compinit -u
+
 
 setopt extended_glob                         # use wildcard
 zstyle ':completion:*:default' menu select=2 # cursor select completion

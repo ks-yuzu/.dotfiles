@@ -4,7 +4,6 @@ if [ ! ${+commands[peco]} ]; then
 fi
 
 
-
 # peco-history
 function peco-select-history()
 {

@@ -63,8 +63,7 @@ alias sdedit="java -jar ~/bin/sdedit-4.2-beta7.jar $*"
 alias plantuml="java -jar ~/bin/plantuml.jar $*"
 
 
-function cd() { builtin cd $@ && ls; }
-alias cdt='cd ..'
+function cd() { builtin cd $@ && ls --color; }
 
 alias ssh='perl -e '\''$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); $ts = qx/date --iso-8601=seconds/; chomp $ts; exec "script ~/works/ssh-log/ssh-${ts}-${args}.log /usr/bin/ssh @ARGV"'\'''
 
