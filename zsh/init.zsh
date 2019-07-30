@@ -3,8 +3,8 @@ setopt auto_pushd
 
 #### [ completion ]
 # auto-complete
-autoload -Uz compinit
-compinit -u
+# → make dist で更新
+# autoload -Uz compinit && compinit -u
 
 setopt extended_glob                         # use wildcard
 zstyle ':completion:*:default' menu select=2 # cursor select completion
@@ -35,7 +35,7 @@ fi
 #### [ color ]
 # mac でも dircolors を使うために coreutils (GNU ls) を有効にする
 if [ "$(uname)" = 'Darwin' ]; then
-    export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
+    export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
 fi
 
 eval $(dircolors ~/.dotfiles/zsh/dircolors.256dark) # ls color
@@ -74,14 +74,16 @@ fi
 
 #### [ 分割設定ファイル ]
 
-for i in `find \`dirname $0\` -maxdepth 1 -mindepth 1 | grep '\.zsh$' | grep -v 'init.zsh'`
-do
-    source $i
-done
+# for i in `find \`dirname $0\` -maxdepth 1 -mindepth 1 | grep '\.zsh$' | grep -v 'init.zsh'`
+# do
+#     source $i
+# done
 
-for i in `find \`dirname $0\`/completion -maxdepth 1 -mindepth 1 | grep '\.zsh$'`
-do
-    source $i
-done
+# for i in `find \`dirname $0\`/completion -maxdepth 1 -mindepth 1 | grep '\.zsh$'`
+# do
+#     source $i
+# done
 
-. ${HOME}/.zprofile
+
+# tmp
+source ${HOME}/.zprofile

@@ -56,7 +56,7 @@ function update-prompt()
 
     local face=''
     local info=''
-    if [ -z $STS_ALIAS_SHORT ]; then
+;    if [ -z $STS_EXPIRATION_UNIXTIME ]; then
         face='(-ω-)zzz'
     else
         local lefttime="$(($STS_EXPIRATION_UNIXTIME - $(date +%s)))"
@@ -100,7 +100,7 @@ function rprompt
     local dir=$(get-path-from-git-root)
 
     local current_branch=$(git branch | grep '^*' | cut -d' ' -f2 | grep -v '(HEAD')
-    local ahead_count=$(test ! -z "$current_branch" && git rev-list --count origin/${current_branch}..${current_branch} | perl -ne '/(\d+)/ and $1 and print " +$1"')
+    local ahead_count=$(test ! -z "$current_branch" && git rev-list --count origin/${current_branch}..${current_branch} 2>/dev/null | perl -ne '/(\d+)/ and $1 and print " +$1"')
 
     if [ ! -z $repo -o ! -z $dir ]; then
         echo "[$repo /$dir$ahead_count]"
