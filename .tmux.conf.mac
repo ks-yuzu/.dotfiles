@@ -1,16 +1,27 @@
-set -g prefix C-t
-unbind C-b
+## APPEARANCE
+# 256色端末を使用する
+set -g default-terminal "screen-256color"
 
-## scroll
+
+## SCROLL
 set-option -g history-limit 100000
+setw -g mouse on
 
+
+## KEY BINDING
 # set-window-option -g mode-keys emacs
 set -g mode-keys emacs
 
 bind r source-file ~/.tmux.conf \; display "Reloaded!"
 
-# 256色端末を使用する
-set -g default-terminal "screen-256color"
+
+set -g prefix C-t
+bind C-t send-prefix
+unbind C-b
+
+# チェック無しペーストは潰しておく (→ C-y を使用)
+unbind ]
+
 
 # ステータスバーの色を設定する
 set -g status-fg white
