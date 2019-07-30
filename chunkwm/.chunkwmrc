@@ -41,19 +41,19 @@ chunkc core::hotload 0
 # NOTE: the following are config variables for the chunkwm-tiling plugin.
 #
 
-chunkc set custom_bar_enabled            0
+chunkc set custom_bar_enabled            1
 chunkc set custom_bar_all_monitors       0
-chunkc set custom_bar_offset_top         22
+chunkc set custom_bar_offset_top         0
 chunkc set custom_bar_offset_bottom      0
 chunkc set custom_bar_offset_left        0
-chunkc set custom_bar_offset_right       0
+chunkc set custom_bar_offset_right      60
 
 chunkc set global_desktop_mode           bsp
 chunkc set global_desktop_offset_top     5
 chunkc set global_desktop_offset_bottom  5
-chunkc set global_desktop_offset_left    5
-chunkc set global_desktop_offset_right   5
-chunkc set global_desktop_offset_gap     5
+chunkc set global_desktop_offset_left    2
+chunkc set global_desktop_offset_right   2
+chunkc set global_desktop_offset_gap     2
 
 #
 # NOTE: syntax for desktop-specific settings
@@ -71,7 +71,8 @@ chunkc set desktop_padding_step_size     10.0
 chunkc set desktop_gap_step_size         5.0
 
 chunkc set bsp_spawn_left                1
-chunkc set bsp_optimal_ratio             1.618
+# chunkc set bsp_optimal_ratio             1.618
+chunkc set bsp_optimal_ratio             1.5
 chunkc set bsp_split_mode                optimal
 chunkc set bsp_split_ratio               0.5
 
@@ -138,4 +139,5 @@ chunkc tiling::rule --owner Emacs --except "^$" --state tile &
 
 # tmp
 chunkc set mouse_resize_window alt 1
-chunkc set window_fade_inactive 0
+chunkc border::rule --name Electron --color 0x00000000
+
