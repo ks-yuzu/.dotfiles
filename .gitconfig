@@ -1,6 +1,6 @@
 [user]
-    email = yuuki.oosako.216@gmail.com
-    name = Yuuki Oosako
+    email = yuzu6120@gmail.com
+    name = yuzu
 
 [core]
     editor = /usr/local/bin/emacsclient -n --alternate-editor /usr/local/bin/emacs
