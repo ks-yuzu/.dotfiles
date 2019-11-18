@@ -100,7 +100,7 @@ if [ -x "`which plenv`" ]; then
 fi
 
 ## node
-export PATH=$HOME/.nodebrew/current/bin:$PATH
+export NODE_PATH=`npm -g root`
 
 ## cabal
 # export PATH=$HOME/.cabal/bin:$PATH
@@ -114,6 +114,10 @@ export PATH=$HOME/.nodebrew/current/bin:$PATH
 # export CLASSPATH=$CLASSPATH:$CATALINA_HOME/common/lib:$CATALINA_HOME/common/lib/servlet-api.jar
 # export CLASSPATH=$CLASSPATH:/usr/share/java/mysql-connector-java-5.1.28.jar # jdbc
 
+## go
+export GOPATH=~/.go
+export PATH=$GOPATH/bin:$PATH
+
 ## others
 # export PATH=$PATH:$HOME/.local/lib/python2.7/site-packages/powerline
 # export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio1261/cplex/bin/x86-64_linux
@@ -126,7 +130,7 @@ autoload -Uz add-zsh-hook
 ## tmux info disp
 function disp-tmux-info()
 {
-    if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
+    [[ $TERM =~ 'screen' ]] || return
 
     local NUM_SESSIONS=$(tmux list-sessions | wc -l)
     local NUM_WINDOWS=$( tmux list-windows  | wc -l)
@@ -142,7 +146,7 @@ function disp-tmux-info()
 
 function disp-tmux-info-mini()
 {
-    grep screen <<<$TERM > /dev/null || return
+    [[ $TERM =~ 'screen' ]] || return
 
     local NUM_SESSIONS=$(tmux list-sessions | wc -l)
     local NUM_WINDOWS=$( tmux list-windows  | wc -l)
@@ -158,10 +162,8 @@ function disp-tmux-info-mini()
 
 function disp-tmux-info-for-prompt()
 {
-    grep screen <<<$TERM > /dev/null || return
-    echo -n "["
-    echo -n $(disp-tmux-info-mini)
-    echo -n "] "
+    [[ $TERM =~ 'screen' ]] || return
+    echo -n "[" $(disp-tmux-info-mini) "] "
 }
 
 
@@ -171,7 +173,8 @@ function disp-tmux-info-for-prompt()
 function update-prompt()
 {
     local name="%F{green}%n@%m%f "
-    local tmuxinfo="%F{magenta}$(disp-tmux-info-for-prompt)%f"
+    # local tmuxinfo="%F{magenta}$(disp-tmux-info-for-prompt)%f"
+    local tmuxinfo=""
     local cdir="%F{yellow}%~%f "
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
@@ -255,7 +258,7 @@ RPROMPT='$(rprompt)'
 function show-time()
 {
     echo ""
-    LC_ALL=c date | perl -pe 's/^(.*)$/(\1)/'
+    LC_TIME=c date --iso-8601=minutes | sed -e 's/T/ /g' -e 's/^(.*)$/($1)/'
 }
 
 PERIOD=30
@@ -407,7 +410,19 @@ alias plantuml="java -jar ~/bin/plantuml.jar $*"
 
 function cd() { builtin cd $@ && ls --color; }
 
-alias ssh='perl -e '\''$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); $ts = qx/date --iso-8601=seconds/; chomp $ts; exec "script ~/works/ssh-log/ssh-${ts}-${args}.log /usr/bin/ssh @ARGV"'\'''
+# alias ssh='perl -e '\''$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); $ts = qx/date --iso-8601=seconds/; chomp $ts; exec "script ~/works/ssh-log/ssh-${ts}-${args}.log /usr/bin/ssh @ARGV"'\'''
+
+function ssh() {
+    tmux set automatic-rename off
+    tmux rename-window "ssh $@"
+    tmux set-window-option window-status-current-format "#[fg=colour255,bg=#00aa22,bold] #I: #([[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]] && echo #W || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename #{pane_current_path} )) "
+    # TODO: trap でステータスバー戻す
+
+    # -t tmux -2
+    perl -e '$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); $ts = qx/date --iso-8601=seconds/; chomp $ts; exec "script ~/works/ssh-log/ssh-${ts}-${args}.log /usr/bin/ssh @ARGV"' $@
+    tmux set-window-option window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #([[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]] && echo #W || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename #{pane_current_path} )) "
+    tmux set automatic-rename on
+}
 
 # function ssh() {
 #   /usr/bin/env perl -e <<'EOF' $@
@@ -486,6 +501,8 @@ export VISUAL='emacsclient -t'
 export LESS='-N -M -R'
 
 export FZF_DEFAULT_OPTS="--cycle --no-mouse --reverse --prompt='QUERY> ' --color=16"
+
+export LC_TIME='C'
 # WSL 上のみ実行
 if [[ `uname -a` =~ "Linux.*Microsoft" ]]; then
   if [ "$INSIDE_EMACS" ]; then
@@ -544,7 +561,7 @@ function rename_tmux_window() {
     fi
 }
 
-add-zsh-hook precmd rename_tmux_window
+# add-zsh-hook precmd rename_tmux_window
 # peco の存在チェック
 # if [ ! ${+commands[peco]} ]; then
 #     return
@@ -772,9 +789,10 @@ function peco-ssh () {
   local selected_host=$(perl ~/bin/peco-ssh.pl)
   if [ -n "$selected_host" ]; then
     BUFFER="ssh ${selected_host}"
-    zle accept-line
+    CURSOR=$#BUFFER
+    # zle accept-line
   fi
-  zle clear-screen
+  # zle clear-screen
 }
 zle -N peco-ssh
 bindkey '^\' peco-ssh
@@ -985,7 +1003,8 @@ function get-git-dir-depth
 ## Start tmux automatically on ssh shell
 # https://gist.github.com/ABCanG/11bfcff22a0633600aefbb01550b8e38
 
-if [[ -n "${REMOTEHOST}${SSH_CONNECTION}" && -z "$TMUX" && -z "$STY" ]] && type tmux >/dev/null 2>&1; then
+#if [[ -n "${REMOTEHOST}${SSH_CONNECTION}" && -z "$TMUX" && -z "$STY" ]] && type tmux >/dev/null 2>&1; then
+if [[ -z "$TMUX" && -z "$STY" ]] && type tmux >/dev/null 2>&1; then
     function confirm {
         MSG=$1
         while :
@@ -1126,182 +1145,209 @@ function lock()
 {
     dm-tool loack
 }
-# commnads for kwansei
+# peco-completion-file
 
-function kwansei-z()
+zstyle ':completion:*:*:peco:*:*' format '%BCompleting %d%b'
+
+_peco_completion()
 {
-    KWANSEI_Z_MOUNT_POINT_LOCAL='/mnt/kwansei-z'
-    
-    # Make a mount point directory
-    if [ ! -d $KWANSEI_Z_MOUNT_POINT_LOCAL ]; then
-        sudo mkdir $KWANSEI_Z_MOUNT_POINT_LOCAL
-        echo "Made a directory '$KWANSEI_Z_MOUNT_POINT_LOCAL'."
-    fi
-
-    echo 'test';
-    
-    # mount
-	if [ $(mount -v | grep $KWANSEI_Z_MOUNT_POINT_LOCAL | wc -l)  -eq '0' ]; then
-        sudo mount /mnt/kwansei-z
-    else
-        echo 'already mounted'
-	fi
-
-	cd $KWANSEI_Z_MOUNT_POINT_LOCAL
+	_arguments \
+		'-h, --help[show this help message and exit]' \
+		'--tty[path to the TTY (usually, the value of $TTY)]' \
+		'--query[initial value for query]' \
+		'--rcfile[path to the settings file]' \
+		'--no-ignore-case[start in case-sensitive-mode (DEPRECATED)]' \
+		'--version[print the version and exit]' \
+		'-b, --buffer-size[number of lines to keep in search buffer]' \
+		'--null[expect NUL (\0) as separator for target/output]' \
+		'--initial-index[position of the initial index of the selection (0 base)]' \
+		'--initial-matcher[specify the default matcher]' \
+		'--prompt[specify the prompt string]' \
+		'--layout[layout to be used "top-down"(default) or "bottom-up"]' \
+ 		'*:file:_files'
 }
 
-
-function kscproxy()
-{
-	export http_proxy="http://proxy.ksc.kwansei.ac.jp:8080"
-	export https_proxy="https://proxy.ksc.kwansei.ac.jp:8080"
-}
-# commnads for lab
-
-##### scripts for vpn #####
-alias labvpn='sudo /usr/sbin/openvpn /etc/openvpn/client.ovpn &'
-
-
-##### scripts for gitlab #####
-function gitlab-open
-{
-    if [ $(ps aux | grep ssh | grep 192.218.172.56:80 | wc -l) -eq 0 ]; then
-        ssh -fN -L9999:192.218.172.56:80 lab-g56
-    fi
-
-    firefox localhost:9999
+compdef _peco_completion peco
+_sls_templates() {
+  _values \
+    'VALID TEMPLATES' \
+    'aws-nodejs' \
+    'aws-python' \
+    'aws-java-maven' \
+    'aws-java-gradle'
 }
 
-function gitlab-close
-{
-    local pid=$(ps -aux | grep ssh | grep 192.218.172.56:80 | peco | awk '{print $2}' )
-    if [ $pid != "" ]; then
-       kill $pid && echo killed $pid
-    fi
+_sls_regions() {
+  _values \
+    'VALID REGIONS' \
+    'us-east-1' \
+    'us-west-1' \
+    'us-west-2' \
+    'eu-west-1' \
+    'ap-southeast-1' \
+    'ap-northeast-1' \
+    'ap-southeast-2' \
+    'sa-east-1'
 }
 
-
-##### scripts for nas #####
-export LAB_NAS_MOUNT_POINT_LOCAL='/mnt/labnas'
-
-function inas()
-{
-    # Make a mount point directory
-    if [ ! -d $LAB_NAS_MOUNT_POINT_LOCAL ]; then
-            sudo mkdir $LAB_NAS_MOUNT_POINT_LOCAL
-            echo "Made a directory '$LAB_NAS_MOUNT_POINT_LOCAL'."
-    fi
-
-    # mount
-	if [ $(mount -v | grep $LAB_NAS_MOUNT_POINT_LOCAL | wc -l)  -eq '0' ];then
-        # Linux Kernel 4.13 から SMB 3.0 がデフォルトCIFSになっている.
-        # SMB 3.0 では NAS に接続できなかったため, SMB 1.0 で接続する.
-		sudo mount -t cifs //192.168.0.16/disk1 $LAB_NAS_MOUNT_POINT_LOCAL \
-			 -o iocharset=utf8,username=user,password=pass,file_mode=0755,dir_mode=0755,uid=$(id -u),gid=$(id -g),vers=1.0
-	fi
-
-	cd $LAB_NAS_MOUNT_POINT_LOCAL
+_sls_invoke_types() {
+  _values \
+    'VALID INVOKE TYPES' \
+    'RequestResponse' \
+    'Event' \
+    'DryRun'
 }
 
-function uinas()
-{
-	if [ $(pwd | grep $LAB_NAS_MOUNT_POINT_LOCAL | wc -l)  -eq '1' ];then
-		cd > /dev/null
-	fi
-
-    if [ $(mount -v | grep $LAB_NAS_MOUNT_POINT_LOCAL | wc -l)  -ge '1' ];then
-	    sudo umount $LAB_NAS_MOUNT_POINT_LOCAL
-    fi
-
-    if [ -d $LAB_NAS_MOUNT_POINT_LOCAL ] && sudo rmdir $LAB_NAS_MOUNT_POINT_LOCAL
+_sls_json_files() {
+  local json_files
+  json_files=("${(@f)$(find . -type f -name "*.json" \
+    -not -path "./node_modules/*" \
+    -not -path "./.serverless/*" \
+    -not -name "package.json")}")
+  _values 'JSON FILES FOUND' $json_files
 }
 
-
-##### scripts for nas with sshfs #####
-export SSH_USER='yuzu'
-export LAB_NAS_MOUNT_POINT_SSH='/mnt/ssh-labnas'
-export LAB_SERVER10_KEY_PATH="$HOME/.ssh/lab/id_ed25519_excomputer"
-export LAB_SERVER_IP='192.218.172.58'
-#export LAB_SERVER_IP='192.168.0.10'
-
-function sshinas()
-{
-    if [ ! -d $LAB_NAS_MOUNT_POINT_SSH ]; then
-        sudo mkdir $LAB_NAS_MOUNT_POINT_SSH
-        echo "Made a mount point directory '$LAB_NAS_MOUNT_POINT_SSH'"
-    fi
-    
-    if [ $(mount -v | grep $LAB_NAS_MOUNT_POINT_SSH | wc -l)  -eq '0' ];then
-        sudo sshfs \
-             ${SSH_USER}@${LAB_SERVER_IP}:${LAB_NAS_MOUNT_POINT_LOCAL} \
-             $LAB_NAS_MOUNT_POINT_SSH \
-             -o uid=$(id -u),gid=$(id -g),allow_other,IdentityFile=$LAB_SERVER10_KEY_PATH
-    fi
-    cd $LAB_NAS_MOUNT_POINT_SSH
+_sls_functions() {
+  # parse the functions from the serverless.yaml
+  # with a whole lot of aws/grep/sed/zsh magic
+  local functions
+  functions=("${(@f)$(awk '/^functions/{p=1;print;next} p&&/^(resources|package|provider|plugins|service)/{p=0};p' serverless.yml \
+    | grep -e "^  \w\+:" \
+    | sed 's/ \+//' \
+    | sed 's/:\+//')}")
+  _values 'VALID FUNCTIONS' $functions
 }
 
-function usshinas()
-{
-	if [ $(pwd | grep $LAB_NAS_MOUNT_POINT_SSH | wc -l)  -eq '1' ];then
-		cd > /dev/null
-	fi
+_sls () {
+  typeset -A opt_args
 
-    if [ $(mount -v | grep $LAB_NAS_MOUNT_POINT_LOCAL | wc -l)  -ge '1' ];then
-	    sudo umount $LAB_NAS_MOUNT_POINT_SSH
-    fi
+  _arguments -C \
+  '1:cmd:->cmds' \
+  '*::arg:->args'
 
-    if [ -d $LAB_NAS_MOUNT_POINT_SSH ] && sudo rmdir $LAB_NAS_MOUNT_POINT_SSH
+  case "$state" in
+    (cmds)
+      local commands
+      commands=(
+        'create:Create new Serverless Service.'
+        'deploy:Deploy Service.'
+        'info:Displays information about the service.'
+        'invoke:Invokes a deployed function.'
+        'logs:Outputs the logs of a deployed function.'
+        'remove:Remove resources.'
+        'tracking:Enable or disable usage tracking.'
+      )
+
+      _describe -t commands 'command' commands
+      return 0
+    ;;
+    (args)
+      case $line[1] in
+        (create)
+          _sls_create
+        ;;
+        (deploy)
+          _sls_deploy
+        ;;
+        (info)
+          _sls_info
+        ;;
+        (invoke)
+          _sls_invoke
+        ;;
+        (logs)
+          _sls_logs
+        ;;
+        (remove)
+          _sls_remove
+        ;;
+        (tracking)
+          _sls_tracking
+        ;;
+      esac;
+    ;;
+  esac;
+
+  return 1
 }
-# acap.pl の存在チェック
-if [ ! ${+commands[acap.pl]} ]; then
-    return
-fi
 
-
-
-# vivado
-export PATH=${HOME}/opt/Vivado/2016.4/bin:$PATH
-
-# acap-dir
-export ACAP_DIR="$HOME/tools/acap"
-export MIPSLITE_DIR="$HOME/tools/mipslite"
-export MIPS_ELF_GCC_LIB_DIR="$HOME/tools/acap/lib"
-
-# acap
-export PATH=${ACAP_DIR}/bin:$PATH
-export LIBDIR=${ACAP_DIR}/ccaplib 
-export PATH=${MIPS_ELF_GCC_LIB_DIR}/mips-elf/gcc-4.8.2/bin:$PATH
-export LD_LIBRARY_PATH=${MIPS_ELF_GCC_LIB_DIR}/mpc-1.0.2/lib:${LD_LIBRARY_PATH}
-export LD_LIBRARY_PATH=${MIPS_ELF_GCC_LIB_DIR}/mpfr-3.1.2/lib:${LD_LIBRARY_PATH}
-export LD_LIBRARY_PATH=${MIPS_ELF_GCC_LIB_DIR}/gmp-6.0.0/lib:${LD_LIBRARY_PATH}
-export SOFT_FP_DIR=${MIPS_ELF_GCC_LIB_DIR}/gcc-4.8.2/build/mips-elf/soft-float/el/libgcc
-
-# alias
-alias acap='acap.pl -Z1 -Dall --remain-linked-object -l synthesized/ --enable-inlining'
-alias ise='ise >/dev/null 2>&1 &'
-alias vivado='vivado >/dev/null 2>&1 &'
-
-
-function clean-acap {
-    local dir='.'
-    if [ -d synthesized ]; then
-        dir='synthesized'
-    fi
-    
-    rm -f $dir/*.o
-    rm -f $dir/*.s
-    rm -f $dir/*.0
-    rm -f $dir/user.obj
-    rm -f $dir/*.out
-    rm -f $dir/*.dmem
-    rm -f $dir/*.txt
-    rm -f $dir/*_i.mem
-    rm -f $dir/*_d.mem
-    rm -f $dir/*.low
-    rm -f $dir/*.dfa
-    rm -f $dir/*.sch
-    rm -f $dir/*.bnd
-    rm -f $dir/*.stl
-    rm -f $dir/*.rtl
-    rm -f $dir/*.v
+_sls_create(){
+  _arguments -s \
+    -t'[Template for the service (required)]:sls_templates:_sls_templates' \
+    -p'[The path where the service should be created]'
+    return 0
 }
+
+_sls_deploy(){
+  if [[ $line[2] == "function" ]]; then
+    # TODO: this doesn't seem to work for the subcommand
+    _arguments -s \
+      -f'[Name of the function (required)]:sls_functions:_sls_functions' \
+      -r'[Region of the service]:sls_regions:_sls_regions' \
+      -s'[Stage of the function]'
+      return 0
+  else
+    _arguments -s \
+      -n'[Build artifacts without deploying]' \
+      -r'[Region of the service]:sls_regions:_sls_regions' \
+      -s'[Stage of the service]' \
+      -v'[Show all stack events during deployment]'
+
+    local subcommands
+    subcommands=(
+      'function:Deploys a single function from the service.'
+      )
+    _describe -t commands 'deploy subcommands' subcommands
+    return 0
+  fi
+  return 1
+}
+
+_sls_info() {
+  _arguments -s \
+    -r'[Region of the service]:sls_regions:_sls_regions' \
+    -s'[Stage of the service]'
+    return 0
+}
+
+_sls_invoke() {
+  _arguments -s \
+    -f'[The function name (required)]:sls_functions:_sls_functions' \
+    -l'[Trigger logging data output]' \
+    -p'[Path to JSON file holding input data]:sls_json_files:_sls_json_files' \
+    -r'[Region of the service]:sls_regions:_sls_regions' \
+    -s'[Stage of the function]' \
+    -t'[Type of invocation]:sls_invoke_types:_sls_invoke_types'
+    return 0
+}
+
+_sls_logs() {
+  _arguments -s \
+    -f'[The function name (required)]:sls_functions:_sls_functions' \
+    --filter'[A filter pattern]' \
+    -i'[Tail polling interval in milliseconds. Default: 1000]' \
+    -r'[Region of the service]:sls_regions:_sls_regions' \
+    -s'[Stage of the function]' \
+    --startTime'[Logs before this time will not be displayed]' \
+    -t'[Tail the log output]'
+    return 0
+}
+
+_sls_remove() {
+  _arguments -s \
+    -r'[Region of the service]:sls_regions:_sls_regions' \
+    -s'[Stage of the function]' \
+    -v'[Show all stack events during deployment]'
+    return 0
+}
+
+_sls_tracking() {
+  _arguments -s \
+    -d'[Disable tracking]' \
+    -e'[Enable tracking]'
+    return 0
+}
+
+compdef _sls sls serverless
+source <(kubectl completion zsh)
+
