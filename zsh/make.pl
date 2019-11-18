@@ -12,9 +12,12 @@ use Path::Tiny;
 
 use Term::ANSIColor;
 
-my $SOURCE_DIR = './src/';
-my $OUTPUT_DIR = './dist/';
-my $JOINED_SRC = './dist/.zshrc';
+use FindBin;
+
+
+my $SOURCE_DIR = "$FindBin::RealBin/src/";
+my $OUTPUT_DIR = "$FindBin::RealBin/dist/";
+my $JOINED_SRC = "$FindBin::RealBin/dist/.zshrc";
 
 
 sub build {
@@ -22,9 +25,11 @@ sub build {
   path($JOINED_SRC)->spew('');
   # rm -f ~/.zcompdump
 
-  # TODO: src に
+  my @zshfiles = (
+    path($SOURCE_DIR)->children(qr/\.zsh$/),
+    path($SOURCE_DIR)->child('completion')->children(qr/\.zsh$/)
+  );
 
-  my @zshfiles = path($SOURCE_DIR)->children(qr/\.zsh/);
   for my $zshfile ( sort @zshfiles ) {
     say sprintf "* %-30s %s",
       $zshfile->basename,
@@ -40,7 +45,6 @@ sub build {
 
   system qq(zsh -n $JOINED_SRC);              # syntax check
   system qq(zsh -c "zcompile $JOINED_SRC");   # compile
-  system qq(zsh -c "autoload -Uz compinit && compinit"); # compinit は毎回実行しない
 
   path("${JOINED_SRC}.zwc")->copy( "${JOINED_SRC}.zwc.bak" );
   path("${JOINED_SRC}.zwc")->copy( "$ENV{HOME}/.zshrc.zwc" );
