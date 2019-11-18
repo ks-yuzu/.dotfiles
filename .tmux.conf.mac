@@ -2,30 +2,45 @@
 # 256色端末を使用する
 set -g default-terminal "screen-256color"
 
+# ステータスバーの色を設定する
+set -g status-fg white
+set -g status-bg colour238
+
+set -g status-interval 1
+
+# left
+set-option -g status-left "#[fg=colour255,bg=colour241] S#S(#(tmux ls | grep -n \"^$(tmux display -p '#S')\" | cut -d: -f1)/#(tmux list-sessions | wc -l)) #[default]"
+
+
+# middle
+# set-window-option -g window-status-format " #I: #(set -o pipefail; tmux list-panes -F '#{pane_pid}' | xargs pgrep -flaP | tail -n1 | cut -d' ' -f2- || ([ \"#W\" = $HOME ] && echo HOME || basename #W)) "
+set-window-option -g window-status-format " #I: #([[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]] && echo #W || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename #{pane_current_path} )) "
+set-window-option -g window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #([[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]] && echo #W || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename #{pane_current_path} )) "
+
+
+# right
+set-option -g status-right "#[fg=colour255,bg=colour241] %m/%d %H:%M:%S #[default]"
+
 
 ## SCROLL
 set-option -g history-limit 100000
 setw -g mouse on
+
+unbind -T copy-mode MouseDragEnd1Pane
+bind -T copy-mode C-w send-keys -X copy-pipe "tmux copy-buffer"
 
 
 ## KEY BINDING
 # set-window-option -g mode-keys emacs
 set -g mode-keys emacs
 
-bind r source-file ~/.tmux.conf \; display "Reloaded!"
-
-
+# prefix
 set -g prefix C-t
 bind C-t send-prefix
 unbind C-b
 
-# チェック無しペーストは潰しておく (→ C-y を使用)
-unbind ]
-
-
-# ステータスバーの色を設定する
-set -g status-fg white
-set -g status-bg black
+# reload
+bind r source-file ~/.tmux.conf \; display "Reloaded!"
 
 # M-p M-n
 bind -n M-n next-window
@@ -53,18 +68,46 @@ bind -r J resize-pane -D 5
 bind -r K resize-pane -U 5
 bind -r L resize-pane -R 5
 
+# 全ペイン入力をトグル
+bind ^a setw synchronize-panes \; display "synchronize-panes #{?pane_synchronized,on,off}"
+
+bind J command-prompt -p "join pane from:"  "join-pane -s '%%'"
+bind S command-prompt -p "send pane to:"  "join-pane -t '%%'"
+
+# チェック無しペーストは潰しておく (→ C-y を使用)
+unbind ]
+
 # ## クリップボード共有を有効にする
 # using in Mac OS X ($ brew install reattach-to-user-namespace)
 set -g default-command "reattach-to-user-namespace -l zsh"
 
 # コピーモード (Emacs のバインド)
 # Mac OS X
-#  iTerm2 -> Preferences -> “Applications in terminal may access clipboard”にチェックしないと動かない
+#  iTerm2 -> Preferences -> “Applications in terminal may access clipboard”にチェック
 bind -T copy-mode-emacs M-w send-keys -X copy-pipe "reattach-to-user-namespace pbcopy"
 bind -T copy-mode-emacs C-w send-keys -X copy-pipe "reattach-to-user-namespace pbcopy"
-# bind -n                 C-y run-shell "[ $(pbpaste | perl -0pe 's/\n$//m' | grep -c '') -gt 1 ] && (echo '[warn] multi-line paste!! continue? (y/N): '; read -q && : || return); tmux set-buffer -- \"$(pbpaste)\"; tmux paste-buffer"
 bind -n C-y run-shell "[ $(pbpaste | perl -0pe 's/\n*$//m' | grep -c '') -gt 1 ] && (echo '[warn] multi-line paste!!\nuse C-t C-y to paste the following text forcibly\n-----'; pbpaste) || (tmux set-buffer -- \"$(pbpaste)\" && tmux paste-buffer)"
 bind    C-y run-shell "tmux set-buffer -- \"$(pbpaste)\"; tmux paste-buffer"
 
 # TODO: OS 毎の分岐設定
 # https://www.muratayusuke.com/2015/01/24/tmux%E3%81%AE%E3%82%B3%E3%83%92-%E3%83%98-%E3%81%A8%E3%82%AF%E3%83%AA%E3%83%83%E3%83%95-%E3%83%9B-%E3%83%BC%E3%83%88-%E3%81%AE%E9%80%A3%E6%90%BA%E3%82%92-%E5%90%8C%E3%81%97-tmux-conf%E3%81%A6/
+
+
+
+## COPY COMMAND RESULT
+# prefix + t で 1 コマンド分コピー
+unbind t
+bind t run-shell 'tmux capture-pane -pS -32768 | extract-command-result.pl /tmp/tmux-n-copy-commands | tee -a /tmp/tmp/log | pbcopy; rm -f /tmp/tmux-n-copy-commands' \; display 'Copied!!'
+
+# prefix <数字> prefix t で複数コマンド分コピー
+bind 1 run-shell 'echo 1 > /tmp/tmux-n-copy-commands'
+bind 2 run-shell 'echo 2 > /tmp/tmux-n-copy-commands'
+bind 3 run-shell 'echo 3 > /tmp/tmux-n-copy-commands'
+bind 4 run-shell 'echo 4 > /tmp/tmux-n-copy-commands'
+bind 5 run-shell 'echo 5 > /tmp/tmux-n-copy-commands'
+bind 6 run-shell 'echo 6 > /tmp/tmux-n-copy-commands'
+bind 7 run-shell 'echo 7 > /tmp/tmux-n-copy-commands'
+bind 8 run-shell 'echo 8 > /tmp/tmux-n-copy-commands'
+bind 9 run-shell 'echo 9 > /tmp/tmux-n-copy-commands'
+bind 0 run-shell 'echo 10 > /tmp/tmux-n-copy-commands'
+
