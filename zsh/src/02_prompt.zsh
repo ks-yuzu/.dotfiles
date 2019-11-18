@@ -3,7 +3,7 @@ autoload -Uz add-zsh-hook
 ## tmux info disp
 function disp-tmux-info()
 {
-    if [ $(perl -e "print '$TERM' =~ /screen/ ? 1 : 0") -eq 0 ] && return
+    [[ $TERM =~ 'screen' ]] || return
 
     local NUM_SESSIONS=$(tmux list-sessions | wc -l)
     local NUM_WINDOWS=$( tmux list-windows  | wc -l)
@@ -19,7 +19,7 @@ function disp-tmux-info()
 
 function disp-tmux-info-mini()
 {
-    grep screen <<<$TERM > /dev/null || return
+    [[ $TERM =~ 'screen' ]] || return
 
     local NUM_SESSIONS=$(tmux list-sessions | wc -l)
     local NUM_WINDOWS=$( tmux list-windows  | wc -l)
@@ -35,10 +35,8 @@ function disp-tmux-info-mini()
 
 function disp-tmux-info-for-prompt()
 {
-    grep screen <<<$TERM > /dev/null || return
-    echo -n "["
-    echo -n $(disp-tmux-info-mini)
-    echo -n "] "
+    [[ $TERM =~ 'screen' ]] || return
+    echo -n "[" $(disp-tmux-info-mini) "] "
 }
 
 
@@ -132,7 +130,7 @@ RPROMPT='$(rprompt)'
 function show-time()
 {
     echo ""
-    LC_ALL=c date | perl -pe 's/^(.*)$/(\1)/'
+    LC_TIME=c date --iso-8601=minutes | sed -e 's/T/ /g' -e 's/^(.*)$/($1)/'
 }
 
 PERIOD=30
