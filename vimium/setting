@@ -21,7 +21,6 @@ map <c-r> performBackwardsFind
 map <c-R> performBackwardsFind
 
 
-
 # [ navigation ]
 unmap H
 map F goForward
@@ -45,7 +44,10 @@ unmap K
 map l nextTab
 
 
-
 # [ hit a hint ]
 map e LinkHints.activateMode
 map E LinkHints.activateModeToOpenInNewTab
+
+
+# [ bookmarks ]
+map <m-B> Vomnibar.activateBookmarksInNewTab
