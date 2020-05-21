@@ -128,10 +128,10 @@ function peco-get-fullpath()
         if [ -f $1 ]; then
             fullpath=`pwd`/$1
         else
-            fullpath=$(find `pwd`/$1 -maxdepth 1 -mindepth 1 | peco)
+            fullpath=$(find `pwd`/$1 -maxdepth 1 -mindepth 1 | peco --query "$LBUFFER")
         fi
     else
-        fullpath=$(find `pwd` -maxdepth 1 -mindepth 1 | peco)
+        fullpath=$(find `pwd` -maxdepth 1 -mindepth 1 | peco --query "$LBUFFER")
     fi
     echo "${fullpath}" | pbcopy
     echo ${fullpath}
@@ -225,9 +225,10 @@ function peco-ssh () {
   local selected_host=$(perl ~/bin/peco-ssh.pl)
   if [ -n "$selected_host" ]; then
     BUFFER="ssh ${selected_host}"
-    zle accept-line
+    CURSOR=$#BUFFER
+    # zle accept-line
   fi
-  zle clear-screen
+  # zle clear-screen
 }
 zle -N peco-ssh
 bindkey '^\' peco-ssh
