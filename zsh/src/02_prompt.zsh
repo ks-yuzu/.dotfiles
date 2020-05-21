@@ -39,14 +39,43 @@ function disp-tmux-info-for-prompt()
     echo -n "[" $(disp-tmux-info-mini) "] "
 }
 
+function show-kube-cluster-name() {
+    KUBE_CONTEXT=$(kubectl config current-context)
+    if [[ $KUBE_CONTEXT =~ gke ]]; then
+        echo gke:$(echo $KUBE_CONTEXT | cut -d_ -f4-)
+    elif [[ $KUBE_CONTEXT =~ aws ]]; then
+        local product=$(~/bin/get-aws-account-name-from-id $(echo $KUBE_CONTEXT | cut -d: -f5))
+        # sts token のアカウントとクラスタのアカウントが違っていれば色を変える
+        if [[ ! -n "$STS_EXPIRATION_UNIXTIME" ]]; then
+            :
+        elif [[ "$STS_ALIAS_SHORT" = "$product" ]]; then
+            product="%F{green}${product}%f"
+        else
+            product="%F{red}${product}%f"
+        fi
+        echo aws:${product}:$(echo $KUBE_CONTEXT | cut -d/ -f2)
+    fi
+}
+
+function show-kube-namespace() {
+    # local NS=$(kubectl config view | grep namespace: | awk '{print $2}')
+    local NS=$(kubectl config view | sed -n "/cluster: $(kubectl config current-context | perl -pe 's|/|\\/|g')/,/^-/p" | grep namespace | awk '{print $2}')
+    if [[ -z "$NS" ]]; then
+        return
+    fi
+
+    echo "($NS)"
+}
 
 
 
 ## prompt
 function update-prompt()
 {
-    local name="%F{green}%n@%m%f "
-    local tmuxinfo="%F{magenta}$(disp-tmux-info-for-prompt)%f"
+    local name="%F{green}%n@local%f "
+    # local tmuxinfo="%F{magenta}$(disp-tmux-info-for-prompt)%f"
+    local tmuxinfo=""
+    local kubeinfo="$(show-kube-cluster-name)$(show-kube-namespace) "
     local cdir="%F{yellow}%~%f "
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
@@ -70,7 +99,7 @@ function update-prompt()
 
     local sts="sts:${face}${info} "
 
-    PROMPT="${name}${tmuxinfo}${sts}${cdir}${endl}${mark}"
+    PROMPT="${name}${tmuxinfo}${sts}${kubeinfo}${cdir}${endl}${mark}"
 }
 
 add-zsh-hook precmd update-prompt
