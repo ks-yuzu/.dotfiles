@@ -1,6 +1,9 @@
 # reload config
 cmd + alt + ctrl - r : khd -e "reload"
 
+# open iterm2 new window
+ctrl + alt - return: ~/bin/launch-iterm2.sh
+
 
 # open terminal
 # shift + alt + cmd - return : /Applications/iTerm.app --single-instance -d ~
