@@ -1,7 +1,8 @@
 ## Start tmux automatically on ssh shell
 # https://gist.github.com/ABCanG/11bfcff22a0633600aefbb01550b8e38
 
-if [[ -n "${REMOTEHOST}${SSH_CONNECTION}" && -z "$TMUX" && -z "$STY" ]] && type tmux >/dev/null 2>&1; then
+#if [[ -n "${REMOTEHOST}${SSH_CONNECTION}" && -z "$TMUX" && -z "$STY" ]] && type tmux >/dev/null 2>&1; then
+if [[ -z "$TMUX" && -z "$STY" ]] && type tmux >/dev/null 2>&1; then
     function confirm {
         MSG=$1
         while :
@@ -15,8 +16,8 @@ if [[ -n "${REMOTEHOST}${SSH_CONNECTION}" && -z "$TMUX" && -z "$STY" ]] && type 
         done
     }
     option=""
-    if tmux has-session && tmux list-sessions; then
+    if [ ${+commands[tmux]} -gt 0 ] && tmux has-session && tmux list-sessions; then
         option="attach"
     fi
-    tmux $option && confirm "exit?" && exit
+    [ ${+commands[tmux]} -gt 0 ] && tmux $option && confirm "exit?" && exit
 fi
