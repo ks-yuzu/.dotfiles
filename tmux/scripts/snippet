@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -ueo pipefail
+
+# config
+SNIPPETS=~/.dotfiles/tmux/snippets.txt
+SNIPPET_PANE_HEIGHT=15
+
+# create named pipe
+PIPE=/tmp/_tmux_snippet_command_pipe
+[ -p $PIPE ] || mkfifo $PIPE
+
+# generate command executed in another pane
+ACTIVE_PANE_ID=`tmux list-panes -F '#{pane_active},#{pane_index}' | grep '^1' | cut -d, -f2-`
+COMMAND="(egrep -v '^\s*(#.*)?$' $SNIPPETS | peco | sed 's/^\[[^]]*\] *//' > $PIPE &) && tmux send-key -t $ACTIVE_PANE_ID \"\$(cat $PIPE)\""
+
+# execute
+tmux split-window -l${SNIPPET_PANE_HEIGHT} "$COMMAND"
+

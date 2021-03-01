@@ -81,6 +81,7 @@ unbind ]
 # using in Mac OS X ($ brew install reattach-to-user-namespace)
 set -g default-command "reattach-to-user-namespace -l zsh"
 
+
 # コピーモード (Emacs のバインド)
 # Mac OS X
 #  iTerm2 -> Preferences -> “Applications in terminal may access clipboard”にチェック
@@ -88,6 +89,12 @@ bind -T copy-mode-emacs M-w send-keys -X copy-pipe "reattach-to-user-namespace p
 bind -T copy-mode-emacs C-w send-keys -X copy-pipe "reattach-to-user-namespace pbcopy"
 bind -n C-y run-shell "[ $(pbpaste | perl -0pe 's/\n*$//m' | grep -c '') -gt 1 ] && (echo '[warn] multi-line paste!!\nuse C-t C-y to paste the following text forcibly\n-----'; pbpaste) || (tmux set-buffer -- \"$(pbpaste)\" && tmux paste-buffer)"
 bind    C-y run-shell "tmux set-buffer -- \"$(pbpaste)\"; tmux paste-buffer"
+
+bind -T copy-mode-emacs j   send -X copy-pipe '~/.dotfiles/tmux/scripts/parse-json'
+bind                    C-s run '~/.dotfiles/tmux/scripts/snippet'
+bind -T copy-mode-emacs C   send -X copy-pipe '~/.dotfiles/tmux/scripts/stdin-vim'
+bind                    C   run '~/.dotfiles/tmux/scripts/capture-pane'
+
 
 # TODO: OS 毎の分岐設定
 # https://www.muratayusuke.com/2015/01/24/tmux%E3%81%AE%E3%82%B3%E3%83%92-%E3%83%98-%E3%81%A8%E3%82%AF%E3%83%AA%E3%83%83%E3%83%95-%E3%83%9B-%E3%83%BC%E3%83%88-%E3%81%AE%E9%80%A3%E6%90%BA%E3%82%92-%E5%90%8C%E3%81%97-tmux-conf%E3%81%A6/
@@ -97,7 +104,7 @@ bind    C-y run-shell "tmux set-buffer -- \"$(pbpaste)\"; tmux paste-buffer"
 ## COPY COMMAND RESULT
 # prefix + t で 1 コマンド分コピー
 unbind t
-bind t run-shell 'tmux capture-pane -pS -32768 | extract-command-result.pl /tmp/tmux-n-copy-commands | tee -a /tmp/tmp/log | pbcopy; rm -f /tmp/tmux-n-copy-commands' \; display 'Copied!!'
+bind t run-shell 'tmux capture-pane -pS -32768 | extract-command-result.pl /tmp/tmux-n-copy-commands | tee -a /tmp/command-result-copy-log | pbcopy; rm -f /tmp/tmux-n-copy-commands' \; display 'Copied!!'
 
 # prefix <数字> prefix t で複数コマンド分コピー
 bind 1 run-shell 'echo 1 > /tmp/tmux-n-copy-commands'
@@ -111,3 +118,6 @@ bind 8 run-shell 'echo 8 > /tmp/tmux-n-copy-commands'
 bind 9 run-shell 'echo 9 > /tmp/tmux-n-copy-commands'
 bind 0 run-shell 'echo 10 > /tmp/tmux-n-copy-commands'
 
+
+
+set-hook -g pane-exited "save-buffer /tmp/last-pane"

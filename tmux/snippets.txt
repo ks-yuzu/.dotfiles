@@ -1,0 +1,23 @@
+[EC2: fetch tags      ] aws ec2 describe-tags --region $(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed -e 's/[a-z]$//') --filter "Name=resource-id,Values=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)" --query 'Tags[].[Key, Value]' --output text | column -t
+[EC2: fetch name tag  ] aws ec2 describe-tags --region $(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed -e 's/[a-z]$//') --filter "Name=resource-id,Values=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)" --query 'Tags[?Key==`Name`].Value' --output text
+[EC2: fetch name tag  ] aws ec2 describe-instances --region $(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed -e 's/[a-z]$//') --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) --query 'Reservations[].Instances[].Tags[?Key==`Name`].Value' --output text
+[EC2: list id/name    ] aws ec2 describe-instances --query 'Reservations[].Instances[].[InstanceId, (Tags[?Key==`Name`].Value)[0]]' --output text
+[EC2: describe self   ] aws ec2 describe-instances --region $(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed -e 's/[a-z]$//') --filter "Name=instance-id,Values=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
+[JGWS: gslookup       ] sudo -ugree ssh gs19.gree.internal gslookup $(ip a | grep -Po '(?<=inet )10\.\d+\.\d+\.\d+')
+[JGWS: AS State       ] gaws ls -a -f full --add state AutoscaleState --sort_by name
+[JGWS: AS State       ] gaws ls -a -f full --add state AutoscaleState AutoscaleUntargeted AutoscaleAssetDeployState --sort_by name
+[JGWS: AS State e -> l] gaws ls -a -f full --add AutoscaleState --sort_by name | grep error | cut -d'|' -f4 | xargs -n1 | xargs -I{} mswitch update -a AutoscaleState launched {}
+[JGWS: AS State       ] mswitch update AutoscaleState ws_deployed <target>
+[JGWS: AS State       ] mswitch update AutoscaleState elb_registered <target>
+[JGWS: AS Untarget    ] mswitch update AutoscaleUntargeted true <target>
+[JGWS: df on all JG ws] gslookup --type www --service 'pirate|dig|land|garden' --state on_service | sort -t. -k2,2 -V | grep ^ws | awk '{print $1}' | xargs -I{} bash -c 'echo -n "{} "; sudo -uadmin ssh {} "df /home/gree | grep nvme"' 2> /dev/null
+[JGWS: gen vsn grepexp]  | awk '{print "-e" $1}' | xargs
+[K8S: get pod wide    ] kubectl get pods -o wide -A | perl -alne 'print join "\t", @F[0..7]' | column -t
+[K8S: get pod short   ] kubectl get pod -o=custom-columns=NAMESPACE:.metadata.namespace,NODE:.spec.nodeName,NAME:.metadata.name -A
+[K8S: OOM pod uid     ] sudo cat /var/log/messages | grep '(?<=Task in /kubepods/burstable/pod)[^/]+' -Po
+[K8S: uid to name     ] kubectl get pod --all-namespaces -o json | jq '.items[] | select(.metadata.uid == "<uid>") | .metadata.name' -r
+[ETC: grep with header] sed -n -e1p -e//p
+[ETC: mysql pwd       ] read -sp 'MySQL Password: ' MYSQL_PWD && export $_; echo
+[ETC: env aws product ] AWS_PRODUCT=
+[AWS: codebuild build ] start_build_stdout=$(aws codebuild start-build --project-name XXXX); account_id=$(echo "$start_build_stdout" | jq .build.arn -r | cut -d: -f5); region=$(echo "$start_build_stdout" | jq .build.arn -r | cut -d: -f4); project_name=$(echo "$start_build_stdout" | jq .build.projectName -r); build_id=$(echo "$start_build_stdout" | jq .build.arn -r | cut -d/ -f2); open "https://${region}.console.aws.amazon.com/codesuite/codebuild/${account_id}/projects/${project_name}/build/${build_id}/?region=${region}"
+[AWS: launch template ] versions=$(AWS_PRODUCT=saoal sts aws ec2 describe-launch-template-versions --launch-template-name dev-eks-worker-node); diff <(echo "$versions" | jq '.LaunchTemplateVersions[1]' | less) <(echo "$versions" | jq '.LaunchTemplateVersions[0]' | less) -u

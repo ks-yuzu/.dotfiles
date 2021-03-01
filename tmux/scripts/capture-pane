@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+# config
+MAX_LINES=100000
+
+tmux capture-pane -S -${MAX_LINES}; tmux new-window 'tmux show-buffer | perl -0pe "s/\A\n+//; s/\n+\z//" | vim + -c "set nonumber" -'
