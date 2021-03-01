@@ -64,8 +64,21 @@ alias plantuml="java -jar ~/bin/plantuml.jar $*"
 
 
 function cd() { builtin cd $@ && ls --color; }
+function pr-select { gh pr list| peco | awk '{print $1}' }
 
-alias ssh='perl -e '\''$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); $ts = qx/date --iso-8601=seconds/; chomp $ts; exec "script ~/works/ssh-log/ssh-${ts}-${args}.log /usr/bin/ssh @ARGV"'\'''
+# alias ssh='perl -e '\''$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); $ts = qx/date --iso-8601=seconds/; chomp $ts; exec "script ~/works/ssh-log/ssh-${ts}-${args}.log /usr/bin/ssh @ARGV"'\'''
+
+function ssh() {
+    tmux set automatic-rename off
+    tmux rename-window "ssh $@"
+    tmux set-window-option window-status-current-format "#[fg=colour255,bg=#00aa22,bold] #I: #([[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]] && echo #W || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename #{pane_current_path} )) "
+    # TODO: trap でステータスバー戻す
+
+    # -t tmux -2
+    perl -e '$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); $ts = qx/date --iso-8601=seconds/; chomp $ts; exec "script ~/works/ssh-log/ssh-${ts}-${args}.log /usr/bin/ssh @ARGV"' $@
+    tmux set-window-option window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #([[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]] && echo #W || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename #{pane_current_path} )) "
+    tmux set automatic-rename on
+}
 
 # function ssh() {
 #   /usr/bin/env perl -e <<'EOF' $@
@@ -95,6 +108,37 @@ which pbcopy  >/dev/null 2>&1 && alias -g clip='tee >(pbcopy)'                  
 which putclip >/dev/null 2>&1 && alias -g clip='tee >(putclip)'                  # Cygwin
 
 
+## sts
+alias stsext='eval `stsenv`'
+
+## eks with sts
+docker-eks () {
+  local AWS_PRODUCT
+  : ${AWS_PRODUCT:=$1}
+  if [ -z "$AWS_PRODUCT" ]; then
+    echo 'No AWS account specified. Please set to AWS_PRODUCT or pass as an argument'
+    return 1
+  fi
+
+  export AWS_PRODUCT
+  docker run -e AWS_PRODUCT -v ~/.dotfiles:/root/.dotfiles -v ~/.zshrc.zwc:/root/.zshrc.zwc --rm -it eks-work
+  # export AWS_DEFAULT_REGION
+  # docker run -e AWS_PRODUCT -e AWS_DEFAULT_REGION --rm -it eks-work
+}
+
+# gslookup
+alias gslookup='/usr/bin/ssh op3 gslookup 2> /dev/null'
+
+# cd repo
+function repo() {
+  REPO_ROOT="${HOME}/works/*/repo"
+
+  dir=$( (builtin cd $REPO_ROOT; find . -mindepth 2 -maxdepth 2 | peco) )
+  [[ -z "$dir" ]] && return
+
+  echo "${REPO_ROOT}/${dir}"
+  cd "${REPO_ROOT}/${dir}"
+}
 
 # iab (グローバルエイリアス展開)
 typeset -A abbreviations
