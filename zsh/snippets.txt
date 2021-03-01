@@ -2,50 +2,47 @@
 [CD:       move to repos            ]  cd $(locate '.git' | perl -nE '/^(.*)\.git$/ and say $1' | peco)
 
 # one liner
-[DOCKER: docker container bash      ]  docker ps | tail -n +2 | peco | cut -d' ' -f1 | xargs -o -I{} docker exec -it {} bash
-[DOCKER: docker container exited    ]  docker ps -a --filter 'status=exited' | tail -n +2 | peco | cut -d' ' -f1 | xargs docker commit -m 'exited' | cut -d: -f2 | xargs -o -I{} docker run --rm -it {} bash
-[DOCKER: docker-compose bash        ]  docker-compose ps | tail -n +3 | peco | cut -d' ' -f1 | xargs docker-compose ps -q | xargs -o -I{} docker exec -it {} bash
-[DOCKER: docker-compose bash exited ]  docker-compose ps --filter 'status=exited' | tail -n +3 | peco | cut -d' ' -f1 | xargs docker commit -m 'exited' | cut -d: -f2 | xargs -o -I{} docker run --rm -it {} bash
-[DOCKER: docker smart bash          ]  (test -f docker-compose.yml && (docker-compose ps | tail -n +3) || (docker ps | tail -n +2)) | peco | cut -d' ' -f1 | xargs -o -I{} docker exec -it {} bash
-[DOCKER: docker smart bash exited   ]  (test -f docker-compose.yml && (docker-compose ps --filter 'status=exited' | tail -n +3) || (docker ps -a --filter 'status=exited' | tail -n +2)) | peco | cut -d' ' -f1 | xargs docker commit -m 'exited' | cut -d: -f2 | xargs -o -I{} docker run --rm -it {} bash
+[K8S:      exec                     ]  kubectl get pods | tail -n +2 | peco | cut -d' ' -f1 | xargs -o -I{} kubectl exec -it {} bash
+[K8S:      switch context           ]  kubectx | peco | xargs kubectx
+[K8S:      switch ns                ]  kubens | peco | xargs kubens
+# [DOCKER: docker container bash      ]  docker ps | tail -n +2 | peco | cut -d' ' -f1 | xargs -o -I{} docker exec -it {} bash
+# [DOCKER: docker container exited    ]  docker ps -a --filter 'status=exited' | tail -n +2 | peco | cut -d' ' -f1 | xargs docker commit -m 'exited' | cut -d: -f2 | xargs -o -I{} docker run --rm -it {} bash
+# [DOCKER: docker-compose bash        ]  docker-compose ps | tail -n +3 | peco | cut -d' ' -f1 | xargs docker-compose ps -q | xargs -o -I{} docker exec -it {} bash
+# [DOCKER: docker-compose bash exited ]  docker-compose ps --filter 'status=exited' | tail -n +3 | peco | cut -d' ' -f1 | xargs docker commit -m 'exited' | cut -d: -f2 | xargs -o -I{} docker run --rm -it {} bash
+[DOCKER:   docker bash              ]  (test -f docker-compose.yml && (docker-compose ps | tail -n +3) || (docker ps | tail -n +2)) | peco | cut -d' ' -f1 | xargs -o -I{} docker exec -it {} bash
+[DOCKER:   docker bash exited       ]  (test -f docker-compose.yml && (docker-compose ps --filter 'status=exited' | tail -n +3) || (docker ps -a --filter 'status=exited' | tail -n +2)) | peco | cut -d' ' -f1 | xargs docker commit -m 'exited' | cut -d: -f2 | xargs -o -I{} docker run --rm -it {} bash
 
-[REPORT:  report -> daily (-)       ]  find ~/works/gree/training-report -maxdepth 1 | sort -r | peco | xargs cat | ggrep -P '^h\d' | perl -pe 's/^h(\d). //; $_="  " x ($1-1) . "- $_"'
-[REPORT:  report -> daily (#)       ]  ls ~/works/gree/training-report/ | peco | xargs cat | ggrep -P '^h\d' | perl -pe 's/^h([12]). // and $_="#" x ($1+2) . " $_"; s/^\s*h[3-9]. // and $_ = "  " x ($1-2)."- ".$_'
+# [REPORT:  report -> daily (-)       ]  find ~/works/gree/training-report -maxdepth 1 | sort -r | peco | xargs cat | ggrep -P '^h\d' | perl -pe 's/^h(\d). //; $_="  " x ($1-1) . "- $_"'
+# [REPORT:  report -> daily (#)       ]  ls ~/works/gree/training-report/ | peco | xargs cat | ggrep -P '^h\d' | perl -pe 's/^h([12]). // and $_="#" x ($1+2) . " $_"; s/^\s*h[3-9]. // and $_ = "  " x ($1-2)."- ".$_'
 
 # setting
-[SETTING:  Edit .zshrc              ]  e ~/.dotfiles/zsh/init.zsh
-[SETTING:  Edit alias.zsh           ]  e ~/.dotfiles/zsh/alias.zsh
-[SETTING:  Edit startup.zsh         ]  e ~/.dotfiles/zsh/startup.zsh
-[SETTING:  Edit peco.zsh            ]  e ~/.dotfiles/zsh/peco.zsh
-[SETTING:  Edit path.zsh            ]  e ~/.dotfiles/zsh/path.zsh
-[SETTING:  Edit tools.zsh           ]  e ~/.dotfiles/zsh/tools.zsh
-[SETTING:  Edit tools.zsh           ]  e ~/.dotfiles/zsh/lab.zsh
-[SETTING:  Edit this snippets       ]  e ~/.dotfiles/zsh/snippets.txt
-[SETTING:  Edit init.el             ]  e ~/.emacs.d/init.el
-[RELOAD :  Reload .zshrc            ]  source ~/.zshrc
-[COMPILE:  Compile .zshrc           ]  zcompile ~/.zshrc
+[SETTING:  edit .zshrc              ]  e $(find ~/.dotfiles/zsh/src/ -type f | sort | peco)
+[SETTING:  edit alias.zsh           ]  e ~/.dotfiles/zsh/src/*alias.zsh
+[SETTING:  edit startup.zsh         ]  e ~/.dotfiles/zsh/src/*startup.zsh
+[SETTING:  edit peco.zsh            ]  e ~/.dotfiles/zsh/src/*peco.zsh
+[SETTING:  edit path.zsh            ]  e ~/.dotfiles/zsh/src/*path.zsh
+[SETTING:  edit tools.zsh           ]  e ~/.dotfiles/zsh/src/*tools.zsh
+[SETTING:  edit tools.zsh           ]  e ~/.dotfiles/zsh/src/*lab.zsh
+[SETTING:  edit this snippets       ]  e ~/.dotfiles/zsh/snippets.txt
+[SETTING:  edit tmux snippets       ]  e ~/.dotfiles/tmux/snippets.txt
+[SETTING:  edit init.el             ]  e ~/.emacs.d/init.el
+[RELOAD :  reload .zshrc            ]  source ~/.zshrc
+[COMPILE:  compile .zshrc           ]  zcompile ~/.zshrc
 
 # etc
-[ETC:      CapsLock to Ctrl         ]  setxkbmap -option ctrl:nocaps
+[ETC:      open github              ]  open "$(git remote -v | grep '(fetch)$' | peco --select-1 | awk '{print $2}' | sed -e 's|:|/|' -e 's|git@|https://|' -e 's/.git$//')"
+[ETC:      capslock to ctrl         ]  setxkbmap -option ctrl:nocaps
 [ETC:      LANG -> JP               ]  export LANG=ja_JP.UTF-8
 [ETC:      VNC                      ]  remmina
 [ETC:      scanner                  ]  scangearmp2
 [ETC:      tcpdump                  ]  sudo tcpdump -i lo0 -s0 -X src port 22 or dst port 22
 [ETC:      network                  ]  sudo nethogs wlp2s0
 [ETC:      PATH S-expression        ]  perl -wle 'do { print qq/(setenv "$_" "$ENV{$_}")/ if exists $ENV{$_} } for @ARGV' PATH  VIRTUAL_ENV
+[ETC:      start xkeysnail          ]  xhost +SI:localuser:root && sudo xkeysnail .xkeysnail-config.py
+[ETC:      k8s anchor dup check     ]  find . -name '*.yaml' | xargs ggrep -P '&[^\s&]+' -oH | sort | uniq -c
 
+[GCP:      switch project           ]  gcloud config configurations activate $(gcloud config configurations list | tail -n +2 | peco | awk '{print $4}')
+[GCP:      switch project           ]  gcloud config set project $(gcloud projects list | peco | awk '{print $1}')
+[GCP:      switch gke cluster       ]  gcloud container clusters list | peco | while read NAME REGION _REST; do gcloud container clusters get-credentials $NAME --region $REGION; done
 
-[AWS:      set aws account id       ]  export AWS_ACCOUNT_ID=023282341704; eval `stsenv`
-[AWS:      select EC2 instance      ]  stsaws ec2 describe-instances | jq ' .Reservations[] | .Instances[] | .Tags[] | select(.Key == "Name").Value'
-
-
-# etc
-[ETC     : CapsLock to Ctrl      ]  setxkbmap -option ctrl:nocaps
-[ETC     : LANG -> JP            ]  export LANG=ja_JP.UTF-8
-[ETC     : VNC                   ]  remmina
-[ETC     : scanner               ]  scangearmp2
-[ETC     : tcpdump               ]  sudo tcpdump -i lo0 -s0 -X src port 22 or dst port 22
-[ETC     : network               ]  sudo nethogs wlp2s0
-[ETC     : PATH S                ]  perl -wle 'do { print qq/(setenv "$_" "$ENV{$_}")/ if exists $ENV{$_} } for @ARGV' PATH  VIRTUAL_ENV
-[ETC     : start xkeysnail       ]  xhost +SI:localuser:root && sudo xkeysnail .xkeysnail-config.py
 
