@@ -52,6 +52,7 @@ SAVEHIST=1000000
 # Screenでのコマンド共有用
 setopt inc_append_history       # シェルを横断して.zsh_historyに記録
 setopt share_history            # ヒストリを共有
+setopt extended_history         # コマンドの実行時刻を記録
 
 setopt hist_ignore_dups         # 直前と同じコマンドをヒストリに追加しない
 setopt hist_ignore_all_dups     # ヒストリに追加されるコマンド行が古いものと同じなら古いものを削除
@@ -86,4 +87,5 @@ fi
 
 
 # tmp
-source ${HOME}/.zprofile
+# [[ -f ${HOME}/.zprofile ]] && source ${HOME}/.zprofile
+
