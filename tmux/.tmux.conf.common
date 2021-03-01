@@ -1,0 +1,156 @@
+# ========================================
+#  CONFIG
+# ========================================
+run "tmux setenv -g TMUX_CONF_DIR ~/.dotfiles/tmux"
+
+run "tmux setenv -g CURRENT_OS $($TMUX_CONF_DIR/scripts/get-os)"
+run "tmux setenv -g COPY_COMMAND  $($TMUX_CONF_DIR/scripts/get-commands | grep copy  | cut -d' ' -f2-)"
+run "tmux setenv -g PASTE_COMMAND $($TMUX_CONF_DIR/scripts/get-commands | grep paste | cut -d' ' -f2-)"
+
+
+# ========================================
+#  APPEARANCE
+# ========================================
+set -g default-terminal "screen-256color"
+
+# status bar
+set -g status-fg white
+set -g status-bg colour238
+set -g status-interval 1
+
+# status bar - left
+set-option -g status-left "#[fg=colour255,bg=colour241] S#S(#(tmux ls | grep -n \"^$(tmux display -p '#S')\" | cut -d: -f1)/#(tmux list-sessions | wc -l)) #[default]"
+
+# status bar - middle
+# set-window-option -g window-status-format " #I: #(\
+#   set -o pipefail;\
+#   tmux list-panes -F '#{pane_pid}' | xargs pgrep -flaP | tail -n1 | cut -d' ' -f2-\
+#     || ([ \"#W\" = $HOME ] && echo HOME || basename #W)\
+# ) "
+set-window-option -g window-status-format " #I: #(\
+  [[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]]\
+    && echo #W\
+    || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename #{pane_current_path} )\
+) "
+set-window-option -g window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #(\
+  [[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]]\
+    && echo #W\
+    || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename #{pane_current_path} )\
+) "
+
+# status bar - right
+set-option -g status-right "#[fg=colour255,bg=colour241] %m/%d %H:%M:%S #[default]"
+
+
+# ========================================
+#  SCROLL
+# ========================================
+set-option -g history-limit 200000
+setw -g mouse on
+
+unbind -T copy-mode MouseDragEnd1Pane
+bind -T copy-mode C-w send-keys -X copy-pipe "tmux copy-buffer"
+
+
+# ========================================
+#  KEY BINDINGS
+# ========================================
+# set-window-option -g mode-keys emacs
+set -g mode-keys emacs
+
+# prefix
+set -g prefix C-t
+bind C-t send-prefix
+unbind C-b
+
+# reload
+bind r source-file ~/.tmux.conf \; display "Reloaded!"
+
+
+# -- ウィンドウ操作 ----------------
+bind -n M-n next-window
+bind -n M-p previous-window
+bind -n M-[ next-window
+bind -n M-] previous-window
+
+
+# -- ペイン操作 --------------------
+# ペイン分割
+bind | split-window -h
+bind - split-window -v
+unbind 1
+unbind %
+unbind '"'
+bind 2 split-window -v
+bind 3 split-window -h
+
+
+# ペイン移動
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+bind -r C-h select-window -t :-
+bind -r C-l select-window -t :+
+
+# ペインのリサイズ
+bind -r H resize-pane -L 5
+bind -r J resize-pane -D 5
+bind -r K resize-pane -U 5
+bind -r L resize-pane -R 5
+
+# 全ペイン入力をトグル
+bind ^a setw synchronize-panes \; display "synchronize-panes #{?pane_synchronized,on,off}"
+
+# ペインのウィンドウ間移動
+bind J command-prompt -p "join pane from:"  "join-pane -s '%%'"
+bind S command-prompt -p "send pane to:"  "join-pane -t '%%'"
+
+# チェック無しペーストは潰しておく (→ C-y を使用)
+unbind ]
+
+
+# -- クリップボード ----------------
+# prefix + t で 1 コマンド分の出力をコピー
+unbind t
+bind t\
+  run 'tmux capture-pane -pS -32768\
+         | extract-command-result.pl /tmp/tmux-n-copy-commands\
+         | tee -a /tmp/command-result-copy-log\
+         | $COPY_COMMAND;\
+       rm -f /tmp/tmux-n-copy-commands' \;\
+  display 'Copied!!'
+
+# prefix <数字> prefix t で複数コマンドの出力をコピー
+bind 1 run-shell 'echo 1 > /tmp/tmux-n-copy-commands'
+bind 2 run-shell 'echo 2 > /tmp/tmux-n-copy-commands'
+bind 3 run-shell 'echo 3 > /tmp/tmux-n-copy-commands'
+bind 4 run-shell 'echo 4 > /tmp/tmux-n-copy-commands'
+bind 5 run-shell 'echo 5 > /tmp/tmux-n-copy-commands'
+bind 6 run-shell 'echo 6 > /tmp/tmux-n-copy-commands'
+bind 7 run-shell 'echo 7 > /tmp/tmux-n-copy-commands'
+bind 8 run-shell 'echo 8 > /tmp/tmux-n-copy-commands'
+bind 9 run-shell 'echo 9 > /tmp/tmux-n-copy-commands'
+bind 0 run-shell 'echo 10 > /tmp/tmux-n-copy-commands'
+
+
+# -- スクリプト拡張 ----------------
+bind -T copy-mode-emacs j   send -X copy-pipe '$TMUX_CONF_DIR/scripts/parse-json'
+bind                    C-s run '$TMUX_CONF_DIR/scripts/snippet'
+bind -T copy-mode-emacs C   send -X copy-pipe '$TMUX_CONF_DIR/scripts/stdin-vim'
+bind                    C   run '$TMUX_CONF_DIR/scripts/capture-pane'
+
+
+# ========================================
+#  MISC
+# ========================================
+set-option -g bell-action none
+set-option -s escape-time 0
+set-hook -g pane-exited "save-buffer /tmp/last-pane"
+
+
+
+# ========================================
+#  INCLUDE FILES
+# ========================================
+if -b '[ "$CURRENT_OS" = "mac" ]' "source $TMUX_CONF_DIR/.tmux.conf.mac"
