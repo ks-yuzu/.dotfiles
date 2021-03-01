@@ -39,25 +39,39 @@ function disp-tmux-info-for-prompt()
     echo -n "[" $(disp-tmux-info-mini) "] "
 }
 
-function show-kube-cluster-name() {
-    KUBE_CONTEXT=$(kubectl config current-context)
-    if [[ $KUBE_CONTEXT =~ gke ]]; then
-        echo gke:$(echo $KUBE_CONTEXT | cut -d_ -f4-)
-    elif [[ $KUBE_CONTEXT =~ aws ]]; then
-        local product=$(~/bin/get-aws-account-name-from-id $(echo $KUBE_CONTEXT | cut -d: -f5))
+function get-kube-cluster-info() {
+    local kube_context=$(kubectl config current-context)
+    if [[ "$_KUBE_CONTEXT" != "$kube_context" ]]; then
+        _KUBE_CONTEXT=$kube_context
+    else
+        echo $_K8S_CLUSTER_INFO
+        return
+    fi
+
+    if [[ $_KUBE_CONTEXT =~ gke ]]; then
+        # _K8S_CLUSTER_INFO=" \e[38;5;33mgke:\e[m$(echo $_KUBE_CONTEXT | cut -d_ -f4-)"
+        _K8S_CLUSTER_INFO=" \e[38;5;33mgke:\e[m$(echo $_KUBE_CONTEXT | cut -d_ -f2,4 --output-delimiter '/')"
+        # _K8S_CLUSTER_INFO=" $(imgcat ~/.dotfiles/zsh/icons/gke-icon.png; echo -n -e "\033[2C")$(echo $_KUBE_CONTEXT | cut -d_ -f4-)"
+    elif [[ $_KUBE_CONTEXT =~ aws ]]; then
+        local product=$(get-aws-account-name-from-id $(echo $_KUBE_CONTEXT | cut -d: -f5))
         # sts token のアカウントとクラスタのアカウントが違っていれば色を変える
         if [[ ! -n "$STS_EXPIRATION_UNIXTIME" ]]; then
             :
-        elif [[ "$STS_ALIAS_SHORT" = "$product" ]]; then
+        elif [[ "${STS_ALIAS_SHORT:-$AWS_PRODUCT}" = "$product" ]]; then
             product="%F{green}${product}%f"
         else
             product="%F{red}${product}%f"
         fi
-        echo aws:${product}:$(echo $KUBE_CONTEXT | cut -d/ -f2)
+        _K8S_CLUSTER_INFO=" \e[38;5;202meks:\e[m${product}/$(echo $_KUBE_CONTEXT | cut -d/ -f2)"
+        # _K8S_CLUSTER_INFO=" $(imgcat ~/.dotfiles/zsh/icons/eks-icon.png; echo -n -e "\033[2C")${product}:$(echo $_KUBE_CONTEXT | cut -d/ -f2)"
+    else
+        _K8S_CLUSTER_INFO=''
     fi
+
+    echo $_K8S_CLUSTER_INFO
 }
 
-function show-kube-namespace() {
+function get-kube-ns-info() {
     # local NS=$(kubectl config view | grep namespace: | awk '{print $2}')
     local NS=$(kubectl config view | sed -n "/cluster: $(kubectl config current-context | perl -pe 's|/|\\/|g')/,/^-/p" | grep namespace | awk '{print $2}')
     if [[ -z "$NS" ]]; then
@@ -68,41 +82,95 @@ function show-kube-namespace() {
 }
 
 
+function _is_gcloud_config_updated() {
+    local active_config config_default configurations
+    local active_config_now config_default_now configurations_now
+    local active_config_mtime config_default_mtime configurations_mtime mtime_fmt
+
+    # if one of these files is modified, assume gcloud configuration is updated
+    active_config="$HOME/.config/gcloud/active_config"
+    config_default="$HOME/.config/gcloud/configurations/config_default"
+    configurations="$HOME/.config/gcloud/configurations"
+
+    zstyle -s ':zsh-gcloud-prompt:' mtime_fmt mtime_fmt
+
+    active_config_now="$(stat $mtime_fmt $active_config 2>/dev/null)"
+    config_default_now="$(stat $mtime_fmt $config_default 2>/dev/null)"
+    configurations_now="$(stat $mtime_fmt $configurations 2>/dev/null)"
+
+    zstyle -s ':zsh-gcloud-prompt:' active_config_mtime active_config_mtime
+    zstyle -s ':zsh-gcloud-prompt:' config_default_mtime config_default_mtime
+    zstyle -s ':zsh-gcloud-prompt:' configurations_mtime configurations_mtime
+
+    if [[ "$active_config_mtime" != "$active_config_now" || "$config_default_mtime" != "$config_default_now" || "$configurations_mtime" != "$configurations_now" ]]; then
+        zstyle ':zsh-gcloud-prompt:' active_config_mtime "$active_config_now"
+        zstyle ':zsh-gcloud-prompt:' config_default_mtime "$config_default_now"
+        zstyle ':zsh-gcloud-prompt:' configurations_mtime "$configurations_now"
+        return 0
+    else
+        return 1
+    fi
+}
+
+function _update_gcloud_context() {
+    if _is_gcloud_config_updated; then
+        # _GCLOUD_ACCOUNT="$(gcloud config get-value account 2>/dev/null)"
+        _GCLOUD_PROJECT="$(gcloud config get-value project 2>/dev/null)"
+    fi
+
+    return 0
+}
+
 
 ## prompt
 function update-prompt()
 {
-    local name="%F{green}%n@local%f "
-    # local tmuxinfo="%F{magenta}$(disp-tmux-info-for-prompt)%f"
+    _update_gcloud_context
+
+    if [ -n "$SSH_CONNECTION" ]; then
+        host='%m'
+    elif [ -f /.dockerenv ]; then
+        host='docker'
+    else
+        host='local'
+    fi
+
+    local name="%F{green}%n@${host}%f"
+    # local tmuxinfo=" %F{magenta}$(disp-tmux-info-for-prompt)%f"
     local tmuxinfo=""
-    local kubeinfo="$(show-kube-cluster-name)$(show-kube-namespace) "
+    local kubeinfo="$(get-kube-cluster-info)$(get-kube-ns-info) "
     local cdir="%F{yellow}%~%f "
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
 
-
     local face=''
     local info=''
-;    if [ -z $STS_EXPIRATION_UNIXTIME ]; then
+    if [ -z $STS_EXPIRATION_UNIXTIME ]; then
         face='(-ω-)zzz'
+        info='(none)'
     else
         local lefttime="$(($STS_EXPIRATION_UNIXTIME - $(date +%s)))"
 
         if [ $lefttime -gt 0 ]; then
             face="('ω')"
-            info=" $STS_ALIAS_SHORT($lefttime)"
+            info="${STS_ALIAS_SHORT:-$AWS_PRODUCT}($lefttime)"
         else
             face='(>_<)'
-            info=" $STS_ALIAS_SHORT(%F{red}expired%f)"
+            info="${STS_ALIAS_SHORT:-$AWS_PRODUCT}(%F{red}expired%f)"
         fi
     fi
 
-    local sts="sts:${face}${info} "
+    # local sts=" aws:${face}${info}"
+    local sts=$' \e[38;5;202maws:\e[m'${info}
+    # local sts=" $(imgcat ~/.dotfiles/zsh/icons/aws-icon.png; echo -n -e "\033[2C")${info}"
+    local gcloud=$' \e[38;5;33mgcp:\e[m'${_GCLOUD_PROJECT:-(none)}
+    # local gcloud=" $(imgcat ~/.dotfiles/zsh/icons/gcp-icon.png; echo -n -e "\033[2C")$_GCLOUD_PROJECT"
 
-    PROMPT="${name}${tmuxinfo}${sts}${kubeinfo}${cdir}${endl}${mark}"
+    PROMPT="${name}${tmuxinfo}${sts}${gcloud}${kubeinfo}${cdir}${endl}${mark}"
 }
+# add-zsh-hook precmd update-prompt
 
-add-zsh-hook precmd update-prompt
+
 
 
 # rev prompt
@@ -127,7 +195,8 @@ function rprompt
     local dir=$(get-path-from-git-root)
 
     local current_branch=$(git branch | grep '^*' | cut -d' ' -f2 | grep -v '(HEAD')
-    local ahead_count=$(test ! -z "$current_branch" && git rev-list --count origin/${current_branch}..${current_branch} 2>/dev/null | perl -ne '/(\d+)/ and $1 and print " +$1"')
+    local upstream=$(git branch -vv | grep "^..$current_branch" | cut -d'[' -f2 | cut -d: -f1)
+    local ahead_count=$(test ! -z "$current_branch" && git rev-list --count ${upstream}..${current_branch} 2>/dev/null | perl -ne '/(\d+)/ and $1 and print " +$1"')
 
     if [ ! -z $repo -o ! -z $dir ]; then
         echo "[$repo /$dir$ahead_count]"
@@ -153,94 +222,10 @@ function vcs_echo
     echo "%{$color%}$branch%{$reset_color%}" | sed -e s/@/"%F{white}@%f%{$color%}"/
 }
 
-RPROMPT='$(rprompt)'
-
-## period
-function show-time()
-{
-    echo ""
-    LC_TIME=c date --iso-8601=minutes | sed -e 's/T/ /g' -e 's/^(.*)$/($1)/'
-}
-
-PERIOD=30
-add-zsh-hook periodic show-time
-
-
-## rev-prompt
-# autoload -Uz vcs_info
-# autoload -Uz colors
-# colors
-# autoload -Uz add-zsh-hook
-# setopt prompt_subst
-# zstyle ':vcs_info:*' enable git
-# zstyle ':vcs_info:git:*' check-for-changes true
-# zstyle ':vcs_info:git:*' stagedstr "%{$fg[yellow]%}+"
-# zstyle ':vcs_info:git:*' unstagedstr "%{$fg[red]%}!"
-# #zstyle ':vcs_info:*'     formats       "%{$fg[green]%}%c%u[%b]%{$reset_color%}"
-# #zstyle ':vcs_info:*'     actionformats '[%b|%a]'
-# #precmd () { vcs_info }
-# #RPROMPT='${vcs_info_msg_0_}'
-
-
-# zstyle ':vcs_info:git:stagedstr:*:' S
-# zstyle ':vcs_info:git:unstagedstr:*' U
-# zstyle ':vcs_info:*' formats "%{${fg[green]}%}[%b] %{${fg_bold[red]}%}%c%u%{${reset_color}%}"
-
-#  PROMPT="$PROMPT_USERHOST $PROMPT_TIME $vcs_info_msg_0_ $PROMPT_STATUS"
-
-# update_vcs_info () {
-#     vcs_info
-#     RPROMPT="$vcs_info_msg_0_"
-# }
-# add-zsh-hook precmd update_vcs_info  # precmd フックへの登録
-
-
-
-
-
-
-# autoload -Uz VCS_INFO_get_data_git; VCS_INFO_get_data_git 2> /dev/null
-
-# function rprompt-git-current-branch {
-#         local name st color gitdir action
-#         if [[ "$PWD" =~ '/\.git(/.*)?$' ]]; then
-#                 return
-#         fi
-
-#         name=`git rev-parse --abbrev-ref=loose HEAD 2> /dev/null`
-#         if [[ -z $name ]]; then
-#                 return
-#         fi
-
-#         gitdir=`git rev-parse --git-dir 2> /dev/null`
-#         action=`VCS_INFO_git_getaction "$gitdir"` && action="($action)"
-
-# 		if [[ -e "$gitdir/rprompt-nostatus" ]]; then
-# 		   echo "$name$action "
-# 		   		return
-# 				fi
-
-#         st=`git status 2> /dev/null`
-# 		if [[ -n `echo "$st" | grep "^nothing to"` ]]; then
-# 		   color=%F{green}
-# 		   elif [[ -n `echo "$st" | grep "^nothing added"` ]]; then
-# 		   		color=%F{yellow}
-# 				elif [[ -n `echo "$st" | grep "^# Untracked"` ]]; then
-#                 color=%B%F{red}
-#         else
-#                 color=%F{red}
-#         fi
-
-#         echo "$color$name$action%f%b"
-# }
-
 function get-path-from-git-root
 {
 	git rev-parse --show-prefix 2> /dev/null
 }
 
+RPROMPT='$(rprompt)'
 
-# remake prompt-meswhen showing prompt
-# setopt prompt_subst
-
-# RPROMPT='[`rprompt-git-current-branch``relative-path`]' #%~]'
