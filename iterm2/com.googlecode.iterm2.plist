@@ -1283,7 +1283,7 @@
 					<key>action</key>
 					<string>PasswordTrigger</string>
 					<key>parameter</key>
-					<string>ADFS</string>
+					<string>AD</string>
 					<key>regex</key>
 					<string>Password:</string>
 				</dict>
