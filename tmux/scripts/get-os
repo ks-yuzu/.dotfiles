@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+if [ "$(uname)" == 'Darwin' ]; then
+  echo mac
+elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
+  echo linux
+elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
+  echo cygwin
+elif [[ -n $(uname -r | grep -i 'microsoft') ]]; then
+  echo wsl
+else
+  echo ''
+fi
