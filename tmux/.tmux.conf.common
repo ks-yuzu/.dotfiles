@@ -3,9 +3,9 @@
 # ========================================
 run "tmux setenv -g TMUX_CONF_DIR ~/.dotfiles/tmux"
 
-run "tmux setenv -g CURRENT_OS $($TMUX_CONF_DIR/scripts/get-os)"
-run "tmux setenv -g COPY_COMMAND  $($TMUX_CONF_DIR/scripts/get-commands | grep copy  | cut -d' ' -f2-)"
-run "tmux setenv -g PASTE_COMMAND $($TMUX_CONF_DIR/scripts/get-commands | grep paste | cut -d' ' -f2-)"
+run 'tmux setenv -g CURRENT_OS "$($TMUX_CONF_DIR/scripts/get-os)"'
+run 'tmux setenv -g COPY_COMMAND "$($TMUX_CONF_DIR/scripts/get-commands | grep copy  | cut -d" " -f2-)"'
+run 'tmux setenv -g PASTE_COMMAND "$($TMUX_CONF_DIR/scripts/get-commands | grep paste | cut -d" " -f2-)"'
 
 
 # ========================================
@@ -111,6 +111,16 @@ unbind ]
 
 
 # -- クリップボード ----------------
+bind -T copy-mode-emacs M-w send-keys -X copy-pipe "$COPY_COMMAND"
+bind -T copy-mode-emacs C-w send-keys -X copy-pipe "$COPY_COMMAND"
+
+bind -n C-y run "\
+  [ $($PASTE_COMMAND | perl -0pe 's/\n*$//m' | grep -c '') -gt 1 ]\
+    && (echo '[warn] multi-line paste!!\nuse C-t C-y to paste the following text forcibly\n-----'; $PASTE_COMMAND)\
+    || (tmux set-buffer -- \"$($PASTE_COMMAND)\" && tmux paste-buffer)"
+bind    C-y run "tmux set-buffer -- \"$($PASTE_COMMAND)\"; tmux paste-buffer"
+
+
 # prefix + t で 1 コマンド分の出力をコピー
 unbind t
 bind t\
