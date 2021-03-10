@@ -13,7 +13,7 @@ if is-at-least 4.3.11; then
 
 
     function peco-cdr {
-        local dir=$(cdr -l | peco | awk '{print $2}')
+        local dir=$(cdr -l | peco | perl -pe 's/^\d+\s+//')
         if [ -n "$dir" ]; then
             BUFFER="cd ${dir}"
             zle accept-line
