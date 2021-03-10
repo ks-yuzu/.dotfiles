@@ -1,5 +1,5 @@
 # WSL 上のみ実行
-if [[ `uname -a` =~ "Linux.*Microsoft" ]]; then
+if [[ `uname -a` =~ "Linux.*microsoft" ]]; then
   if [ "$INSIDE_EMACS" ]; then
     TERM=eterm-color
   fi
