@@ -118,7 +118,7 @@ bind -n C-y run "\
   [ $($PASTE_COMMAND | perl -0pe 's/\n*$//m' | grep -c '') -gt 1 ]\
     && (echo '[warn] multi-line paste!!\nuse C-t C-y to paste the following text forcibly\n-----'; $PASTE_COMMAND)\
     || (tmux set-buffer -- \"$($PASTE_COMMAND)\" && tmux paste-buffer)"
-bind    C-y run "tmux set-buffer -- \"$($PASTE_COMMAND)\"; tmux paste-buffer"
+bind    C-y run 'tmux set-buffer -- "$($PASTE_COMMAND)" && tmux paste-buffer'
 
 
 # prefix + t で 1 コマンド分の出力をコピー
