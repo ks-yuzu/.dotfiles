@@ -30,12 +30,12 @@ set-option -g status-left "#[fg=colour255,bg=colour241] S#S(#(tmux ls | grep -n 
 set-window-option -g window-status-format " #I: #(\
   [[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]]\
     && echo #W\
-    || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename #{pane_current_path} )\
+    || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename '#{pane_current_path}' )\
 ) "
 set-window-option -g window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #(\
   [[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]]\
     && echo #W\
-    || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename #{pane_current_path} )\
+    || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename '#{pane_current_path}' )\
 ) "
 
 # status bar - right
