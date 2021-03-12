@@ -25,6 +25,13 @@ export PATH=$HOME/.nodebrew/current/bin:$PATH
 # export CLASSPATH=$CLASSPATH:$CATALINA_HOME/common/lib:$CATALINA_HOME/common/lib/servlet-api.jar
 # export CLASSPATH=$CLASSPATH:/usr/share/java/mysql-connector-java-5.1.28.jar # jdbc
 
+## golang
+if [ -d "$HOME/.goenv" ]; then
+  export GOENV_ROOT=$HOME/.goenv
+  export PATH=$GOENV_ROOT/bin:$PATH
+  eval "$(goenv init -)"
+fi
+
 ## others
 # export PATH=$PATH:$HOME/.local/lib/python2.7/site-packages/powerline
 # export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio1261/cplex/bin/x86-64_linux
