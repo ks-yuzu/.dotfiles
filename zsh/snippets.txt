@@ -1,10 +1,10 @@
 # cd
-[CD:       move to repos            ]  cd $(locate '.git' | perl -nE '/^(.*)\.git$/ and say $1' | peco)
+# [CD:       move to repos            ]  cd $(locate '.git' | perl -nE '/^(.*)\.git$/ and say $1' | peco)
 
 # one liner
-[K8S:      exec                     ]  kubectl get pods | tail -n +2 | peco | cut -d' ' -f1 | xargs -o -I{} kubectl exec -it {} bash
 [K8S:      switch context           ]  kubectx | peco | xargs kubectx
 [K8S:      switch ns                ]  kubens | peco | xargs kubens
+[K8S:      exec                     ]  kubectl get pods | tail -n +2 | peco | cut -d' ' -f1 | xargs -o -I{} kubectl exec -it {} bash
 # [DOCKER: docker container bash      ]  docker ps | tail -n +2 | peco | cut -d' ' -f1 | xargs -o -I{} docker exec -it {} bash
 # [DOCKER: docker container exited    ]  docker ps -a --filter 'status=exited' | tail -n +2 | peco | cut -d' ' -f1 | xargs docker commit -m 'exited' | cut -d: -f2 | xargs -o -I{} docker run --rm -it {} bash
 # [DOCKER: docker-compose bash        ]  docker-compose ps | tail -n +3 | peco | cut -d' ' -f1 | xargs docker-compose ps -q | xargs -o -I{} docker exec -it {} bash
@@ -41,7 +41,7 @@
 [ETC:      start xkeysnail          ]  xhost +SI:localuser:root && sudo xkeysnail .xkeysnail-config.py
 [ETC:      k8s anchor dup check     ]  find . -name '*.yaml' | xargs ggrep -P '&[^\s&]+' -oH | sort | uniq -c
 
-[GCP:      switch project           ]  gcloud config configurations activate $(gcloud config configurations list | tail -n +2 | peco | awk '{print $4}')
+[GCP:      switch configuration     ]  gcloud config configurations activate $(gcloud config configurations list | tail -n +2 | peco | awk '{print $1}')
 [GCP:      switch project           ]  gcloud config set project $(gcloud projects list | peco | awk '{print $1}')
 [GCP:      switch gke cluster       ]  gcloud container clusters list | peco | while read NAME REGION _REST; do gcloud container clusters get-credentials $NAME --region $REGION; done
 
