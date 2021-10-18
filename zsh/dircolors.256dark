@@ -227,7 +227,7 @@ LINK 00;38;5;37 # symbolic link. (If you set this to 'target' instead of a
 .ods		 	 00;38;5;48
 .pde		 	 00;38;5;87
 .java		 	 00;38;5;196
-.pl			 	 00;38;5;14
+.pl			 	 00;38;5;123
 .pm			 	 00;38;5;45
 .t			 	 00;38;5;38
 .v               00;38;5;171
@@ -235,6 +235,13 @@ LINK 00;38;5;37 # symbolic link. (If you set this to 'target' instead of a
 .vt              00;38;5;171
 .html            00;38;5;81
 .docx            00;38;5;12
+.json            00;38;5;228
+*Dockerfile      00;38;5;44
+.js              00;38;5;226
+.ts              00;38;5;45
+.yml             00;38;5;35
+.yaml            00;38;5;35
+.svelte          00;38;5;202
 
 
 # "unimportant" files as logs and backups (base01)
