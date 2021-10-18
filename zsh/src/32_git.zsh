@@ -4,7 +4,7 @@ function git-status()
     # if [ "$(git rev-parse --is-inside-work-tree 2> /dev/null)" = 'true' ]; then
         echo git status -sb
         git status -sb
-        echo ''
+        echo '\n'
     # fi
     zle reset-prompt
 }
@@ -92,8 +92,11 @@ bindkey "^g^g" __git-graph-rich
 ## git commit -v
 function __git-commit()
 {
-    git commit -v
-    zle reset-prompt
+    # git commit -v
+    # zle reset-prompt
+    BUFFER="git commit -m ''"
+    CURSOR=15
+
 }
 zle -N __git-commit
 bindkey "^gc" __git-commit
