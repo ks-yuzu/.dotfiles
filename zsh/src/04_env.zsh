@@ -10,5 +10,7 @@ export LESS='-N -M -R'
 
 export FZF_DEFAULT_OPTS="--cycle --no-mouse --reverse --prompt='QUERY> ' --color=16"
 
+export LC_TIME='C'
+
 export AWS_DEFAULT_REGION=ap-northeast-1
 export KUBECTL_EXTERNAL_DIFF='colordiff -u'
