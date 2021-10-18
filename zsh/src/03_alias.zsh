@@ -131,7 +131,7 @@ alias gslookup='/usr/bin/ssh op3 gslookup 2> /dev/null'
 
 # cd repo
 function repo() {
-  REPO_ROOT="${HOME}/works/*/repo"
+  REPO_ROOT=$(ls -d ${HOME}/works/*/repo)
 
   dir=$( (builtin cd $REPO_ROOT; find . -mindepth 2 -maxdepth 2 | peco) )
   [[ -z "$dir" ]] && return
@@ -177,3 +177,4 @@ zle -N no-magic-abbrev-expand
 bindkey " " magic-abbrev-expand
 bindkey "^x " no-magic-abbrev-expand
 
+alias pr='gh pr create -fw'
