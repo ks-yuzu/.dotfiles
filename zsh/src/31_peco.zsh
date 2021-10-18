@@ -235,6 +235,13 @@ zle -N peco-ssh
 bindkey '^\' peco-ssh
 
 
+function peco-kubectx () {
+    kubectx $(kubectx | peco)
+}
+zle -N peco-kubectx
+bindkey '^x^k' peco-kubectx
+
+
 function sp()
 {
     ssh $(grep -E '^Host' $HOME/.ssh/config | \
