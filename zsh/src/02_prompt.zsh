@@ -138,35 +138,41 @@ function update-prompt()
     local name="%F{green}%n@${host}%f"
     # local tmuxinfo=" %F{magenta}$(disp-tmux-info-for-prompt)%f"
     local tmuxinfo=""
-    local kubeinfo="$(get-kube-cluster-info)$(get-kube-ns-info) "
     local cdir="%F{yellow}%~%f "
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
 
-    local face=''
-    local info=''
-    if [ -z $STS_EXPIRATION_UNIXTIME ]; then
-        face='(-ω-)zzz'
-        info='(none)'
-    else
-        local lefttime="$(($STS_EXPIRATION_UNIXTIME - $(date +%s)))"
+    if [ ! is-wsl ]; then
+      local kubeinfo="$(get-kube-cluster-info)$(get-kube-ns-info) "
+      local face=''
+      local info=''
+      if [ -z $STS_EXPIRATION_UNIXTIME ]; then
+          face='(-ω-)zzz'
+          info='(none)'
+      else
+          local lefttime="$(($STS_EXPIRATION_UNIXTIME - $(date +%s)))"
 
-        if [ $lefttime -gt 0 ]; then
-            face="('ω')"
-            info="${STS_ALIAS_SHORT:-$AWS_PRODUCT}($lefttime)"
-        else
-            face='(>_<)'
-            info="${STS_ALIAS_SHORT:-$AWS_PRODUCT}(%F{red}expired%f)"
-        fi
+          if [ $lefttime -gt 0 ]; then
+              face="('ω')"
+              info="${STS_ALIAS_SHORT:-$AWS_PRODUCT}($lefttime)"
+          else
+              face='(>_<)'
+              info="${STS_ALIAS_SHORT:-$AWS_PRODUCT}(%F{red}expired%f)"
+          fi
+      fi
+
+      # local sts=" aws:${face}${info}"
+      local sts=$' \e[38;5;202maws:\e[m'${info}
+      # local sts=" $(imgcat ~/.dotfiles/zsh/icons/aws-icon.png; echo -n -e "\033[2C")${info}"
+      local gcloud=$' \e[38;5;33mgcp:\e[m'${_GCLOUD_PROJECT:-(none)}
+      # local gcloud=" $(imgcat ~/.dotfiles/zsh/icons/gcp-icon.png; echo -n -e "\033[2C")$_GCLOUD_PROJECT"
     fi
 
-    # local sts=" aws:${face}${info}"
-    local sts=$' \e[38;5;202maws:\e[m'${info}
-    # local sts=" $(imgcat ~/.dotfiles/zsh/icons/aws-icon.png; echo -n -e "\033[2C")${info}"
-    local gcloud=$' \e[38;5;33mgcp:\e[m'${_GCLOUD_PROJECT:-(none)}
-    # local gcloud=" $(imgcat ~/.dotfiles/zsh/icons/gcp-icon.png; echo -n -e "\033[2C")$_GCLOUD_PROJECT"
+    if [ is-linux ]; then
+        os_version="[$(cat /etc/os-release | grep VERSION_CODENAME | cut -d= -f2)]"
+    fi
 
-    PROMPT="${name}${tmuxinfo}${sts}${gcloud}${kubeinfo}${cdir}${endl}${mark}"
+    PROMPT="${name}${tmuxinfo}${sts}${gcloud}${kubeinfo}${os_version} ${cdir}${endl}${mark}"
 }
 # add-zsh-hook precmd update-prompt
 
@@ -181,45 +187,45 @@ colors
 zstyle ':vcs_info:*' enable git
 zstyle ':vcs_info:*' max-exports 6 # max number of variables in format
 zstyle ':vcs_info:git:*' check-for-changes true
-zstyle ':vcs_info:git:*' formats '%b@%r' '%c' '%u'
+zstyle ':vcs_info:git:*' stagedstr "%F{yellow}S"
+zstyle ':vcs_info:git:*' unstagedstr "%F{red}U"
+zstyle ':vcs_info:git:*' formats '%b' '%r' '%c' '%u'
 zstyle ':vcs_info:git:*' actionformats '%b@%r|%a' '%c' '%u'
 
 setopt prompt_subst
 
 function rprompt
 {
-    local st=$(git status 2> /dev/null)
-    if [[ -z "$st" ]]; then return; fi
-
     local repo=$(vcs_echo)
+    [ -z "$repo" ] && return
+
     local dir=$(get-path-from-git-root)
 
-    local current_branch=$(git branch | grep '^*' | cut -d' ' -f2 | grep -v '(HEAD')
-    local upstream=$(git branch -vv | grep "^..$current_branch" | cut -d'[' -f2 | cut -d: -f1)
-    local ahead_count=$(test ! -z "$current_branch" && git rev-list --count ${upstream}..${current_branch} 2>/dev/null | perl -ne '/(\d+)/ and $1 and print " +$1"')
+    # local current_branch=$(git branch | grep '^*' | cut -d' ' -f2 | grep -v '(HEAD')
+    # local upstream=$(git branch -vv | grep "^..$current_branch" | cut -d'[' -f2 | cut -d']' -f1)
+    # if [ ! is-wsl ]; then
+        local ahead_count=$(git rev-list --count HEAD...@'{u}' 2>/dev/null | xargs printf " %+d")
+    # fi
 
-    if [ ! -z $repo -o ! -z $dir ]; then
-        echo "[$repo /$dir$ahead_count]"
-    elif [ ! -z $repo -o -z $dir ]; then
-        echo "[$repo /$ahead_count]"
-    fi
-
+    echo "[$repo /${dir}${ahead_count}]"
 }
 
 function vcs_echo
 {
     STY= LANG=en_US.UTF-8 vcs_info
-    # local st=`git status 2> /dev/null`
-    # if [[ -z "$st" ]]; then return; fi
+
     local branch="$vcs_info_msg_0_"
-    local color
-    if   [[ -n "$vcs_info_msg_1_" ]];                then color=${fg[yellow]} # staged
-    elif [[ -n "$vcs_info_msg_2_" ]];                then color=${fg[red]}    # unstaged
-    elif [[ -n $(echo "$st" | grep "^Untracked") ]]; then color=${fg[cyan]}   # untracked
-    else                                                  color=${fg[green]}
+    [ -z "$branch" ] && return
+
+    local repo="$vcs_info_msg_1_"
+
+    if   [[ -n "$vcs_info_msg_2_" ]];                then local color=${fg[yellow]} # staged
+    elif [[ -n "$vcs_info_msg_3_" ]];                then local color=${fg[red]}    # unstaged
+    elif [[ -n $(echo "$st" | grep "^Untracked") ]]; then local color=${fg[cyan]}   # untracked
+    else                                                  local color=${fg[green]}
     fi
 
-    echo "%{$color%}$branch%{$reset_color%}" | sed -e s/@/"%F{white}@%f%{$color%}"/
+    echo "%{$color%}$branch%{$reset_color%}@%{$color%}$repo%{$reset_color%} ${vcs_info_msg_2_}${vcs_info_msg_3_}%{$reset_color%}"
 }
 
 function get-path-from-git-root
