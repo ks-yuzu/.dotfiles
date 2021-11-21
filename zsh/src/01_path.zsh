@@ -32,9 +32,16 @@ if [ -d "$HOME/.goenv" ]; then
   eval "$(goenv init -)"
 fi
 
+# gcc
+if [ -d /usr/lib/gcc/x86_64-linux-gnu/10 ]; then
+  export C_INCLUDE_PATH=/usr/lib/gcc/x86_64-linux-gnu/10/include
+  export LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/10
+fi
+
 ## others
 # export PATH=$PATH:$HOME/.local/lib/python2.7/site-packages/powerline
 # export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio1261/cplex/bin/x86-64_linux
+export PATH=$HOME/.local/bin/:$PATH
 export PATH=$HOME/bin:$PATH
 export PATH=$HOME/opt:$PATH
 # export PATH=$HOME/bin/processing/:$PATH
