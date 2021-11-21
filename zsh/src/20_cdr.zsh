@@ -15,7 +15,7 @@ if is-at-least 4.3.11; then
     function peco-cdr {
         local dir=$(cdr -l | peco | perl -pe 's/^\d+\s+//')
         if [ -n "$dir" ]; then
-            BUFFER="cd ${dir}"
+            BUFFER="cd '${dir}'"
             zle accept-line
         fi
         zle clear-screen
