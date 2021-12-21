@@ -235,13 +235,6 @@ zle -N peco-ssh
 bindkey '^\' peco-ssh
 
 
-function peco-kubectx () {
-    kubectx $(kubectx | peco)
-}
-zle -N peco-kubectx
-bindkey '^x^k' peco-kubectx
-
-
 function sp()
 {
     ssh $(grep -E '^Host' $HOME/.ssh/config | \
@@ -267,7 +260,6 @@ function peco-file() {
         | peco \
         | perl -alE 'say $F[7]'
 }
-
 
 
 # peco todo
@@ -298,7 +290,6 @@ zle -N peco-open-todo
 bindkey '^xt' peco-open-todo
 
 
-
 # peco make
 function peco-make()
 {
@@ -312,4 +303,31 @@ function peco-make()
 
 zle -N peco-make
 bindkey '^[m' peco-make
+
+
+# peco kubectx
+function peco-kubectx () {
+    local ctx=$(kubectx | peco)
+    [ -z "$ctx" ] && return
+
+    BUFFER="kubectx $ctx"
+    zle accept-line
+}
+zle -N peco-kubectx
+bindkey '^[k' peco-kubectx
+bindkey '^[^k' peco-kubectx
+
+
+# peco k9s
+function peco-k9s()
+{
+    # local ctx=$(kubectx | peco --query "$LBUFFER")
+    local ctx=$(kubectx | peco --query "$(kubectx -c)")
+    [ -z "$ctx" ] && return
+
+    BUFFER=" k9s --context $ctx"
+#    zle accept-line
+}
+zle -N peco-k9s
+bindkey '^[9' peco-k9s
 
