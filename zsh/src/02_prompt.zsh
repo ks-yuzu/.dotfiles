@@ -40,7 +40,11 @@ function disp-tmux-info-for-prompt()
 }
 
 function get-kube-cluster-info() {
+    which kubectl > /dev/null || return
+
     local kube_context=$(kubectl config current-context)
+    [[ "$?" != "0" ]] || return
+
     if [[ "$_KUBE_CONTEXT" != "$kube_context" ]]; then
         _KUBE_CONTEXT=$kube_context
     else
@@ -81,6 +85,11 @@ function get-kube-ns-info() {
     echo "($NS)"
 }
 
+function get-argocd-info() {
+    which argocd > /dev/null || return
+    ARGOCD_CONTEXT=$(argocd context | grep '^*' | awk '{print $2}' | cut -d. -f1)
+    echo "\e[38;5;202margocd:\e[m${ARGOCD_CONTEXT}"
+}
 
 function _is_gcloud_config_updated() {
     local active_config config_default configurations
@@ -138,15 +147,20 @@ function update-prompt()
     local name="%F{green}%n@${host}%f"
     # local tmuxinfo=" %F{magenta}$(disp-tmux-info-for-prompt)%f"
     local tmuxinfo=""
+
+    local kubeinfo="$(get-kube-cluster-info)$(get-kube-ns-info) "
+    local argocdinfo="$(get-argocd-info) "
     local cdir="%F{yellow}%~%f "
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
 
-    if [ ! is-wsl ]; then
+    if ! is-wsl; then
       local kubeinfo="$(get-kube-cluster-info)$(get-kube-ns-info) "
       local face=''
       local info=''
-      if [ -z $STS_EXPIRATION_UNIXTIME ]; then
+      if [ -n "$AWS_PROFILE" ]; then
+        info="$AWS_PROFILE"
+      elif [ -z $STS_EXPIRATION_UNIXTIME ]; then
           face='(-ω-)zzz'
           info='(none)'
       else
@@ -168,11 +182,11 @@ function update-prompt()
       # local gcloud=" $(imgcat ~/.dotfiles/zsh/icons/gcp-icon.png; echo -n -e "\033[2C")$_GCLOUD_PROJECT"
     fi
 
-    if [ is-linux ]; then
+    if is-linux; then
         os_version="[$(cat /etc/os-release | grep VERSION_CODENAME | cut -d= -f2)]"
     fi
 
-    PROMPT="${name}${tmuxinfo}${sts}${gcloud}${kubeinfo}${os_version} ${cdir}${endl}${mark}"
+    PROMPT="${name}${tmuxinfo}${sts}${gcloud}${kubeinfo}${os_version}${argocdinfo}${cdir}${endl}${mark}"
 }
 # add-zsh-hook precmd update-prompt
 
