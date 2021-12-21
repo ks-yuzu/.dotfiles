@@ -13,3 +13,11 @@ function _precmd() {
   update-prompt
 }
 add-zsh-hook precmd _precmd
+
+
+function _preexec() {
+  if [[ "$1" =~ "^ *argocd app" ]]; then
+    find ~/.argocd/config -mmin -$((12 * 60)) | grep -q .\
+      || argocd login $(argocd context | sed -n '2,$p' | cut -c 4- | peco | awk '{print $1}') --grpc-web --sso
+  fi
+}
