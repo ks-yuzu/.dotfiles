@@ -42,7 +42,7 @@ function disp-tmux-info-for-prompt()
 function get-kube-cluster-info() {
     which kubectl > /dev/null || return
 
-    local kube_context=$(kubectl config current-context)
+    local kube_context=$(kubectl config current-context 2> /dev/null)
     [[ "$?" != "0" ]] || return
 
     if [[ "$_KUBE_CONTEXT" != "$kube_context" ]]; then
@@ -76,8 +76,9 @@ function get-kube-cluster-info() {
 }
 
 function get-kube-ns-info() {
+    which kubectl > /dev/null || return
     # local NS=$(kubectl config view | grep namespace: | awk '{print $2}')
-    local NS=$(kubectl config view | sed -n "/cluster: $(kubectl config current-context | perl -pe 's|/|\\/|g')/,/^-/p" | grep namespace | awk '{print $2}')
+    local NS=$(kubectl config view | sed -n "/cluster: $(kubectl config current-context 2> /dev/null | perl -pe 's|/|\\/|g')/,/^-/p" | grep namespace | awk '{print $2}')
     if [[ -z "$NS" ]]; then
         return
     fi
