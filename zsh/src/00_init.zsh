@@ -74,19 +74,19 @@ fi
 
 
 function is-linux {
-    [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]
+  [[ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]]
 }
 
 function is-osx {
-    [ "$(uname)" == 'Darwin' ]
+  [[ "$(uname)" == 'Darwin' ]]
 }
 
 function is-wsl {
- [[ -n "$(uname -r | grep -i 'microsoft')" ]]
+  [[ -n "$(uname -r | grep -i 'microsoft')" ]]
 }
 
 function is-cygwin {
-    [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]
+  [[ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]]
 }
 
 
