@@ -1,36 +1,48 @@
-## plenv
-# PERL_LOCAL_LIB="$HOME/perl5"
-# export PATH=${PERL_LOCAL_LIB}/bin:$PATH
-# export PERL5LIB=${PERL_LOCAL_LIB}/lib/perl5:$PERL5LIB
+function append-path-if-exists {
+  DIRPATH=$1
+  if [ -d "$DIRPATH" ]; then
+    export PATH="$DIRPATH:$PATH"
+  fi
+}
 
-if [ -x "`which plenv`" ]; then
+## plenv
+export PATH="$HOME/.plenv/bin:$PATH"
+
+if [ -x "`which plenv 2> /dev/null`" ]; then
+  eval "$(plenv init -)"
   export PLENV_VERSION=$(plenv version | awk '{print $1}')
   # export PERL_CPANM_OPT="--local-lib=${PERL_LOCAL_LIB}"
-  export PATH=${PLENV_ROOT}/bin:$PATH
-  export PERL5LIB=${PLENV_ROOT}/versions/${PLENV_VERSION}/lib/perl5:$PERL5LIB
+  # export PATH=${PLENV_ROOT}/bin:$PATH
+  # export PERL5LIB=${PLENV_ROOT}/versions/${PLENV_VERSION}/lib/perl5:$PERL5LIB
 fi
 
+
 ## node
-export PATH=$HOME/.nodebrew/current/bin:$PATH
+append-path-if-exists "$HOME/.nodebrew/current/bin"
+# if which npm; then
+#   export NODE_PATH=`npm -g root`
+# fi
 
-## cabal
-# export PATH=$HOME/.cabal/bin:$PATH
+## ruby
+if which rbenv > /dev/null; then
+  eval "$(rbenv init -)"
+fi
 
-## java
-# export TOMCAT_HOME=/usr/share/tomcat6
-# export CATALINA_HOME=/usr/share/tomcat6
-# export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
-# export PATH=$PATH:$JAVA_HOME/bin
-# export CLASSPATH=$JAVA_HOME/jre/lib:$JAVA_HOME/lib:$JAVA_HOME/lib/tools.jar
-# export CLASSPATH=$CLASSPATH:$CATALINA_HOME/common/lib:$CATALINA_HOME/common/lib/servlet-api.jar
-# export CLASSPATH=$CLASSPATH:/usr/share/java/mysql-connector-java-5.1.28.jar # jdbc
 
-## golang
+## haskell
+append-path-if-exists "$HOME/.cabal/bin"
+
+
+## go
 if [ -d "$HOME/.goenv" ]; then
   export GOENV_ROOT=$HOME/.goenv
   export PATH=$GOENV_ROOT/bin:$PATH
   eval "$(goenv init -)"
+elif [ -d "$HOME/.go" ]; then
+  export GOPATH=~/.go
+  export PATH=$GOPATH/bin:$PATH
 fi
+
 
 # gcc
 if [ -d /usr/lib/gcc/x86_64-linux-gnu/10 ]; then
@@ -38,11 +50,12 @@ if [ -d /usr/lib/gcc/x86_64-linux-gnu/10 ]; then
   export LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/10
 fi
 
+
 ## others
 # export PATH=$PATH:$HOME/.local/lib/python2.7/site-packages/powerline
 # export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio1261/cplex/bin/x86-64_linux
-export PATH=$HOME/.local/bin/:$PATH
-export PATH=$HOME/bin:$PATH
-export PATH=$HOME/opt:$PATH
-# export PATH=$HOME/bin/processing/:$PATH
+append-path-if-exists "$HOME/.local/bin/"
+append-path-if-exists "$HOME/bin"
+append-path-if-exists "$HOME/opt"
+append-path-if-exists "$HOME/.cargo/bin"
 
