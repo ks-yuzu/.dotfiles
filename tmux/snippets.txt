@@ -15,9 +15,17 @@
 [K8S: get pod wide    ] kubectl get pods -o wide -A | perl -alne 'print join "\t", @F[0..7]' | column -t
 [K8S: get pod short   ] kubectl get pod -o=custom-columns=NAMESPACE:.metadata.namespace,NODE:.spec.nodeName,NAME:.metadata.name -A
 [K8S: OOM pod uid     ] sudo cat /var/log/messages | grep '(?<=Task in /kubepods/burstable/pod)[^/]+' -Po
+[K8S: OOM pod uid     ] sudo cat /var/log/messages | grep -F oom-kill | grep '(?<=task_memcg=/kubepods/burstable/pod)[^/]+' -Po
 [K8S: uid to name     ] kubectl get pod --all-namespaces -o json | jq '.items[] | select(.metadata.uid == "<uid>") | .metadata.name' -r
+[K8S: container disk  ] du -sh /media/root/home/kubernetes/containerized_mounter/rootfs/var/lib/kubelet/pods/*
+[K8S: container disk  ] du -sh /media/root/mnt/stateful_partition/var/lib/docker/overlay2/*
+[INSTALL: apt         ] apt update -qq && apt -yqq install 
+[INSTALL: util        ] (apt update && apt install -y iproute2 dnsutils) > /dev/null 2>&1
+[INSTALL: peco        ] curl -sS https://api.github.com/repos/peco/peco/releases/latest | grep -F browser_download_url | cut -d'"' -f4 | grep peco_linux_amd64.tar.gz | xargs curl -sSLO && tar xf peco*.tar.gz && PATH=$PATH:`pwd`/peco_linux_amd64
 [ETC: grep with header] sed -n -e1p -e//p
 [ETC: mysql pwd       ] read -sp 'MySQL Password: ' MYSQL_PWD && export $_; echo
 [ETC: env aws product ] AWS_PRODUCT=
+[ETC: remove apt lock ] (ps aux | grep '[a]pt') || sudo rm -i /var/lib/apt/lists/lock /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend
+[ETC: edit this       ] e ~/.dotfiles/tmux/snippets.txt
 [AWS: codebuild build ] start_build_stdout=$(aws codebuild start-build --project-name XXXX); account_id=$(echo "$start_build_stdout" | jq .build.arn -r | cut -d: -f5); region=$(echo "$start_build_stdout" | jq .build.arn -r | cut -d: -f4); project_name=$(echo "$start_build_stdout" | jq .build.projectName -r); build_id=$(echo "$start_build_stdout" | jq .build.arn -r | cut -d/ -f2); open "https://${region}.console.aws.amazon.com/codesuite/codebuild/${account_id}/projects/${project_name}/build/${build_id}/?region=${region}"
 [AWS: launch template ] versions=$(AWS_PRODUCT=saoal sts aws ec2 describe-launch-template-versions --launch-template-name dev-eks-worker-node); diff <(echo "$versions" | jq '.LaunchTemplateVersions[1]' | less) <(echo "$versions" | jq '.LaunchTemplateVersions[0]' | less) -u

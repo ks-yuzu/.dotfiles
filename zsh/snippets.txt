@@ -30,6 +30,8 @@
 [COMPILE:  compile .zshrc           ]  zcompile ~/.zshrc
 
 # etc
+[ETC:      argocd re-login          ]  argocd login $(argocd context | sed -n '2,$p' | cut -c 4- | peco | awk '{print $1}') --grpc-web --sso
+[ETC:      argocd kustomize diff    ]  argocd app list | peco --query "$(basename `pwd`)" --select-1 | awk '{print $1}' | KUBECTL_EXTERNAL_DIFF='colordiff -u' xargs -I{} argocd app diff {} --local .
 [ETC:      open github              ]  open "$(git remote -v | grep '(fetch)$' | peco --select-1 | awk '{print $2}' | sed -e 's|:|/|' -e 's|git@|https://|' -e 's/.git$//')"
 [ETC:      capslock to ctrl         ]  setxkbmap -option ctrl:nocaps
 [ETC:      LANG -> JP               ]  export LANG=ja_JP.UTF-8
