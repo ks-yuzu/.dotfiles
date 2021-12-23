@@ -2,10 +2,12 @@
 use v5.26;
 use warnings;
 use diagnostics;
-use autodie qw(:all);
+# use autodie qw(:all);
 
 use utf8;
 use open IO => qw/:encoding(UTF-8) :std/;
+
+use lib './.perllib';
 
 use Cwd;
 use Path::Tiny;
