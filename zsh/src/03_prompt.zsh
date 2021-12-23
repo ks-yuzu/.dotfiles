@@ -77,6 +77,7 @@ function get-kube-cluster-info() {
 
 function get-kube-ns-info() {
     which kubectl > /dev/null || return
+
     # local NS=$(kubectl config view | grep namespace: | awk '{print $2}')
     local NS=$(kubectl config view | sed -n "/cluster: $(kubectl config current-context 2> /dev/null | perl -pe 's|/|\\/|g')/,/^-/p" | grep namespace | awk '{print $2}')
     if [[ -z "$NS" ]]; then
@@ -155,31 +156,36 @@ function update-prompt()
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
 
-    if ! is-wsl; then
+    if [ -n "$SHOW_KUBEINFO_IN_PROMPT" ]; then
       local kubeinfo="$(get-kube-cluster-info)$(get-kube-ns-info) "
-      local face=''
-      local info=''
-      if [ -n "$AWS_PROFILE" ]; then
-        info="$AWS_PROFILE"
-      elif [ -z $STS_EXPIRATION_UNIXTIME ]; then
-          face='(-ω-)zzz'
-          info='(none)'
-      else
-          local lefttime="$(($STS_EXPIRATION_UNIXTIME - $(date +%s)))"
+    fi
 
-          if [ $lefttime -gt 0 ]; then
-              face="('ω')"
-              info="${STS_ALIAS_SHORT:-$AWS_PRODUCT}($lefttime)"
-          else
-              face='(>_<)'
-              info="${STS_ALIAS_SHORT:-$AWS_PRODUCT}(%F{red}expired%f)"
-          fi
+    if [ -n "$SHOW_STSINFO_IN_PROMPT" ]; then
+      local stsface=''
+      local ststext=''
+      if [ -n "$AWS_PROFILE" ]; then
+        ststext="$AWS_PROFILE"
+      elif [ -z $STS_EXPIRATION_UNIXTIME ]; then
+        #stsface='(-ω-)zzz'
+        ststext='(none)'
+      else
+        local lefttime="$(($STS_EXPIRATION_UNIXTIME - $(date +%s)))"
+
+        if [ $lefttime -gt 0 ]; then
+          #stsface="('ω')"
+          ststext="${STS_ALIAS_SHORT:-$AWS_PRODUCT}($lefttime)"
+        else
+          #stsface='(>_<)'
+          ststext="${STS_ALIAS_SHORT:-$AWS_PRODUCT}(%F{red}expired%f)"
+        fi
       fi
 
-      # local sts=" aws:${face}${info}"
-      local sts=$' \e[38;5;202maws:\e[m'${info}
+      local stsinfo=$' \e[38;5;202maws:\e[m'${ststext}
       # local sts=" $(imgcat ~/.dotfiles/zsh/icons/aws-icon.png; echo -n -e "\033[2C")${info}"
-      local gcloud=$' \e[38;5;33mgcp:\e[m'${_GCLOUD_PROJECT:-(none)}
+    fi
+
+    if [ -n "$SHOW_GCLOUDINFO_IN_PROMPT" ]; then
+      local gcloudinfo=$' \e[38;5;33mgcp:\e[m'${_GCLOUD_PROJECT:-(none)}
       # local gcloud=" $(imgcat ~/.dotfiles/zsh/icons/gcp-icon.png; echo -n -e "\033[2C")$_GCLOUD_PROJECT"
     fi
 
@@ -187,7 +193,7 @@ function update-prompt()
         os_version="[$(cat /etc/os-release | grep VERSION_CODENAME | cut -d= -f2)]"
     fi
 
-    PROMPT="${name}${tmuxinfo}${sts}${gcloud}${kubeinfo}${os_version}${argocdinfo}${cdir}${endl}${mark}"
+    PROMPT="${name}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${os_version}${argocdinfo}${cdir}${endl}${mark}"
 }
 # add-zsh-hook precmd update-prompt
 
