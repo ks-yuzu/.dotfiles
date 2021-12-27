@@ -6,4 +6,4 @@ function rename_tmux_window() {
     fi
 }
 
-add-zsh-hook precmd rename_tmux_window
+# add-zsh-hook precmd rename_tmux_window
