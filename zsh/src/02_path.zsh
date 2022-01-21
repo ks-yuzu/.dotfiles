@@ -5,6 +5,7 @@ function append-path-if-exists {
   fi
 }
 
+
 ## plenv
 export PATH="$HOME/.plenv/bin:$PATH"
 
@@ -18,10 +19,15 @@ fi
 
 
 ## node
+# nodebrew
 append-path-if-exists "$HOME/.nodebrew/current/bin"
+# nvm
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
 # if which npm; then
 #   export NODE_PATH=`npm -g root`
 # fi
+
 
 ## ruby
 if which rbenv > /dev/null; then
