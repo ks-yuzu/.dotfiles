@@ -21,5 +21,34 @@ if [[ `uname -a` =~ "Linux.*microsoft" ]]; then
   # 必要であれば、以下をアンコメント
   # keychain -q ~/.ssh/id_rsa
   # source ~/.keychain/$HOSTNAME-sh
-fi
 
+  # use git.exe in /mnt/*
+  if which git.exe >/dev/null; then
+    function git {
+      if [[ `pwd -P` == /mnt/* ]]; then
+        git.exe "$@"
+      else
+        /usr/bin/git "$@"
+      fi
+    }
+  fi
+
+  # use gh.exe in /mnt/*
+  if which gh.exe >/dev/null; then
+    function gh {
+      if [[ `pwd -P` == /mnt/* ]]; then
+        /mnt/c/Program\ Files/GitHub\ CLI/gh.exe "$@"
+      else
+        /usr/bin/gh "$@"
+      fi
+    }
+  fi
+
+  # launch ssh-agent
+  SSH_AGENT_FILE="$HOME/.ssh/ssh_agent"
+  [ -f $SSH_AGENT_FILE ] && source $SSH_AGENT_FILE > /dev/null
+  if ! ssh-add -l > /dev/null ; then
+      ssh-agent > $SSH_AGENT_FILE
+      source $SSH_AGENT_FILE > /dev/null
+  fi
+fi
