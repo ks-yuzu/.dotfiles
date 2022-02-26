@@ -12,6 +12,7 @@ run 'tmux setenv -g PASTE_COMMAND "$($TMUX_CONF_DIR/scripts/get-commands | grep 
 #  APPEARANCE
 # ========================================
 set -g default-terminal "screen-256color"
+set -g automatic-rename on
 
 # status bar
 set -g status-fg white
@@ -28,14 +29,24 @@ set-option -g status-left "#[fg=colour255,bg=colour241] S#S(#(tmux ls | grep -n 
 #     || ([ \"#W\" = $HOME ] && echo HOME || basename #W)\
 # ) "
 set-window-option -g window-status-format " #I: #(\
-  [[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]]\
-    && echo #W\
-    || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename '#{pane_current_path}' )\
+  if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
+    echo '#W';\
+  elif [ #{pane_current_path} = '$HOME' ]; then\
+    echo 'HOME';\
+  else\
+    : basename '#{pane_current_path}';\
+    echo '#{pane_current_path}' | perl -pe 's|^$HOME|~|';\
+  fi\
 ) "
 set-window-option -g window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #(\
-  [[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]]\
-    && echo #W\
-    || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename '#{pane_current_path}' )\
+  if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
+    echo '#W';\
+  elif [ #{pane_current_path} = '$HOME' ]; then\
+    echo 'HOME';\
+  else\
+    : basename '#{pane_current_path}';\
+    echo '#{pane_current_path}' | perl -pe 's|^$HOME|~|';\
+  fi\
 ) "
 
 # status bar - right
@@ -70,8 +81,8 @@ bind r source-file ~/.tmux.conf \; display "Reloaded!"
 # -- ウィンドウ操作 ----------------
 bind -n M-n next-window
 bind -n M-p previous-window
-bind -n M-[ next-window
-bind -n M-] previous-window
+# bind -n M-[ next-window
+# bind -n M-] previous-window
 
 
 # -- ペイン操作 --------------------
@@ -117,18 +128,18 @@ bind -T copy-mode-emacs C-w send-keys -X copy-pipe "$COPY_COMMAND"
 bind -n C-y run "\
   [ $($PASTE_COMMAND | perl -0pe 's/\n*$//m' | grep -c '') -gt 1 ]\
     && (echo '[warn] multi-line paste!!\nuse C-t C-y to paste the following text forcibly\n-----'; $PASTE_COMMAND)\
-    || (tmux set-buffer -- \"$($PASTE_COMMAND)\" && tmux paste-buffer)"
-bind    C-y run 'tmux set-buffer -- "$($PASTE_COMMAND)" && tmux paste-buffer'
+    || (tmux set-buffer -- \"$($PASTE_COMMAND | tr -d \\r)\" && tmux paste-buffer)"
+bind    C-y run 'tmux set-buffer -- "$($PASTE_COMMAND | tr -d \\r)" && tmux paste-buffer'
 
 
 # prefix + t で 1 コマンド分の出力をコピー
 unbind t
 bind t\
-  run 'tmux capture-pane -pS -32768\
+  run '(tmux capture-pane -pS -32768\
          | extract-command-result.pl /tmp/tmux-n-copy-commands\
          | tee -a /tmp/command-result-copy-log\
          | $COPY_COMMAND;\
-       rm -f /tmp/tmux-n-copy-commands' \;\
+       rm -f /tmp/tmux-n-copy-commands) 2>&1' \;\
   display 'Copied!!'
 
 # prefix <数字> prefix t で複数コマンドの出力をコピー
