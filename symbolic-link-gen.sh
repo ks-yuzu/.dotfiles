@@ -6,6 +6,7 @@ echo 'source ~/.dotfiles/zsh/init.zsh' >> ~/.zshrc
 ln -s ~/.dotfiles/.tmux.conf       ~/.tmux.conf
 
 mkdir -p ~/.config
+#ln -s ~/.dotfiles/.peco            ~/.peco
 ln -s ~/.dotfiles/.config/peco     ~/.config/
 
 ## git
@@ -21,11 +22,10 @@ ln -s ~/.dotfiles/.gitattributes_global ~/.gitattributes_global
 ## skk jisyo
 ln -s ~/.dotfiles/SKK-JISYO.L.utf8 ~/.SKK-JISYO.L.utf8
 
-
 ## Mac home
-ln -s ~/.dotfiles/chunkwm/.chunkwm_plugins/    ~/.chunkwm_plugins           
-ln -s ~/.dotfiles/chunkwm/.chunkwmrc           ~/.chunkwmrc                 
-ln -s ~/.dotfiles/khd/.khdrc                   ~/.khdrc                     
-ln -s ~/.dotfiles/.tmux.conf.mac               ~/.tmux.conf                 
-ln -s ~/.dotfiles/com.googlecode.iterm2.plis   ~/com.googlecode.iterm2.plist
-ln -s ~/.dotfiles/                             ~/.hammaerspoon              
+ln -s ~/.dotfiles/chunkwm/.chunkwm_plugins/    ~/.chunkwm_plugins
+ln -s ~/.dotfiles/chunkwm/.chunkwmrc           ~/.chunkwmrc
+ln -s ~/.dotfiles/khd/.khdrc                   ~/.khdrc
+ln -s ~/.dotfiles/.tmux.conf.mac               ~/.tmux.conf
+ln -s ~/.dotfiles/com.googlecode.iterm2.plist  ~/com.googlecode.iterm2.plist
+ln -s ~/.dotfiles/                             ~/.hammaerspoon
