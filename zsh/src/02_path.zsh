@@ -18,20 +18,37 @@ if [ -x "`which plenv 2> /dev/null`" ]; then
 fi
 
 
-## node
+## node etc.
 # nodebrew
 append-path-if-exists "$HOME/.nodebrew/current/bin"
+
 # nvm
-export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
-# if which npm; then
-#   export NODE_PATH=`npm -g root`
-# fi
+NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+if [ -d "$NVM_DIR" ]; then
+  export NVM_DIR
+  [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+fi
+
+# deno
+DENO_INSTALL="/mnt/d/wsl-home/.deno"
+if [ -d "$DENO_INSTALL" ]; then
+  export DENO_INSTALL
+  append-path-if-exists "$DENO_INSTALL/bin"
+fi
 
 
 ## ruby
-if which rbenv > /dev/null; then
+if [ -d "$HOME/.rbenv" ]; then
+  append-path-if-exists "$HOME/.rbenv/bin"
   eval "$(rbenv init -)"
+fi
+
+
+## python
+if [ -d "$HOME/.pyenv" ]; then
+  export PYENV_ROOT="$HOME/.pyenv"
+  append-path-if-exists "$PYENV_ROOT/bin"
+  eval "$(pyenv init --path)"
 fi
 
 
@@ -51,9 +68,10 @@ fi
 
 
 # gcc
-if [ -d /usr/lib/gcc/x86_64-linux-gnu/10 ]; then
-  export C_INCLUDE_PATH=/usr/lib/gcc/x86_64-linux-gnu/10/include
-  export LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/10
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/10
+if [ -d "$LIBRARY_PATH" ]; then
+  export LIBRARY_PATH
+  export C_INCLUDE_PATH="${LIBRARY_PATH}/include"
 fi
 
 
