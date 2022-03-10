@@ -1,5 +1,5 @@
 ## git status
-function git-status()
+function __git-status()
 {
     # if [ "$(git rev-parse --is-inside-work-tree 2> /dev/null)" = 'true' ]; then
         echo git status -sb
@@ -8,12 +8,11 @@ function git-status()
     # fi
     zle reset-prompt
 }
-zle -N git-status
-bindkey "^gs" git-status
+zle -N __git-status && bindkey "^gs" $_
 
 
 ## git diff
-function peco-git-diff()
+function __peco-git-diff()
 {
     local O_PWD=$(pwd)
     local GIT_ROOT=$(perl -e "print '$O_PWD' . '/..' x $(get-git-dir-depth)")
@@ -38,12 +37,11 @@ function peco-git-diff()
     cd $O_PWD > /dev/null
     zle reset-prompt
 }
-zle -N peco-git-diff
-bindkey "^gd" peco-git-diff
+zle -N __peco-git-diff && bindkey "^gd" $_
 
 
 ## git add
-function peco-git-add()
+function __peco-git-add()
 {
     local SELECTED_FILE_TO_ADD="$(git status --short | \
                                   peco --query "$LBUFFER" | \
@@ -55,18 +53,16 @@ function peco-git-add()
     zle accept-line
     zle reset-prompt
 }
-zle -N peco-git-add
-bindkey "^ga" peco-git-add
+zle -N __peco-git-add && bindkey "^ga" $_
 
 
 ## git checkout
-function peco-git-checkout()
+function __peco-git-checkout()
 {
     git checkout $(git branch -a | peco | sed -e 's/^..//g' -e '/->/d' | awk '!a[$0]++')
     zle reset-prompt
 }
-zle -N peco-git-checkout
-bindkey "^go" peco-git-checkout
+zle -N __peco-git-checkout && bindkey "^go" $_
 
 
 ## git graph
@@ -75,8 +71,7 @@ function __git-graph()
     git log --graph --all --pretty=format:'%C(green)%cd%C(reset) %C(red)%h%C(reset) %C(yellow bold)%d%C(reset) %C(bold)%s%C(reset) %C(blue bold)<%an>%C(reset)' --abbrev-commit --date=format:'%Y-%m-%d %H:%M'
     zle reset-prompt
 }
-zle -N __git-graph
-bindkey "^gg" __git-graph
+zle -N __git-graph && bindkey "^gg" $_
 
 
 ## git graph rich
@@ -85,8 +80,7 @@ function __git-graph-rich()
     git log --graph --all --pretty=format:'%C(red reverse)%d%Creset%C(white reverse) %h% Creset %C(green reverse) %an %Creset %C(cyan bold)%ad (%ar)%Creset%n%C(white bold)%w(80)%s%Creset%n%n%w(80,2,2)%b' --abbrev-commit --date=format:'%Y-%m-%d %H:%M:%S' --name-status
     zle reset-prompt
 }
-zle -N __git-graph-rich
-bindkey "^g^g" __git-graph-rich
+zle -N __git-graph-rich && bindkey "^g^g" $_
 
 
 ## git commit -v
@@ -98,20 +92,17 @@ function __git-commit()
     CURSOR=15
 
 }
-zle -N __git-commit
-bindkey "^gc" __git-commit
+zle -N __git-commit && bindkey "^gc" $_
 
 
-## git commit -v
-function cd-git-root()
+function __cd-git-root
 {
     if [[ $(get-git-dir-depth) != '0' ]]; then
         cd $(get-git-root-dir)
     fi
     zle reset-prompt
 }
-zle -N cd-git-root
-bindkey "^gr" cd-git-root
+zle -N __cd-git-root && bindkey "^gr" $_
 
 
 function get-git-root-dir()
