@@ -1,9 +1,8 @@
 ## git status
 function __git-status()
 {
-    BUFFER='git status -sb'
-    echo $BUFFER && zle accept-line
-    echo '\n' && zle reset-prompt
+    BUFFER=' git status -sb'
+    zle accept-line
 }
 zle -N __git-status && bindkey "^gs" $_
 
@@ -14,9 +13,9 @@ function __peco-git-diff()
     #local GIT_ROOT="$(pwd)$(perl -e "print '/..' x $(get-git-dir-depth)")"
     local GIT_ROOT="$(perl -e "print '../' x $(get-git-dir-depth)")"
 
-    if [ $(git status --porcelain | wc -l) -eq 0 ]; then
+    if [ -z "$(git status --porcelain)" ]; then
       echo ''
-      git status
+      BUFFER=' git status'
     else
       local SELECTED_FILE="$(git status --porcelain | \
                                grep '^ *M' | \
@@ -24,13 +23,20 @@ function __peco-git-diff()
                                awk -F ' ' '{print $NF}')"
       [ -n "$SELECTED_FILE" ] || return
 
-      BUFFER="(builtin cd '$GIT_ROOT' && git diff $(echo "$SELECTED_FILE" | tr '\n' ' '))"
-      echo $BUFFER && zle accept-line
+      BUFFER=" (builtin cd '$GIT_ROOT' && git diff $(echo "$SELECTED_FILE" | tr '\n' ' '))"
     fi
 
-    echo '\n' && zle reset-prompt
+    zle accept-line
 }
 zle -N __peco-git-diff && bindkey "^gd" $_
+
+
+## git diff --cached
+function __git-diff-cached() {
+    BUFFER=' git diff --cached'
+    zle accept-line
+}
+zle -N __git-diff-cached && bindkey "^gD" $_
 
 
 ## git add
@@ -41,9 +47,8 @@ function __peco-git-add()
                              awk -F ' ' '{print $NF}')"
     [ -n "$SELECTED_FILE" ] || return
 
-    BUFFER="git add $(echo "$SELECTED_FILE" | tr '\n' ' ')"
-    echo $BUFFER && zle accept-line
-    echo '\n' && zle reset-prompt
+    BUFFER=" git add $(echo "$SELECTED_FILE" | tr '\n' ' ')"
+    zle accept-line
 }
 zle -N __peco-git-add && bindkey "^ga" $_
 
@@ -51,9 +56,8 @@ zle -N __peco-git-add && bindkey "^ga" $_
 ## git checkout
 function __peco-git-checkout()
 {
-    BUFFER="git checkout $(git branch -a | peco | sed -e 's/^..//g' -e '/->/d' | awk '!a[$0]++')"
-    echo $BUFFER && zle accept-line
-    echo '\n' && zle reset-prompt
+    BUFFER=" git checkout $(git branch -a | peco | sed -e 's/^..//g' -e '/->/d' | awk '!a[$0]++')"
+    zle accept-line
 }
 zle -N __peco-git-checkout && bindkey "^go" $_
 
@@ -61,9 +65,8 @@ zle -N __peco-git-checkout && bindkey "^go" $_
 ## git graph
 function __git-graph()
 {
-    BUFFER="git log --graph --all --pretty=format:'%C(green)%cd%C(reset) %C(red)%h%C(reset) %C(yellow bold)%d%C(reset) %C(bold)%s%C(reset) %C(blue bold)<%an>%C(reset)' --abbrev-commit --date=format:'%Y-%m-%d %H:%M'"
-    echo $BUFFER && zle accept-line
-    echo '\n' && zle reset-prompt
+    BUFFER=" git log --graph --all --pretty=format:'%C(green)%cd%C(reset) %C(red)%h%C(reset) %C(yellow bold)%d%C(reset) %C(bold)%s%C(reset) %C(blue bold)<%an>%C(reset)' --abbrev-commit --date=format:'%Y-%m-%d %H:%M'"
+    zle accept-line
 }
 zle -N __git-graph && bindkey "^gg" $_
 
@@ -71,9 +74,8 @@ zle -N __git-graph && bindkey "^gg" $_
 ## git graph rich
 function __git-graph-rich()
 {
-    BUFFER="git log --graph --all --pretty=format:'%C(red reverse)%d%Creset%C(white reverse) %h% Creset %C(green reverse) %an %Creset %C(cyan bold)%ad (%ar)%Creset%n%C(white bold)%w(80)%s%Creset%n%n%w(80,2,2)%b' --abbrev-commit --date=format:'%Y-%m-%d %H:%M:%S' --name-status"
-    echo $BUFFER && zle accept-line
-    echo '\n' && zle reset-prompt
+    BUFFER=" git log --graph --all --pretty=format:'%C(red reverse)%d%Creset%C(white reverse) %h% Creset %C(green reverse) %an %Creset %C(cyan bold)%ad (%ar)%Creset%n%C(white bold)%w(80)%s%Creset%n%n%w(80,2,2)%b' --abbrev-commit --date=format:'%Y-%m-%d %H:%M:%S' --name-status"
+    zle accept-line
 }
 zle -N __git-graph-rich && bindkey "^g^g" $_
 
