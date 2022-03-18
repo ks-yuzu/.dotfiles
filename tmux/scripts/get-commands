@@ -6,11 +6,10 @@ _OS=$(`dirname $0`/get-os)
 # [[ $_OS = 'mac' ]] && echo 'copy: reattach-to-user-namespace pbcopy'
 [[ $_OS = 'mac'   ]] && echo 'copy: pbcopy'
 [[ $_OS = 'linux' ]] && echo 'copy: xsel -ip && xsel -op | xsel -ib'
-[[ $_OS = 'wsl'   ]] && echo 'copy: nkf -w | clip.exe'
+[[ $_OS = 'wsl'   ]] && echo 'copy: clip.exe'
 
 ## PASTE
 [[ $_OS = 'mac'   ]] && echo 'paste: pbpaste'
 [[ $_OS = 'linux' ]] && echo 'paste: xsel -ob'
 [[ $_OS = 'wsl'   ]] && echo 'paste: win32yank.exe -o'
-
 
