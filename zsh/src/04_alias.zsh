@@ -66,68 +66,57 @@ alias plantuml="java -jar ~/bin/plantuml.jar $*"
 function cd() { builtin cd $@ && ls --color; }
 function pr-select { gh pr list| peco | awk '{print $1}' }
 
-# alias ssh='perl -e '\''$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); $ts = qx/date --iso-8601=seconds/; chomp $ts; exec "script ~/works/ssh-log/ssh-${ts}-${args}.log /usr/bin/ssh @ARGV"'\'''
 
 function ssh() {
+  if [ -n "$TMUX" ]; then
     tmux set automatic-rename off
     tmux rename-window "ssh $@"
-    tmux set-window-option window-status-current-format "#[fg=colour255,bg=#00aa22,bold] #I: #([[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]] && echo #W || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename #{pane_current_path} )) "
-    # TODO: trap でステータスバー戻す
-
-    # -t tmux -2
-    perl -e '$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); $ts = qx/date --iso-8601=seconds/; chomp $ts; exec "script ~/works/ssh-log/ssh-${ts}-${args}.log /usr/bin/ssh @ARGV"' $@
-    tmux set-window-option window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #([[ '#W' != 'zsh' && '#W' != 'reattach-to-user-namespace' ]] && echo #W || ([ #{pane_current_path} = $HOME ] && echo 'HOME' || basename #{pane_current_path} )) "
-    tmux set automatic-rename on
-}
-
-# function ssh() {
-#   /usr/bin/env perl -e <<'EOF' $@
-# use v5.12;
-# use warnings;
-
-# use utf8;
-# use open IO => qw/:encoding(UTF-8) :std/;
-
-# my $args = join '_', (grep { $_ !~ /^\-/ } @ARGV);
-
-# my $timestamp = qx/date --iso-8601=seconds/;
-# chomp $timestamp;
-
-# exec "script ~/works/ssh-log/ssh-${timestamp}-${args}.log /usr/bin/ssh @ARGV"
-# EOF
-# }
-
-
-
-## copy stdin to clipboard
-# which xsel    >/dev/null 2>&1 && alias -g clip='xsel --input --clipboard' # Mac
-# which pbcopy  >/dev/null 2>&1 && alias -g clip='pbcopy'                   # Linux
-# which putclip >/dev/null 2>&1 && alias -g clip='putclip'                  # Cygwin
-which xsel    >/dev/null 2>&1 && alias -g clip='tee >(xsel --input --clipboard)' # Mac
-which pbcopy  >/dev/null 2>&1 && alias -g clip='tee >(pbcopy)'                   # Linux
-which putclip >/dev/null 2>&1 && alias -g clip='tee >(putclip)'                  # Cygwin
-
-
-## sts
-alias stsext='eval `stsenv`'
-
-## eks with sts
-docker-eks () {
-  local AWS_PRODUCT
-  : ${AWS_PRODUCT:=$1}
-  if [ -z "$AWS_PRODUCT" ]; then
-    echo 'No AWS account specified. Please set to AWS_PRODUCT or pass as an argument'
-    return 1
+    tmux set-window-option window-status-current-format "#[fg=colour255,bg=#00aa22,bold] #I: #(\
+      if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
+        echo '#W';\
+      elif [ #{pane_current_path} = '$HOME' ]; then\
+        echo 'HOME';\
+      else\
+        : basename '#{pane_current_path}';\
+        echo '#{pane_current_path}' | perl -pe 's|^$HOME|~|';\
+      fi\
+    ) "
   fi
 
-  export AWS_PRODUCT
-  docker run -e AWS_PRODUCT -v ~/.dotfiles:/root/.dotfiles -v ~/.zshrc.zwc:/root/.zshrc.zwc --rm -it eks-work
-  # export AWS_DEFAULT_REGION
-  # docker run -e AWS_PRODUCT -e AWS_DEFAULT_REGION --rm -it eks-work
+  timestamp=$(date --iso-8601=seconds); echo $timestamp
+  joined_args=$(perl -e '$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); print ${args}' $@)
+  logfile="$HOME/works/ssh-log/ssh-${timestamp}-${joined_args}.log"
+
+  if script /dev/null -c : > /dev/null; then
+      script $logfile -c "/usr/bin/ssh $@" # for linux
+  else
+      script $logfile /usr/bin/ssh $@      # for BSD
+  fi
+
+  if [ -n "$TMUX" ]; then
+    tmux set-window-option window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #(\
+      if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
+        echo '#W';\
+      elif [ #{pane_current_path} = '$HOME' ]; then\
+        echo 'HOME';\
+      else\
+        : basename '#{pane_current_path}';\
+        echo '#{pane_current_path}' | perl -pe 's|^$HOME|~|';\
+      fi\
+    ) "
+    tmux set automatic-rename on
+  fi
 }
 
-# gslookup
-alias gslookup='/usr/bin/ssh op3 gslookup 2> /dev/null'
+
+## copy stdout to clipboard
+if   which pbcopy        >/dev/null 2>&1; then alias -g clip='tee >(pbcopy)'                   # Linux
+elif which xsel          >/dev/null 2>&1; then alias -g clip='tee >(xsel --input --clipboard)' # Mac
+elif which putclip       >/dev/null 2>&1; then alias -g clip='tee >(putclip)'                  # Cygwin
+elif which win32yank.exe >/dev/null 2>&1; then alias -g clip='tee >(win32yank.exe -i)'         # Windows
+elif which clip.exe      >/dev/null 2>&1; then alias -g clip='tee >(clip.exe)'                 # Windows
+fi
+
 
 # cd repo
 function repo() {
