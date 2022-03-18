@@ -1,7 +1,7 @@
 autoload -Uz add-zsh-hook
 
-## tmux info disp
-function disp-tmux-info()
+## tmux
+function get-tmux-info()
 {
     [[ $TERM =~ 'screen' ]] || return
 
@@ -17,7 +17,7 @@ function disp-tmux-info()
     echo -n "W $CURR_WINDOW_NUM/$NUM_WINDOWS (WID:$CURR_WINDOW_ID), S $CURR_SESSION_NUM/$NUM_SESSIONS (SID:$CURR_SESSION_ID)"
 }
 
-function disp-tmux-info-mini()
+function get-tmux-info-mini()
 {
     [[ $TERM =~ 'screen' ]] || return
 
@@ -33,17 +33,20 @@ function disp-tmux-info-mini()
     echo -n "W:$CURR_WINDOW_NUM/$NUM_WINDOWS S:$CURR_SESSION_NUM/$NUM_SESSIONS"
 }
 
-function disp-tmux-info-for-prompt()
+function get-tmux-info-for-prompt()
 {
     [[ $TERM =~ 'screen' ]] || return
-    echo -n "[" $(disp-tmux-info-mini) "] "
+    echo -n "[" $(get-tmux-info-mini) "] "
 }
 
+
+# k8s
 function get-kube-cluster-info() {
     which kubectl > /dev/null || return
 
-    local kube_context=$(kubectl config current-context 2> /dev/null)
-    [[ "$?" != "0" ]] || return
+  # local kube_context=$(kubectl config current-context 2> /dev/null)
+    local kube_context=$(grep current-context ~/.kube/config | cut -d' ' -f2)
+    [[ "$?" = "0" ]] || return
 
     if [[ "$_KUBE_CONTEXT" != "$kube_context" ]]; then
         _KUBE_CONTEXT=$kube_context
@@ -53,13 +56,12 @@ function get-kube-cluster-info() {
     fi
 
     if [[ $_KUBE_CONTEXT =~ gke ]]; then
-        # _K8S_CLUSTER_INFO=" \e[38;5;33mgke:\e[m$(echo $_KUBE_CONTEXT | cut -d_ -f4-)"
         _K8S_CLUSTER_INFO=" \e[38;5;33mgke:\e[m$(echo $_KUBE_CONTEXT | cut -d_ -f2,4 --output-delimiter '/')"
-        # _K8S_CLUSTER_INFO=" $(imgcat ~/.dotfiles/zsh/icons/gke-icon.png; echo -n -e "\033[2C")$(echo $_KUBE_CONTEXT | cut -d_ -f4-)"
+      # _K8S_CLUSTER_INFO=" $(imgcat ~/.dotfiles/zsh/icons/gke-icon.png; echo -n -e "\033[2C")$(echo $_KUBE_CONTEXT | cut -d_ -f4-)"
     elif [[ $_KUBE_CONTEXT =~ aws ]]; then
         local product=$(get-aws-account-name-from-id $(echo $_KUBE_CONTEXT | cut -d: -f5))
         # sts token のアカウントとクラスタのアカウントが違っていれば色を変える
-        if [[ ! -n "$STS_EXPIRATION_UNIXTIME" ]]; then
+        if [[ -z "$STS_EXPIRATION_UNIXTIME" ]]; then
             :
         elif [[ "${STS_ALIAS_SHORT:-$AWS_PRODUCT}" = "$product" ]]; then
             product="%F{green}${product}%f"
@@ -67,7 +69,7 @@ function get-kube-cluster-info() {
             product="%F{red}${product}%f"
         fi
         _K8S_CLUSTER_INFO=" \e[38;5;202meks:\e[m${product}/$(echo $_KUBE_CONTEXT | cut -d/ -f2)"
-        # _K8S_CLUSTER_INFO=" $(imgcat ~/.dotfiles/zsh/icons/eks-icon.png; echo -n -e "\033[2C")${product}:$(echo $_KUBE_CONTEXT | cut -d/ -f2)"
+      # _K8S_CLUSTER_INFO=" $(imgcat ~/.dotfiles/zsh/icons/eks-icon.png; echo -n -e "\033[2C")${product}:$(echo $_KUBE_CONTEXT | cut -d/ -f2)"
     else
         _K8S_CLUSTER_INFO=''
     fi
@@ -78,19 +80,22 @@ function get-kube-cluster-info() {
 function get-kube-ns-info() {
     which kubectl > /dev/null || return
 
-    # local NS=$(kubectl config view | grep namespace: | awk '{print $2}')
-    local NS=$(kubectl config view | sed -n "/cluster: $(kubectl config current-context 2> /dev/null | perl -pe 's|/|\\/|g')/,/^-/p" | grep namespace | awk '{print $2}')
-    if [[ -z "$NS" ]]; then
-        return
-    fi
+    local NS=$(kubectl config view\
+                   | sed -n "/cluster: $(kubectl config current-context 2> /dev/null | perl -pe 's|/|\\/|g')/,/^-/p"\
+                   | grep namespace\
+                   | awk '{print $2}')
 
+    [[ -n "$NS" ]] || return
     echo "($NS)"
 }
 
 function get-argocd-info() {
     which argocd > /dev/null || return
-    ARGOCD_CONTEXT=$(argocd context | grep '^*' | awk '{print $2}' | cut -d. -f1)
-    echo "\e[38;5;202margocd:\e[m${ARGOCD_CONTEXT}"
+    [ -f ~/.argocd/config ] || return
+  # local ARGOCD_CONTEXT=$(argocd context | grep '^*' | awk '{print $2}' | cut -d. -f1 | sed -E 's/-?argo-?cd//')
+    local ARGOCD_CONTEXT=$(grep '^current-context' ~/.argocd/config | cut -d' ' -f2 | cut -d. -f1 | sed -E 's/-?argo-?cd//')
+
+    echo " \e[38;5;202margocd:\e[m${ARGOCD_CONTEXT}"
 }
 
 function _is_gcloud_config_updated() {
@@ -125,7 +130,6 @@ function _is_gcloud_config_updated() {
 
 function _update_gcloud_context() {
     if _is_gcloud_config_updated; then
-        # _GCLOUD_ACCOUNT="$(gcloud config get-value account 2>/dev/null)"
         _GCLOUD_PROJECT="$(gcloud config get-value project 2>/dev/null)"
     fi
 
@@ -150,15 +154,16 @@ function update-prompt()
     # local tmuxinfo=" %F{magenta}$(disp-tmux-info-for-prompt)%f"
     local tmuxinfo=""
 
-    local kubeinfo="$(get-kube-cluster-info)$(get-kube-ns-info) "
-    local argocdinfo="$(get-argocd-info) "
-    local cdir="%F{yellow}%~%f "
+    local cdir=" %F{yellow}%~%f"
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
 
     if [ -n "$SHOW_KUBEINFO_IN_PROMPT" ]; then
-      local kubeinfo="$(get-kube-cluster-info)$(get-kube-ns-info) "
+      # local kubeinfo="$(get-kube-cluster-info)$(get-kube-ns-info)"
+        local kubeinfo="$(get-kube-cluster-info)"
     fi
+
+    local argocdinfo="$(get-argocd-info)"
 
     if [ -n "$SHOW_STSINFO_IN_PROMPT" ]; then
       local stsface=''
@@ -193,14 +198,14 @@ function update-prompt()
         os_version="[$(cat /etc/os-release | grep VERSION_CODENAME | cut -d= -f2)]"
     fi
 
-    PROMPT="${name}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${os_version}${argocdinfo}${cdir}${endl}${mark}"
+    PROMPT="${name}${os_version}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${argocdinfo}${cdir}${endl}${mark}"
 }
 # add-zsh-hook precmd update-prompt
 
 
 
 
-# rev prompt
+# reverse prompt
 autoload -Uz vcs_info
 autoload -Uz colors
 colors
@@ -208,50 +213,36 @@ colors
 zstyle ':vcs_info:*' enable git
 zstyle ':vcs_info:*' max-exports 6 # max number of variables in format
 zstyle ':vcs_info:git:*' check-for-changes true
+zstyle ':vcs_info:git:*' formats '%b' '%r' '%c' '%u'
 zstyle ':vcs_info:git:*' stagedstr "%F{yellow}S"
 zstyle ':vcs_info:git:*' unstagedstr "%F{red}U"
-zstyle ':vcs_info:git:*' formats '%b' '%r' '%c' '%u'
 zstyle ':vcs_info:git:*' actionformats '%b@%r|%a' '%c' '%u'
 
 setopt prompt_subst
 
 function rprompt
 {
-    local repo=$(vcs_echo)
-    [ -z "$repo" ] && return
-
-    local dir=$(get-path-from-git-root)
-
-    # local current_branch=$(git branch | grep '^*' | cut -d' ' -f2 | grep -v '(HEAD')
-    # local upstream=$(git branch -vv | grep "^..$current_branch" | cut -d'[' -f2 | cut -d']' -f1)
-    # if [ ! is-wsl ]; then
-        local ahead_count=$(git rev-list --count HEAD...@'{u}' 2>/dev/null | xargs printf " %+d")
-    # fi
-
-    echo "[$repo /${dir}${ahead_count}]"
-}
-
-function vcs_echo
-{
     STY= LANG=en_US.UTF-8 vcs_info
 
     local branch="$vcs_info_msg_0_"
-    [ -z "$branch" ] && return
+    [ -n "$branch" ] || return
 
-    local repo="$vcs_info_msg_1_"
-
-    if   [[ -n "$vcs_info_msg_2_" ]];                then local color=${fg[yellow]} # staged
-    elif [[ -n "$vcs_info_msg_3_" ]];                then local color=${fg[red]}    # unstaged
-    elif [[ -n $(echo "$st" | grep "^Untracked") ]]; then local color=${fg[cyan]}   # untracked
-    else                                                  local color=${fg[green]}
+    if   [[ -n "$vcs_info_msg_2_" ]];       then local color=${fg[yellow]} # staged
+    elif [[ -n "$vcs_info_msg_3_" ]];       then local color=${fg[red]}    # unstaged
+    elif git status | grep -q '^Untracked'; then local color=${fg[cyan]}   # untracked
+    else                                         local color=${fg[green]}
     fi
 
-    echo "%{$color%}$branch%{$reset_color%}@%{$color%}$repo%{$reset_color%} ${vcs_info_msg_2_}${vcs_info_msg_3_}%{$reset_color%}"
-}
+    # local repo="$vcs_info_msg_1_"
+    local commit_date=$(git log --date=format:"%Y%m%d" --pretty=format:"%ad" -1)
+    # local path_from_repo_root=$(git rev-parse --show-prefix 2> /dev/null)
+    local ahead_count=$(git rev-list --count HEAD...@'{u}' 2>/dev/null | xargs printf " %+d")
 
-function get-path-from-git-root
-{
-	git rev-parse --show-prefix 2> /dev/null
+    # local repo_status="%{$color%}${branch}%{$reset_color%}@%{$color%}${repo}%{$reset_color%} ${vcs_info_msg_2_}${vcs_info_msg_3_}%{$reset_color%}"
+    # echo "[${repo_status} /${dir}${ahead_count}]"
+
+    local branch_status="%{$color%}${branch}%F{#ccc}@${commit_date}%{$reset_color%}"
+    echo "[${branch_status} ${vcs_info_msg_2_}${vcs_info_msg_3_}%{$reset_color%} ${ahead_count}]"
 }
 
 RPROMPT='$(rprompt)'
