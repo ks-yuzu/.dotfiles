@@ -20,7 +20,6 @@ function peco-select-history()
                  peco --query "$LBUFFER" | \
                  perl -pe 's/\\n/\n/g')
     CURSOR="$#BUFFER"
-    # zle clear-screen
 }
 zle -N peco-select-history
 bindkey '^r' peco-select-history
@@ -48,7 +47,7 @@ function peco-snippets()
     fi
 
     BUFFER=$snippet
-    zle clear-screen
+    CURSOR="$#BUFFER"
 }
 zle -N peco-snippets
 bindkey '^x^x' peco-snippets
@@ -161,7 +160,7 @@ function peco-cd()
             break;
         fi
     done
-    zle clear-screen
+    # zle clear-screen
 }
 zle -N peco-cd
 bindkey '^x^f' peco-cd
@@ -300,34 +299,31 @@ function peco-make()
     fi
     zle clear-screen
 }
-
 zle -N peco-make
 bindkey '^[m' peco-make
 
 
 # peco kubectx
-function peco-kubectx () {
+function peco-kubectx {
     local ctx=$(kubectx | peco)
     [ -z "$ctx" ] && return
 
     BUFFER="kubectx $ctx"
-    zle accept-line
+    echo $BUFFER && zle accept-line
 }
 zle -N peco-kubectx
-bindkey '^[k' peco-kubectx
-bindkey '^[^k' peco-kubectx
+bindkey '^[k'  $_
+bindkey '^[^k' $_
 
 
 # peco k9s
-function peco-k9s()
-{
+function peco-k9s {
     # local ctx=$(kubectx | peco --query "$LBUFFER")
     local ctx=$(kubectx | peco --query "$(kubectx -c)")
     [ -z "$ctx" ] && return
 
     BUFFER=" k9s --context $ctx"
-#    zle accept-line
 }
 zle -N peco-k9s
-bindkey '^[9' peco-k9s
+bindkey '^[9' $_
 
