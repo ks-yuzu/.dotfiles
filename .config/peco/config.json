@@ -5,6 +5,7 @@
 
     "M-d": "peco.DeleteForwardWord",
     "M-h": "peco.DeleteBackwardWord",
+    "C-k": "peco.KillEndOfLine",
 
     "C-v": "peco.SelectNextPage",
     "M-v": "peco.SelectPreviousPage",
