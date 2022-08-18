@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -ueo pipefail
+
+INPUT=$(cat)
+tmux split-window "echo '${INPUT}' | vim + -c 'set nonumber' -"
+

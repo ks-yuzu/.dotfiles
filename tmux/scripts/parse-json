@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-BUFFER_CONTENT=/tmp/tmux-buffer
-cat > ${BUFFER_CONTENT}
+set -ueo pipefail
 
-tmux split-window "cat ${BUFFER_CONTENT} | jq . -C | less -R"
+INPUT=$(cat)
+tmux split-window "echo '${INPUT}' | jq . -C | less -R"
