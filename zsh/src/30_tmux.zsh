@@ -2,7 +2,7 @@ autoload -Uz add-zsh-hook
 
 function rename_tmux_window() {
     if [ $(echo $TERM | grep 'screen') ]; then
-        tmux rename-window $(pwd)
+        tmux rename-window "$(pwd)"
     fi
 }
 
