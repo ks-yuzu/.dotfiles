@@ -57,9 +57,9 @@ cmd + alt - w : yabai -m space --destroy
 # cmd + alt - x : yabai -m space --focus recent
 # cmd + alt - z : yabai -m space --focus prev
 # cmd + alt - c : yabai -m space --focus next
-alt - 1 : yabai -m space --focus 1
-alt - 2 : yabai -m space --focus 2
-alt - 3 : yabai -m space --focus 3
+# alt - 1 : yabai -m space --focus 1
+# alt - 2 : yabai -m space --focus 2
+# alt - 3 : yabai -m space --focus 3
 alt - 4 : yabai -m space --focus 4
 alt - 5 : yabai -m space --focus 5
 alt - 6 : yabai -m space --focus 6
@@ -152,17 +152,5 @@ ctrl + alt - a : yabai -m space --layout bsp
 # ctrl + alt - d : yabai -m space --layout float
 
 
+shift + alt - r: $HOME/bin/replace-windows
 
-
-
-
-
-
-
-
-
-
-# stop に時間がかかる & しばらく入力を受け付けない問題があるので一度 kill -9 してしまう
-# alt + shift - d : PID=$(ps aux | grep '[d]ebounce' | awk '{print $2}'); kill -STOP $PID; sleep 10; kill -CONT $PID
-alt + shift - d : ps aux | grep '[d]ebounce' | awk '{print $2}' | xargs kill -9;\
-                  open -a /Users/yuki.osako/repo/debounce-mac/debounce
