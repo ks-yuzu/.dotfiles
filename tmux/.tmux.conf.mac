@@ -1,21 +1,4 @@
-# ## クリップボード共有を有効にする
-# using in Mac OS X ($ brew install reattach-to-user-namespace)
+# クリップボード共有を有効にする
+# $ brew install reattach-to-user-namespace
 set -g default-command "reattach-to-user-namespace -l zsh"
 
-
-# コピーモード (Emacs バインド)
-# Mac OS X
-#  iTerm2 -> Preferences -> “Applications in terminal may access clipboard”にチェック
-bind -T copy-mode-emacs M-w send-keys -X copy-pipe "reattach-to-user-namespace pbcopy"
-bind -T copy-mode-emacs C-w send-keys -X copy-pipe "reattach-to-user-namespace pbcopy"
-
-
-# 複数行チェック付きペースト
-bind -n C-y run "\
-  [ $(pbpaste | perl -0pe 's/\n*$//m' | grep -c '') -gt 1 ]\
-    && (echo '[warn] multi-line paste!!\nuse C-t C-y to paste the following text forcibly\n-----'; pbpaste)\
-    || (tmux set-buffer -- \"$(pbpaste)\" && tmux paste-buffer)"
-bind    C-y run "tmux set-buffer -- \"$(pbpaste)\"; tmux paste-buffer"
-
-
-# TODO: 共通設定に取り込む

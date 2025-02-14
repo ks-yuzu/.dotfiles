@@ -1,0 +1,2 @@
+source-file ~/.dotfiles/tmux/.tmux.conf.common
+set-hook -g after-new-session "source-file ~/.dotfiles/tmux/.tmux.conf.common"

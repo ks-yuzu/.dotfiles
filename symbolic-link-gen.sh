@@ -3,10 +3,9 @@
 echo 'source ~/.dotfiles/zsh/init.zsh' >> ~/.zshrc
 
 ## terminal
-ln -s ~/.dotfiles/.tmux.conf       ~/.tmux.conf
+ln -s ~/.dotfiles/.tmux.conf.startup ~/.tmux.conf
 
 mkdir -p ~/.config
-#ln -s ~/.dotfiles/.peco            ~/.peco
 ln -s ~/.dotfiles/.config/peco     ~/.config/
 
 ## git
