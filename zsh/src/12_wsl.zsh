@@ -1,6 +1,6 @@
 # WSL 上のみ実行
 if [[ `uname -a` =~ "Linux.*microsoft" ]]; then
-  if [ "$INSIDE_EMACS" ]; then
+  if [ -n "$INSIDE_EMACS" ]; then
     TERM=eterm-color
   fi
 
@@ -46,9 +46,10 @@ if [[ `uname -a` =~ "Linux.*microsoft" ]]; then
 
   # launch ssh-agent
   SSH_AGENT_FILE="$HOME/.ssh/ssh_agent"
-  [ -f $SSH_AGENT_FILE ] && source $SSH_AGENT_FILE > /dev/null
   if ! ssh-add -l > /dev/null ; then
+      echo 'start ssh-agent'
       ssh-agent > $SSH_AGENT_FILE
-      source $SSH_AGENT_FILE > /dev/null
+      cat $SSH_AGENT_FILE
   fi
+  [ -f $SSH_AGENT_FILE ] && source $SSH_AGENT_FILE > /dev/null
 fi
