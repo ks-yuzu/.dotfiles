@@ -243,6 +243,9 @@ LINK 00;38;5;37 # symbolic link. (If you set this to 'target' instead of a
 .yaml            00;38;5;35
 .svelte          00;38;5;202
 .tf              00;38;5;32
+.sh              00;38;5;11
+.bash            00;38;5;11
+.zsh             00;38;5;11
 
 
 # "unimportant" files as logs and backups (base01)
