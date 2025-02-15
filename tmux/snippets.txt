@@ -22,6 +22,7 @@
 [INSTALL: apt         ] apt update -qq && apt -yqq install 
 [INSTALL: util        ] (apt update && apt install -y iproute2 dnsutils) > /dev/null 2>&1
 [INSTALL: peco        ] curl -sS https://api.github.com/repos/peco/peco/releases/latest | grep -F browser_download_url | cut -d'"' -f4 | grep peco_linux_amd64.tar.gz | xargs curl -sSLO && tar xf peco*.tar.gz && PATH=$PATH:`pwd`/peco_linux_amd64
+[INSTALL: gcloud      ] apt update -q && apt install gnupg && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg  add - && apt-get update -y && apt-get install google-cloud-cli -y
 [ETC: grep with header] sed -n -e1p -e//p
 [ETC: mysql pwd       ] read -sp 'MySQL Password: ' MYSQL_PWD && export $_; echo
 [ETC: env aws product ] AWS_PRODUCT=
