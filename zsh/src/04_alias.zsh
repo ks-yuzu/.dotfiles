@@ -42,7 +42,7 @@ alias octave='octave --no-gui'
 alias gcc='gcc -Wall -Wextra -std=c11                               -Winline'
 alias g++='g++ -Wall -Wextra -std=c++17 -Weffc++ -Wsuggest-override -Winline'
 
-alias cdiff='colordiff'
+alias cdiff='colordiff -u'
 
 alias dropbox='dropbox.py $(dropbox.py help | grep -P "^ " | peco | awk "{print \$1}")'
 
@@ -117,17 +117,22 @@ elif which win32yank.exe >/dev/null 2>&1; then alias -g clip='tee >(win32yank.ex
 elif which clip.exe      >/dev/null 2>&1; then alias -g clip='tee >(clip.exe)'                 # Windows
 fi
 
+## container
+(( ${+commands[docker]} )) && alias bake='IMAGE_TAG=$(git rev-parse --short HEAD) docker buildx bake'
 
-# cd repo
-function repo() {
-  REPO_ROOT=$(ls -d ${HOME}/works/*/repo)
 
-  dir=$( (builtin cd $REPO_ROOT; find . -mindepth 2 -maxdepth 2 | peco) )
-  [[ -z "$dir" ]] && return
-
-  echo "${REPO_ROOT}/${dir}"
-  cd "${REPO_ROOT}/${dir}"
+function grd() {
+  docker run --rm -it -p 8080:8080 -v ~/.config/grizzly:/root/.config/grizzly -v .:/workdir -w /workdir grafana/grizzly $@
 }
+
+function grdc() {
+  local context=$(grd config get-contexts | tail -n +2 | peco --query "$1" --select-1 | cut -c3-)
+  if [ -z "$context" ]; then
+    return 1
+  fi
+  grd config use-context $context
+}
+
 
 # iab (グローバルエイリアス展開)
 typeset -A abbreviations
@@ -148,6 +153,11 @@ abbreviations=(
   "Iw"    "| wc"
   "Ix"    "| xargs"
   "NL"    ">/dev/null 2>&1 &"
+  "pr"    " gh pr create -fw"
+  "k"     "kubectl"
+  "t"     "terraform"
+  "tg"    "terragrunt"
+  "awksum" "awk '{ for (i=1; i<=NF; i++) { sum+=$i } } END { print sum }'"
 )
 
 magic-abbrev-expand() {
