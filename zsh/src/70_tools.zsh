@@ -120,3 +120,32 @@ function lock()
 {
     dm-tool loack
 }
+
+function shorten-path()
+{
+  focused_path=
+  short_path=
+
+  set -- $(echo ${1:-$(pwd)} | sed -e "s|^${HOME}|~|; s|/| |g")
+  while [ $# -gt 0 ]; do
+    dir=$1
+    shift
+
+    if [[ "$dir" = '~' ]]; then
+      focused_path="${HOME}"
+      short_path='~'
+    else
+      focused_path="${focused_path}/${dir}"
+
+      if [[ -e "${focused_path}/.git" || $# -eq 0 ]]; then
+        short_path="${short_path}/${dir}"
+      else
+        short_path="${short_path}/${dir:0:3}"
+      fi
+    fi
+
+    # echo "$focused_path - $short_path"
+  done
+
+  echo "$short_path"
+}
