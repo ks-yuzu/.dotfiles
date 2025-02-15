@@ -292,7 +292,7 @@ bindkey '^xt' peco-open-todo
 # peco make
 function peco-make()
 {
-    local recipe=$(ggrep -P '^\S+:' Makefile | sed 's/:.*$//g' | peco)
+    local recipe=$(grep -P '^\S+:' Makefile | sed 's/:.*$//g' | peco)
     if [ -n "$recipe" ]; then
         BUFFER="make ${recipe}"
         zle accept-line
@@ -303,27 +303,18 @@ zle -N peco-make
 bindkey '^[m' peco-make
 
 
-# peco kubectx
-function peco-kubectx {
-    local ctx=$(kubectx | peco)
-    [ -z "$ctx" ] && return
+# peco ghq
+function  peco-ghq() {
+  local selected_dir=$(ghq list -p | peco --prompt='repo> ' --query "$LBUFFER")
 
-    BUFFER="kubectx $ctx"
-    echo $BUFFER && zle accept-line
+  if [ -n "$selected_dir" ]; then
+    BUFFER=" cd ${selected_dir}"
+    zle accept-line
+  fi
 }
-zle -N peco-kubectx
-bindkey '^[k'  $_
-bindkey '^[^k' $_
+zle -N peco-ghq
+bindkey '^[g' $_
 
-
-# peco k9s
-function peco-k9s {
-    # local ctx=$(kubectx | peco --query "$LBUFFER")
-    local ctx=$(kubectx | peco --query "$(kubectx -c)")
-    [ -z "$ctx" ] && return
-
-    BUFFER=" k9s --context $ctx"
+function peco-ghq-clone() {
 }
-zle -N peco-k9s
-bindkey '^[9' $_
 
