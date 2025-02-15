@@ -28,26 +28,36 @@ set-option -g status-left "#[fg=colour255,bg=colour241] S#S(#(tmux ls | grep -n 
 #   tmux list-panes -F '#{pane_pid}' | xargs pgrep -flaP | tail -n1 | cut -d' ' -f2-\
 #     || ([ \"#W\" = $HOME ] && echo HOME || basename #W)\
 # ) "
-set-window-option -g window-status-format " #I: #(\
-  if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
-    echo '#W';\
-  elif [ #{pane_current_path} = '$HOME' ]; then\
-    echo 'HOME';\
-  else\
-    : basename '#{pane_current_path}';\
-    echo '#{pane_current_path}' | perl -pe 's|^$HOME|~|';\
-  fi\
-) "
-set-window-option -g window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #(\
-  if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
-    echo '#W';\
-  elif [ #{pane_current_path} = '$HOME' ]; then\
-    echo 'HOME';\
-  else\
-    : basename '#{pane_current_path}';\
-    echo '#{pane_current_path}' | perl -pe 's|^$HOME|~|';\
-  fi\
-) "
+set-window-option -g window-status-format '#(\
+  _TMUX_IS_CURRENT_PANE=false\
+  _TMUX_WINDOW_ID="#{window_id}"\
+  _TMUX_WINDOW_NAME="#{window_name}"\
+  _TMUX_PANE_PID="#{pane_pid}"\
+  _TMUX_PANE_CURRENT_PATH="#{pane_current_path}"\
+  _TMUX_PANE_CURRENT_COMMAND="#{pane_current_command}"\
+  bash $TMUX_CONF_DIR/scripts/get-window-status-format\
+)'
+set-window-option -g window-status-current-format '#(\
+  _TMUX_IS_CURRENT_PANE=true\
+  _TMUX_WINDOW_ID="#{window_id}"\
+  _TMUX_WINDOW_NAME="#{window_name}"\
+  _TMUX_PANE_PID="#{pane_pid}"\
+  _TMUX_PANE_CURRENT_PATH="#{pane_current_path}"\
+  _TMUX_PANE_CURRENT_COMMAND="#{pane_current_command}"\
+  bash $TMUX_CONF_DIR/scripts/get-window-status-format\
+)'
+# set-window-option -g window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #(\
+#   if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
+#     echo '#W';\
+#   elif [ #{pane_current_path} = '$HOME' ]; then\
+#     echo 'HOME';\
+#   else\
+#     : basename '#{pane_current_path}';\
+#     repo_name=$(basename \"$(git rev-parse --show-toplevel 2> /dev/null)\");\
+#     [ -n \"$repo_name\" ] && repo_name=\" ($repo_name)\";\
+#     echo '#{b:pane_current_path}$repo_name' | perl -pe 's|^$HOME|~|';\
+#   fi\
+# ) "
 
 # status bar - right
 set-option -g status-right "#[fg=colour255,bg=colour241] %m/%d %H:%M:%S #[default]"
@@ -79,10 +89,30 @@ bind r source-file ~/.tmux.conf \; display "Reloaded!"
 
 
 # -- ウィンドウ操作 ----------------
-bind -n M-n next-window
 bind -n M-p previous-window
-# bind -n M-[ next-window
-# bind -n M-] previous-window
+bind -n M-n next-window
+bind -n M-P swap-window -t -1 \; previous-window
+bind -n M-N swap-window -t +1 \; next-window
+bind -n M-1 select-window -t 1
+bind -n M-2 select-window -t 2
+bind -n M-3 select-window -t 3
+bind -n M-4 select-window -t 4
+bind -n M-5 select-window -t 5
+bind -n M-6 select-window -t 6
+bind -n M-7 select-window -t 7
+bind -n M-8 select-window -t 8
+bind -n M-9 select-window -t 9
+bind -n M-0 select-window -t 10
+bind -n M-! if 'tmux list-window | grep -q "^1:"' 'swap-window -t 1; select-window -t 1' 'move-window -t 1'
+bind -n M-@ if 'tmux list-window | grep -q "^2:"' 'swap-window -t 2; select-window -t 2' 'move-window -t 2'
+bind -n M-# if 'tmux list-window | grep -q "^3:"' 'swap-window -t 3; select-window -t 3' 'move-window -t 3'
+bind -n M-$ if 'tmux list-window | grep -q "^4:"' 'swap-window -t 4; select-window -t 4' 'move-window -t 4'
+bind -n M-% if 'tmux list-window | grep -q "^5:"' 'swap-window -t 5; select-window -t 5' 'move-window -t 5'
+bind -n M-^ if 'tmux list-window | grep -q "^6:"' 'swap-window -t 6; select-window -t 6' 'move-window -t 6'
+bind -n M-& if 'tmux list-window | grep -q "^7:"' 'swap-window -t 7; select-window -t 7' 'move-window -t 7'
+bind -n M-* if 'tmux list-window | grep -q "^8:"' 'swap-window -t 8; select-window -t 8' 'move-window -t 8'
+bind -n M-( if 'tmux list-window | grep -q "^9:"' 'swap-window -t 9; select-window -t 9' 'move-window -t 9'
+bind -n M-) if 'tmux list-window | grep -q "^10:"' 'swap-window -t 10; select-window -t 10' 'move-window -t 10'
 
 
 # -- ペイン操作 --------------------
@@ -165,6 +195,7 @@ bind                    C   run '$TMUX_CONF_DIR/scripts/capture-pane'
 # ========================================
 #  MISC
 # ========================================
+set -g base-index 1
 set-option -g bell-action none
 set-option -s escape-time 0
 set-hook -g pane-exited "save-buffer /tmp/last-pane"
