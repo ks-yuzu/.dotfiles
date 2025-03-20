@@ -10,31 +10,37 @@ zle -N __git-status && bindkey "^gs" $_
 ## git diff
 function __peco-git-diff()
 {
-    #local GIT_ROOT="$(pwd)$(perl -e "print '/..' x $(get-git-dir-depth)")"
-    local GIT_ROOT="$(perl -e "print '../' x $(get-git-dir-depth)")"
+  #local GIT_ROOT="$(pwd)$(perl -e "print '/..' x $(get-git-dir-depth)")"
+  #local GIT_ROOT="$(perl -e "print '../' x $(get-git-dir-depth)")"
+  local GIT_ROOT="$(git rev-parse --show-toplevel)"
 
-    if [ -z "$(git status --porcelain)" ]; then
-      echo ''
-      BUFFER=' git status'
-    else
-      local SELECTED_FILE="$(git status --porcelain | \
-                               grep '^ *M' | \
-                               peco --query "$LBUFFER" | \
-                               awk -F ' ' '{print $NF}')"
-      [ -n "$SELECTED_FILE" ] || return
+  local GIT_STATUS="$(git status --porcelain)"
+  if [ -z "$GIT_STATUS" ]; then
+    echo ''
+    BUFFER=' git status'
+  else
+    local SELECTED_FILES="$( \
+      echo "$GIT_STATUS" \
+      | grep '^[ AMRD]M' \
+      | peco --query "$LBUFFER" \
+      | cut -b4- \
+      | sed -e 's/^.* -> //' \
+    )"
+    [ -n "$SELECTED_FILES" ] || return
 
-      BUFFER=" (builtin cd '$GIT_ROOT' && git diff $(echo "$SELECTED_FILE" | tr '\n' ' '))"
-    fi
+    FILE_PATHS="$(echo "$SELECTED_FILES" | xargs -I{} echo $GIT_ROOT/{} | xargs)"
+    BUFFER=" git diff ${FILE_PATHS}"
+  fi
 
-    zle accept-line
+  zle accept-line
 }
 zle -N __peco-git-diff && bindkey "^gd" $_
 
 
 ## git diff --cached
 function __git-diff-cached() {
-    BUFFER=' git diff --cached'
-    zle accept-line
+  BUFFER=' git diff --cached'
+  zle accept-line
 }
 zle -N __git-diff-cached && bindkey "^gD" $_
 
@@ -42,13 +48,17 @@ zle -N __git-diff-cached && bindkey "^gD" $_
 ## git add
 function __peco-git-add()
 {
-    local SELECTED_FILE="$(git status --short | \
-                             peco --query "$LBUFFER" | \
-                             awk -F ' ' '{print $NF}')"
-    [ -n "$SELECTED_FILE" ] || return
+  local SELECTED_FILES="$( \
+    git status --short \
+    | peco --query "$LBUFFER" \
+    | cut -b4- \
+    | sed -e 's/^.* -> //' \
+    | tr '\n' ' ' \
+  )"
+  [ -n "$SELECTED_FILES" ] || return
 
-    BUFFER=" git add $(echo "$SELECTED_FILE" | tr '\n' ' ')"
-    zle accept-line
+  BUFFER=" git add $SELECTED_FILES"
+  zle accept-line
 }
 zle -N __peco-git-add && bindkey "^ga" $_
 
@@ -56,11 +66,31 @@ zle -N __peco-git-add && bindkey "^ga" $_
 ## git checkout
 function __peco-git-checkout()
 {
-    BUFFER=" git checkout $(git branch -a | peco | sed -e 's/^..//g' -e '/->/d' | awk '!a[$0]++')"
-    zle accept-line
+  branch=$(git branch -a | peco | sed -e 's/^..//g' -e '/->/d' | awk '!a[$0]++')
+  if [[ "$branch" =~ "remotes/origin/" ]]; then
+    branch=$(echo $branch | sed -e 's|remotes/origin/||')
+    BUFFER=" git checkout -b $branch origin/$branch"
+  else
+    BUFFER=" git switch $branch"
+  fi
+  CURSOR=$#BUFFER
 }
 zle -N __peco-git-checkout && bindkey "^go" $_
 
+## git checkout
+function __peco-git-fetch-and-switch()
+{
+  branch=$(git branch -a | peco | sed -e 's/^..//g' -e '/->/d' | awk '!a[$0]++')
+
+  if [[ "$branch" =~ "remotes/origin/" ]]; then
+    branch=$(echo $branch | sed -e 's|remotes/origin/||')
+    BUFFER=" git fetch origin ${branch}:${branch} && git checkout -b $branch origin/$branch"
+  else
+    BUFFER=" git fetch origin ${branch}:${branch} && git switch ${branch}"
+  fi
+  CURSOR=$#BUFFER
+}
+zle -N __peco-git-fetch-and-switch && bindkey "^gO" $_
 
 ## git graph
 function __git-graph()
@@ -89,6 +119,34 @@ function __git-commit()
 zle -N __git-commit && bindkey "^gc" $_
 
 
+## fetch master
+function __git-fetch-master()
+{
+    if [[ $(git branch | grep -c '^\s*master$') = 1 ]]; then
+        local TARGET_BRANCH=master:master
+    elif [[ $(git branch | grep -c '^\s*main$') = 1 ]]; then
+        local TARGET_BRANCH=main:main
+    fi
+    BUFFER=" git fetch origin $TARGET_BRANCH"
+    CURSOR=$#BUFFER
+}
+zle -N __git-fetch-master && bindkey "^gf" $_
+
+function __git-checkout-pullrequest()
+{
+  BUFFER=" gh pr checkout"
+  zle accept-line
+}
+zle -N __git-checkout-pullrequest && bindkey "^gp" $_
+
+function __git-browse()
+{
+  BUFFER=" gh browse"
+  zle accept-line
+}
+zle -N __git-browse && bindkey "^gb" $_
+
+
 ## utils
 function __cd-git-root
 {
@@ -105,10 +163,12 @@ function get-path-from-git-root {
 
 function get-git-root-dir
 {
-    if [[ $(get-git-dir-depth) != '0' ]]; then
-        local REL_PATH_FROM_GIT_ROOT=$(get-path-from-git-root | perl -pe 's!/$!!')
-        pwd | perl -pe "s!${REL_PATH_FROM_GIT_ROOT}/?\$!!"
-    fi
+    git rev-parse --show-toplevel
+
+#   if [[ $(get-git-dir-depth) != '0' ]]; then
+#       local REL_PATH_FROM_GIT_ROOT=$(get-path-from-git-root | perl -pe 's!/$!!')
+#       pwd | perl -pe "s!${REL_PATH_FROM_GIT_ROOT}/?\$!!"
+#   fi
 }
 
 function get-git-dir-depth
@@ -120,3 +180,4 @@ function get-git-dir-depth
         echo $depth
     fi
 }
+
