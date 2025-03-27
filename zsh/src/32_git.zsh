@@ -1,3 +1,5 @@
+source ~/.dotfiles/zsh/plugins/fzf-git.zsh
+
 ## git status
 function __git-status()
 {

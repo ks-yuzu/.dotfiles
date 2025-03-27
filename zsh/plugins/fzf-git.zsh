@@ -152,7 +152,6 @@ if [[ $- =~ i ]] || [[ $1 = --run ]]; then # ----------------------------------
 
 # Redefine this function to change the options
 _fzf_git_fzf() {
-  # fzf --height 80% \
   fzf --height 70% --tmux 98%,90% \
     --layout reverse --multi --min-height 20+ --border \
     --no-separator --header-border horizontal \
