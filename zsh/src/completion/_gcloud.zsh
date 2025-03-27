@@ -7,10 +7,11 @@ function source-if-exists {
   fi
 }
 
-source-if-exists '/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc'
+GOOGLE_CLOUD_SDK=/usr/local/Caskroom/google-cloud-sdk/latest
+source-if-exists "$GOOGLE_CLOUD_SDK/path.zsh.inc"
+source-if-exists "$GOOGLE_CLOUD_SDK/completion.zsh.inc"
 
-# update PATH for the Google Cloud SDK.
-source-if-exists "$HOME/google-cloud-sdk/path.zsh.inc"
-# enable shell command completion for gcloud.
-source-if-exists "$HOME/google-cloud-sdk/completion.zsh.inc"
+GOOGLE_CLOUD_SDK=/usr/share/google-cloud-sdk
+source-if-exists "$GOOGLE_CLOUD_SDK/path.zsh.inc"
+source-if-exists "$GOOGLE_CLOUD_SDK/completion.zsh.inc"
 

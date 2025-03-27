@@ -43,37 +43,41 @@ function get-tmux-info-for-prompt()
 # k8s
 function get-kube-cluster-info() {
     which kubectl > /dev/null || return
-
-  # local kube_context=$(kubectl config current-context 2> /dev/null)
-    local kube_context=$(grep current-context ~/.kube/config | cut -d' ' -f2)
     [[ "$?" = "0" ]] || return
 
-    if [[ "$_KUBE_CONTEXT" != "$kube_context" ]]; then
-        _KUBE_CONTEXT=$kube_context
-    else
+  # local kube_context=$(kubectl config current-context 2> /dev/null)
+    local kube_context=$(grep current-context ${KUBECONFIG:-~/.kube/config} | cut -d' ' -f2)
+    local color="${KUBECONFIG+\e[38;5;192m}"
+    local colorclear="\e[m"
+
+    if [[ "$_KUBE_CONTEXT" == "$kube_context" ]]; then
         echo $_K8S_CLUSTER_INFO
         return
     fi
 
+    _KUBE_CONTEXT=$kube_context
+
     if [[ $_KUBE_CONTEXT =~ gke ]]; then
-        _K8S_CLUSTER_INFO=" \e[38;5;33mgke:\e[m$(echo $_KUBE_CONTEXT | cut -d_ -f2,4 --output-delimiter '/')"
       # _K8S_CLUSTER_INFO=" $(imgcat ~/.dotfiles/zsh/icons/gke-icon.png; echo -n -e "\033[2C")$(echo $_KUBE_CONTEXT | cut -d_ -f4-)"
+      local cluster_name=$(echo $_KUBE_CONTEXT | cut -d_ -f2,4 --output-delimiter '/')
+      _K8S_CLUSTER_INFO=" \e[38;5;33mgke:\e[m${color}${cluster_name}${colorclear}"
     elif [[ $_KUBE_CONTEXT =~ aws ]]; then
         local product=$(get-aws-account-name-from-id $(echo $_KUBE_CONTEXT | cut -d: -f5))
         # sts token のアカウントとクラスタのアカウントが違っていれば色を変える
-        if [[ -z "$STS_EXPIRATION_UNIXTIME" ]]; then
+        if [[ -z "$AWS_PROFILE" ]]; then
             :
-        elif [[ "${STS_ALIAS_SHORT:-$AWS_PRODUCT}" = "$product" ]]; then
-            product="%F{green}${product}%f"
+        elif [[ "$AWS_PROFILE" == "$product" ]]; then
+            product="${product}"
         else
-            product="%F{red}${product}%f"
+            product="%F{red}${product}"
         fi
-        _K8S_CLUSTER_INFO=" \e[38;5;202meks:\e[m${product}/$(echo $_KUBE_CONTEXT | cut -d/ -f2)"
+        _K8S_CLUSTER_INFO=" \e[38;5;202meks:\e[m${color}${product}${color}/$(echo $_KUBE_CONTEXT | cut -d/ -f2)${colorclear}"
       # _K8S_CLUSTER_INFO=" $(imgcat ~/.dotfiles/zsh/icons/eks-icon.png; echo -n -e "\033[2C")${product}:$(echo $_KUBE_CONTEXT | cut -d/ -f2)"
     else
-        _K8S_CLUSTER_INFO=''
+        _K8S_CLUSTER_INFO=" k8s:$_KUBE_CONTEXT"
     fi
 
+    #echo -n "${fg[cyan]}\xE2\x8E\x88${reset_color}"
     echo $_K8S_CLUSTER_INFO
 }
 
@@ -130,10 +134,20 @@ function _is_gcloud_config_updated() {
 
 function _update_gcloud_context() {
     if _is_gcloud_config_updated; then
-        _GCLOUD_PROJECT="$(gcloud config get-value project 2>/dev/null)"
+        # _GCLOUD_PROJECT="$(gcloud config get-value project 2>/dev/null)"
+        _GCLOUD_PROJECT="$(=cat ~/.config/gcloud/configurations/config_$(=cat ~/.config/gcloud/active_config) | grep project | cut -d' ' -f3)"
     fi
 
     return 0
+}
+
+function get-grizzly-info() {
+  which yq > /dev/null || return
+  yq --version >/dev/null 2>&1 || return
+  [ -f ~/.config/grizzly/settings.yaml ] || return
+
+  local GRIZZLY_CONTEXT=$(yq .current-context ~/.config/grizzly/settings.yaml)
+  echo "${GRIZZLY_CONTEXT}"
 }
 
 
@@ -154,9 +168,14 @@ function update-prompt()
     # local tmuxinfo=" %F{magenta}$(disp-tmux-info-for-prompt)%f"
     local tmuxinfo=""
 
-    local cdir=" %F{yellow}%~%f"
+    if [[ $(( $(tput cols) - 110 )) -gt $(pwd | wc -c) ]]; then
+        local cdir=" %F{yellow}%~%f"
+    else
+        local cdir=" %F{yellow}\$(shorten-path $(pwd))%f"
+    fi
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
+    # local mark="%B%(?,%F{green} ,%F{red} )%f%b "
 
     if [ -n "$SHOW_KUBEINFO_IN_PROMPT" ]; then
       # local kubeinfo="$(get-kube-cluster-info)$(get-kube-ns-info)"
@@ -194,11 +213,13 @@ function update-prompt()
       # local gcloud=" $(imgcat ~/.dotfiles/zsh/icons/gcp-icon.png; echo -n -e "\033[2C")$_GCLOUD_PROJECT"
     fi
 
+    local grizzlyinfo=$' \e[38;5;130mgrizzly\e[m:'$(get-grizzly-info)
+
     if is-linux; then
-        os_version="[$(cat /etc/os-release | grep VERSION_CODENAME | cut -d= -f2)]"
+        os_version="[$(=cat /etc/os-release | grep VERSION_CODENAME | cut -d= -f2)]"
     fi
 
-    PROMPT="${name}${os_version}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${argocdinfo}${cdir}${endl}${mark}"
+    PROMPT="${name}${os_version}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${argocdinfo}${grizzlyinfo}${cdir}${endl}${mark}"
 }
 # add-zsh-hook precmd update-prompt
 
@@ -242,7 +263,9 @@ function rprompt
     # echo "[${repo_status} /${dir}${ahead_count}]"
 
     local branch_status="%{$color%}${branch}%F{#ccc}@${commit_date}%{$reset_color%}"
-    echo "[${branch_status} ${vcs_info_msg_2_}${vcs_info_msg_3_}%{$reset_color%} ${ahead_count}]"
+
+    local author="$(git config user.name)($(git config user.email))"
+    echo "[ ${branch_status} ${vcs_info_msg_2_}${vcs_info_msg_3_}%{$reset_color%} ${ahead_count}][${author}]"
 }
 
 RPROMPT='$(rprompt)'

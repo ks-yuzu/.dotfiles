@@ -6,36 +6,15 @@ function __git-status()
 }
 zle -N __git-status && bindkey "^gs" $_
 
-
 ## git diff
-function __peco-git-diff()
-{
-  #local GIT_ROOT="$(pwd)$(perl -e "print '/..' x $(get-git-dir-depth)")"
-  #local GIT_ROOT="$(perl -e "print '../' x $(get-git-dir-depth)")"
-  local GIT_ROOT="$(git rev-parse --show-toplevel)"
-
-  local GIT_STATUS="$(git status --porcelain)"
-  if [ -z "$GIT_STATUS" ]; then
-    echo ''
-    BUFFER=' git status'
-  else
-    local SELECTED_FILES="$( \
-      echo "$GIT_STATUS" \
-      | grep '^[ AMRD]M' \
-      | peco --query "$LBUFFER" \
-      | cut -b4- \
-      | sed -e 's/^.* -> //' \
-    )"
-    [ -n "$SELECTED_FILES" ] || return
-
-    FILE_PATHS="$(echo "$SELECTED_FILES" | xargs -I{} echo $GIT_ROOT/{} | xargs)"
-    BUFFER=" git diff ${FILE_PATHS}"
+function __git-diff-fzf() {
+  local files=$(_fzf_git_files | xargs)
+  if [[ -n "$files" ]]; then
+    BUFFER=" git diff -- $files"
+    zle accept-line
   fi
-
-  zle accept-line
 }
-zle -N __peco-git-diff && bindkey "^gd" $_
-
+zle -N __git-diff-fzf && bindkey "^gd" $_
 
 ## git diff --cached
 function __git-diff-cached() {
@@ -45,52 +24,51 @@ function __git-diff-cached() {
 zle -N __git-diff-cached && bindkey "^gD" $_
 
 
-## git add
-function __peco-git-add()
-{
-  local SELECTED_FILES="$( \
-    git status --short \
-    | peco --query "$LBUFFER" \
-    | cut -b4- \
-    | sed -e 's/^.* -> //' \
-    | tr '\n' ' ' \
-  )"
-  [ -n "$SELECTED_FILES" ] || return
-
-  BUFFER=" git add $SELECTED_FILES"
-  zle accept-line
+function __git-add-fzf() {
+  local files=$(_fzf_git_files | xargs)
+  if [[ -n "$files" ]]; then
+    BUFFER=" git add $files"
+    zle accept-line
+  fi
 }
-zle -N __peco-git-add && bindkey "^ga" $_
+zle -N __git-add-fzf && bindkey "^ga" $_
 
 
 ## git checkout
-function __peco-git-checkout()
+function __git-switch-fzf()
 {
-  branch=$(git branch -a | peco | sed -e 's/^..//g' -e '/->/d' | awk '!a[$0]++')
-  if [[ "$branch" =~ "remotes/origin/" ]]; then
-    branch=$(echo $branch | sed -e 's|remotes/origin/||')
-    BUFFER=" git checkout -b $branch origin/$branch"
+  local branch=$(_fzf_git_branches)
+  [[ -z "$branch" ]] && return
+
+  if [[ "$branch" =~ "origin/" ]]; then
+    local branch=$(echo $branch | sed -e 's|origin/||')
+    BUFFER=" git switch -c $branch origin/$branch"
   else
     BUFFER=" git switch $branch"
   fi
   CURSOR=$#BUFFER
+  zle reset-prompt
 }
-zle -N __peco-git-checkout && bindkey "^go" $_
+zle -N __git-switch-fzf && bindkey "^go" $_
 
 ## git checkout
-function __peco-git-fetch-and-switch()
+function __git-fetch-and-switch-fzf()
 {
-  branch=$(git branch -a | peco | sed -e 's/^..//g' -e '/->/d' | awk '!a[$0]++')
+  local branch=$(_fzf_git_branches)
+  [[ -z "$branch" ]] && return
 
-  if [[ "$branch" =~ "remotes/origin/" ]]; then
-    branch=$(echo $branch | sed -e 's|remotes/origin/||')
-    BUFFER=" git fetch origin ${branch}:${branch} && git checkout -b $branch origin/$branch"
-  else
-    BUFFER=" git fetch origin ${branch}:${branch} && git switch ${branch}"
+  if [[ "$branch" =~ "origin/" ]]; then
+    local branch=$(echo $branch | sed -e 's|origin/||')
+    # BUFFER=" git fetch origin ${branch}:${branch} && git checkout -b $branch origin/$branch"
+  #   BUFFER=" git fetch origin ${branch}:${branch} && git switch -c $branch origin/$branch"
+  # else
+  #   BUFFER=" git fetch origin ${branch}:${branch} && git switch ${branch}"
   fi
+  BUFFER=" git fetch origin ${branch}:${branch} && git switch ${branch}"
   CURSOR=$#BUFFER
+  zle reset-prompt
 }
-zle -N __peco-git-fetch-and-switch && bindkey "^gO" $_
+zle -N __git-fetch-and-switch-fzf && bindkey "^gO" $_
 
 ## git graph
 function __git-graph()

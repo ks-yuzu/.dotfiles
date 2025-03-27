@@ -99,6 +99,10 @@ function __k8s-manifest-dyff()
 }
 zle -N __k8s-manifest-dyff && bindkey "^u^[^d" $_
 
+# kustomize の overlay を選択して移動
+# - preview: ディレクトリ内のファイル一覧, kustomization.yaml の中身
+# - bind:
+#   - tab: 選択中のディレクトリで kustomize build
 function __k8s-switch-kustomize-overlay()
 {
   if ! (pwd | grep -P '/overlays?') > /dev/null; then
@@ -107,7 +111,15 @@ function __k8s-switch-kustomize-overlay()
   fi
 
   OVERLAYS_DIR=$(pwd | grep -Po '.*/overlays?')
-  dir=$(find $OVERLAYS_DIR -name kustomization.yaml | xargs dirname | sed -e "s|$OVERLAYS_DIR||" | peco | xargs -I{} echo "${OVERLAYS_DIR}{}")
+  dir=$(
+    # builtin cd $OVERLAYS_DIR;
+    find $OVERLAYS_DIR -name kustomization.yaml \
+      | xargs dirname \
+      | sed -e "s|$OVERLAYS_DIR/||" \
+      | fzf --preview "bat --color=always ${OVERLAYS_DIR}/{}/kustomization.yaml; ls -l --almost-all --si --time-style=long-iso ${OVERLAYS_DIR}/{}" \
+            --bind "tab:preview:kustomize build --enable-alpha-plugins --enable-exec --enable-helm --load-restrictor LoadRestrictionsNone ${OVERLAYS_DIR}/{} 2>&1" \
+      | xargs -I{} echo "${OVERLAYS_DIR}/{}"
+  )
   if [ -z "$dir" ]; then
     return 1
   fi
@@ -118,6 +130,10 @@ function __k8s-switch-kustomize-overlay()
 }
 zle -N __k8s-switch-kustomize-overlay && bindkey "^[o" $_
 
+# kustomize のディレクトリを選択して移動
+# - preview: ディレクトリ内のファイル一覧, kustomization.yaml の中身
+# - bind:
+#   - tab: 選択中のディレクトリで kustomize build
 function __k8s-switch-kustomize-dir()
 {
   if ! (pwd | grep -P '/(base|overlay|component)s?') > /dev/null; then
@@ -126,7 +142,14 @@ function __k8s-switch-kustomize-dir()
   fi
 
   KUSTOMIZE_ROOT_DIR=$(pwd | grep -Po '.*/(base|overlay|component)s?' | xargs dirname)
-  dir=$(find $KUSTOMIZE_ROOT_DIR -name kustomization.yaml | xargs dirname | sed -e "s|$KUSTOMIZE_ROOT_DIR||" | peco | xargs -I{} echo "${KUSTOMIZE_ROOT_DIR}{}")
+  dir=$(
+    find $KUSTOMIZE_ROOT_DIR -name kustomization.yaml \
+      | xargs dirname \
+      | sed -e "s|$KUSTOMIZE_ROOT_DIR||" \
+      | fzf --preview "bat --color=always ${KUSTOMIZE_ROOT_DIR}/{}/kustomization.yaml; ls -l --almost-all --si --time-style=long-iso ${KUSTOMIZE_ROOT_DIR}/{}" \
+            --bind "tab:preview:kustomize build --enable-alpha-plugins --enable-exec --enable-helm --load-restrictor LoadRestrictionsNone ${KUSTOMIZE_ROOT_DIR}/{} 2>&1" \
+      | xargs -I{} echo "${KUSTOMIZE_ROOT_DIR}{}"
+  )
   if [ -z "$dir" ]; then
     return 1
   fi

@@ -43,7 +43,7 @@ sub build {
       path($JOINED_SRC)->append($zshfile->lines)
     }
   }
-
+  path($JOINED_SRC)->append('if (which zprof > /dev/null); then zprof; fi');
 
   system qq(zsh -n $JOINED_SRC);              # syntax check
   system qq(zsh -c "zcompile $JOINED_SRC");   # compile

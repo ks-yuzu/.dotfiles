@@ -3,7 +3,7 @@ setopt auto_pushd
 
 #### [ completion ]
 # auto-complete
-autoload -Uz compinit && compinit -u
+autoload -Uz compinit && compinit -C
 
 
 setopt extended_glob                         # use wildcard
@@ -19,13 +19,15 @@ setopt brace_ccl                             # {a-c} -> a b c
 #### [ key ]
 bindkey -e                                   # emacs like
 bindkey "\e[Z" reverse-menu-complete         # enable Shift-Tab
+#bindkey '^M'   accept-and-hold
 
 setopt ignore_eof                            # Ctrl+Dでzshを終了しない
+
 
 # CapsLock -> ctrl
 if (( ${+commands[setxkbmap]} )); then
     if [[ "$(uname)" != 'Darwin' ]]; then
-        setxkbmap -option ctrl:nocaps
+        setxkbmap -option ctrl:nocaps 2> /dev/null
     fi
 fi
 
@@ -88,7 +90,6 @@ function is-wsl {
 function is-cygwin {
   [[ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]]
 }
-
 
 #### [ 分割設定ファイル ]
 

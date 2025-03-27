@@ -4,10 +4,8 @@
 alias ls='ls -F --show-control-chars --color=auto'
 alias la='ls -a'
 alias ll='ls -l --si --time-style=long-iso'
-# alias ll='ls -l'
 alias ltr='ls -l -tr'
 alias lal='ls -l --almost-all --si --time-style=long-iso'
-# alias lal='ls -al --color=auto'
 alias laltr='ls -al -tr --color=auto'
 
 alias ..='cd ..'
@@ -20,29 +18,25 @@ alias rm='rm -i'
 
 alias tmux='tmux -2'
 
-#alias conky='conky -b NL'
-#alias guake='guake &'
-
 alias e='emacsclient -n'
 alias ekill="emacsclient -e '(kill-emacs)'"
 #alias ed='emacs --daemon'
 
-alias gita='git add'
-alias gitc='git commit -v'
-alias gitcm='git commit -v -m'
-alias gitst='git status'
-
-if which xdg-open >/dev/null 2>&1 ; then # Linux
-    alias op='xdg-open'
-    alias open='xdg-open'
+if which xdg-open >/dev/null 2>&1 ; then
+  alias op='xdg-open'
+  alias open='xdg-open'
 fi
 
+which colordiff >/dev/null 2>&1 && alias cdiff='colordiff -u'
+which bat       >/dev/null 2>&1 && alias cat='bat --paging=never'
+which fzf       >/dev/null 2>&1 && alias ff='fzf'
+
+#alias conky='conky -b NL'
+#alias guake='guake &'
 alias octave='octave --no-gui'
 
 alias gcc='gcc -Wall -Wextra -std=c11                               -Winline'
 alias g++='g++ -Wall -Wextra -std=c++17 -Weffc++ -Wsuggest-override -Winline'
-
-alias cdiff='colordiff -u'
 
 alias dropbox='dropbox.py $(dropbox.py help | grep -P "^ " | peco | awk "{print \$1}")'
 
@@ -57,31 +51,26 @@ alias -s pdf='evince'
 # alias -g L='| less'
 alias -g NL='>/dev/null 2>&1 &'
 
-alias pm-suspend="echo \"[alias] 'pm-suspend' does not work well on Ubuntu14.04\""
-
-alias sdedit="java -jar ~/bin/sdedit-4.2-beta7.jar $*"
-alias plantuml="java -jar ~/bin/plantuml.jar $*"
-
 
 function cd() { builtin cd $@ && ls --color; }
 function pr-select { gh pr list| peco | awk '{print $1}' }
 
 
 function ssh() {
-  if [ -n "$TMUX" ]; then
-    tmux set automatic-rename off
-    tmux rename-window "ssh $@"
-    tmux set-window-option window-status-current-format "#[fg=colour255,bg=#00aa22,bold] #I: #(\
-      if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
-        echo '#W';\
-      elif [ #{pane_current_path} = '$HOME' ]; then\
-        echo 'HOME';\
-      else\
-        : basename '#{pane_current_path}';\
-        echo '#{pane_current_path}' | perl -pe 's|^$HOME|~|';\
-      fi\
-    ) "
-  fi
+# if [ -n "$TMUX" ]; then
+#   tmux set automatic-rename off
+#   tmux rename-window "ssh $@"
+#   tmux set-window-option window-status-current-format "#[fg=colour255,bg=#00aa22,bold] #I: #(\
+#     if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
+#       echo '#W';\
+#     elif [ #{pane_current_path} = '$HOME' ]; then\
+#       echo 'HOME';\
+#     else\
+#       : basename '#{pane_current_path}';\
+#       echo '#{pane_current_path}' | perl -pe 's|^$HOME|~|';\
+#     fi\
+#   ) "
+# fi
 
   timestamp=$(date --iso-8601=seconds); echo $timestamp
   joined_args=$(perl -e '$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); print ${args}' $@)
@@ -93,23 +82,26 @@ function ssh() {
       script $logfile /usr/bin/ssh $@      # for BSD
   fi
 
-  if [ -n "$TMUX" ]; then
-    tmux set-window-option window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #(\
-      if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
-        echo '#W';\
-      elif [ #{pane_current_path} = '$HOME' ]; then\
-        echo 'HOME';\
-      else\
-        : basename '#{pane_current_path}';\
-        echo '#{pane_current_path}' | perl -pe 's|^$HOME|~|';\
-      fi\
-    ) "
-    tmux set automatic-rename on
-  fi
+# if [ -n "$TMUX" ]; then
+#   tmux set-window-option window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #(\
+#     if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
+#       echo '#W';\
+#     elif [ #{pane_current_path} = '$HOME' ]; then\
+#       echo 'HOME';\
+#     else\
+#       : basename '#{pane_current_path}';\
+#       echo '#{pane_current_path}' | perl -pe 's|^$HOME|~|';\
+#     fi\
+#   ) "
+#   tmux set automatic-rename on
+# fi
 }
 
+## clipboard
+if ! (( ${+commands[pbpaste]} )); then
+  (( ${+commands[win32yank.exe]} )) && alias pbpaste='win32yank.exe -o'
+fi
 
-## copy stdout to clipboard
 if   which pbcopy        >/dev/null 2>&1; then alias -g clip='tee >(pbcopy)'                   # Linux
 elif which xsel          >/dev/null 2>&1; then alias -g clip='tee >(xsel --input --clipboard)' # Mac
 elif which putclip       >/dev/null 2>&1; then alias -g clip='tee >(putclip)'                  # Cygwin
