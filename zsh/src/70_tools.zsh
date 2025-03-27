@@ -123,6 +123,7 @@ function lock()
 
 function shorten-path()
 {
+  length=${2:-3}
   focused_path=
   short_path=
 
@@ -140,7 +141,7 @@ function shorten-path()
       if [[ -e "${focused_path}/.git" || $# -eq 0 ]]; then
         short_path="${short_path}/${dir}"
       else
-        short_path="${short_path}/${dir:0:3}"
+        short_path="${short_path}/${dir:0:${length}}"
       fi
     fi
 

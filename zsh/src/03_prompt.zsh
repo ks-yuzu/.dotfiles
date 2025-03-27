@@ -57,10 +57,12 @@ function get-kube-cluster-info() {
 
     _KUBE_CONTEXT=$kube_context
 
+    local label="⎈" # gke:
     if [[ $_KUBE_CONTEXT =~ gke ]]; then
       # _K8S_CLUSTER_INFO=" $(imgcat ~/.dotfiles/zsh/icons/gke-icon.png; echo -n -e "\033[2C")$(echo $_KUBE_CONTEXT | cut -d_ -f4-)"
       local cluster_name=$(echo $_KUBE_CONTEXT | cut -d_ -f2,4 --output-delimiter '/')
-      _K8S_CLUSTER_INFO=" \e[38;5;33mgke:\e[m${color}${cluster_name}${colorclear}"
+      # local label=gke
+      _K8S_CLUSTER_INFO=" \e[38;5;33m${label}\e[m${color}${cluster_name}${colorclear}"
     elif [[ $_KUBE_CONTEXT =~ aws ]]; then
         local product=$(get-aws-account-name-from-id $(echo $_KUBE_CONTEXT | cut -d: -f5))
         # sts token のアカウントとクラスタのアカウントが違っていれば色を変える
@@ -71,10 +73,11 @@ function get-kube-cluster-info() {
         else
             product="%F{red}${product}"
         fi
-        _K8S_CLUSTER_INFO=" \e[38;5;202meks:\e[m${color}${product}${color}/$(echo $_KUBE_CONTEXT | cut -d/ -f2)${colorclear}"
+        # local label=eks:
+        _K8S_CLUSTER_INFO=" \e[38;5;202m${label}:\e[m${color}${product}${color}/$(echo $_KUBE_CONTEXT | cut -d/ -f2)${colorclear}"
       # _K8S_CLUSTER_INFO=" $(imgcat ~/.dotfiles/zsh/icons/eks-icon.png; echo -n -e "\033[2C")${product}:$(echo $_KUBE_CONTEXT | cut -d/ -f2)"
     else
-        _K8S_CLUSTER_INFO=" k8s:$_KUBE_CONTEXT"
+        _K8S_CLUSTER_INFO=" ${label}:$_KUBE_CONTEXT"
     fi
 
     #echo -n "${fg[cyan]}\xE2\x8E\x88${reset_color}"
@@ -99,7 +102,8 @@ function get-argocd-info() {
   # local ARGOCD_CONTEXT=$(argocd context | grep '^*' | awk '{print $2}' | cut -d. -f1 | sed -E 's/-?argo-?cd//')
     local ARGOCD_CONTEXT=$(grep '^current-context' ~/.argocd/config | cut -d' ' -f2 | cut -d. -f1 | sed -E 's/-?argo-?cd//')
 
-    echo " \e[38;5;202margocd:\e[m${ARGOCD_CONTEXT}"
+    local label="🐙" # argocd:
+    echo " \e[38;5;202m${label}\e[m${ARGOCD_CONTEXT}"
 }
 
 function _is_gcloud_config_updated() {
@@ -157,21 +161,21 @@ function update-prompt()
     _update_gcloud_context
 
     if [ -n "$SSH_CONNECTION" ]; then
-        host='%m'
+      local host_suffix='@%m'
     elif [ -f /.dockerenv ]; then
-        host='docker'
+      local host_sufiix='@docker'
     else
-        host='local'
+      local host_suffix='@local'
     fi
 
-    local name="%F{green}%n@${host}%f"
+    local name="%F{green}%n${host_suffix}%f"
     # local tmuxinfo=" %F{magenta}$(disp-tmux-info-for-prompt)%f"
     local tmuxinfo=""
 
     if [[ $(( $(tput cols) - 110 )) -gt $(pwd | wc -c) ]]; then
         local cdir=" %F{yellow}%~%f"
     else
-        local cdir=" %F{yellow}\$(shorten-path $(pwd))%f"
+        local cdir=" %F{yellow}\$(shorten-path $(pwd) 4)%f"
     fi
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
@@ -191,7 +195,8 @@ function update-prompt()
         ststext="$AWS_PROFILE"
       elif [ -z $STS_EXPIRATION_UNIXTIME ]; then
         #stsface='(-ω-)zzz'
-        ststext='(none)'
+        # ststext='(none)'
+        ststext='-'
       else
         local lefttime="$(($STS_EXPIRATION_UNIXTIME - $(date +%s)))"
 
@@ -204,21 +209,20 @@ function update-prompt()
         fi
       fi
 
-      local stsinfo=$' \e[38;5;202maws:\e[m'${ststext}
-      # local sts=" $(imgcat ~/.dotfiles/zsh/icons/aws-icon.png; echo -n -e "\033[2C")${info}"
+      local stsinfo=$' \e[38;5;202m \e[m'${ststext}
     fi
 
     if [ -n "$SHOW_GCLOUDINFO_IN_PROMPT" ]; then
-      local gcloudinfo=$' \e[38;5;33mgcp:\e[m'${_GCLOUD_PROJECT:-(none)}
-      # local gcloud=" $(imgcat ~/.dotfiles/zsh/icons/gcp-icon.png; echo -n -e "\033[2C")$_GCLOUD_PROJECT"
+      local gcloudinfo=$' \e[38;5;33m \e[m'${_GCLOUD_PROJECT:--}
     fi
 
-    local grizzlyinfo=$' \e[38;5;130mgrizzly\e[m:'$(get-grizzly-info)
+    local grizzlyinfo=$' \e[38;5;130m🐻\e[m'$(get-grizzly-info)
 
-    if is-linux; then
-        os_version="[$(=cat /etc/os-release | grep VERSION_CODENAME | cut -d= -f2)]"
-    fi
+    # if is-linux; then
+    #   local os_version="[$(=cat /etc/os-release | grep VERSION_CODENAME | cut -d= -f2)]"
+    # fi
 
+    # PROMPT="${name}${os_version}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${argocdinfo}${grizzlyinfo}${cdir}${endl}${mark}"
     PROMPT="${name}${os_version}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${argocdinfo}${grizzlyinfo}${cdir}${endl}${mark}"
 }
 # add-zsh-hook precmd update-prompt
