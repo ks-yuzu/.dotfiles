@@ -21,5 +21,19 @@
 [alias]
   graph = log --graph --all --pretty=format:'%C(green)%cd%C(reset) %C(red)%h%C(reset) %C(yellow bold)%d%C(reset) %C(bold)%s%C(reset) %C(blue bold)<%an>%C(reset)' --abbrev-commit --date=format:'%Y-%m-%d %H:%M'
   graph-rich = log --graph --all --pretty=format:'%C(red reverse)%d%Creset%C(white reverse) %h% Creset %C(green reverse) %an %Creset %C(cyan bold)%ad (%ar)%Creset%n%C(white bold)%w(80)%s%Creset%n%n%w(80,2,2)%b' --abbrev-commit --date=format:'%Y-%m-%d %H:%M:%S' --name-status
-  showpr = "!f() { git log --merges --oneline --reverse --ancestry-path $1...candidate-production | grep 'Merge pull request #' | head -n 1; }; f"
+  show-current-hash = !git --no-pager show --format='%h' --no-patch
+  open = !gh browse
+  browse = !gh browse
+  browse-pr = !open $(gh browse -n)/pulls
+  retag = !zsh -c 'git tag -d $1 && git tag -a $1 -m $1 && echo -n "execute: git push origin $1 --force \\[y/N\\]: " && (read -q && echo && git push origin $1 --force || echo Skip push.)' $@
   pr-setup = config --add remote.origin.fetch +refs/pull/*/head:refs/remotes/origin/pr/*
+  pr-checkout = !gh pr list | peco | awk '{print $1}' | xargs gh pr checkout
+
+[url "git@github.com:"]
+  insteadOf = https://github.com/
+
+[ghq]
+  root = ~/repo
+
+[rebase]
+  autostash = true
