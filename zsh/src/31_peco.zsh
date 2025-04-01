@@ -49,18 +49,41 @@ function reload-zshrc-fzf {
 zle -N reload-zshrc-fzf && bindkey '^x^z' $_ && bindkey '^xz' $_
 
 
-# 選択したファイルパスをラインバッファのカーソル位置に挿入する
+# ファイルを選択して、パスをラインバッファに挿入 or コピーする
+# - query: カーソル位置の単語
 # - preview: ファイル/ディレクトリの内容
 # - bind:
 #   # helm.el ライクなキーバインド
-#   - tab:    サブディレクトリに移動
-#   - ctrl-j: サブディレクトリに移動
-#   - ctrl-l: 親ディレクトリに移動
-function insert-filepath-to-linebuf-fzf {
+#   - tab:       サブディレクトリに移動
+#   - ctrl-j:    サブディレクトリに移動
+#   - ctrl-l:    親ディレクトリに移動
+#   - enter:     選択 - バッファにファイルパスを挿入 (相対パス)
+#   - alt-enter: 選択 - バッファにファイルパスを挿入 (絶対パス)
+#   - ctrl-y:    選択 - ファイルパスをコピー (相対パス)
+#   - alt-y:     選択 - ファイルパスをコピー (絶対パス)
+function select-file-fzf {
+  # カーソルの直前の文字が空白でなければ単語を入力中と判定
+  local prev_char="${BUFFER[$CURSOR]}"
+  local next_char="${BUFFER[$CURSOR+1]}"
+  local is_typing_word=$([[
+    ( -z "$prev_char" || "$prev_char" == [[:space:]] ) &&
+    ( -z "$next_char" || "$next_char" == [[:space:]] )
+  ]] && echo 1)
+
+  if [ -n "$is_typing_word" ]; then
+    local query=''
+  else
+    local word_left="${BUFFER[1,CURSOR]##*[[:space:]]}"
+    local word_right="${BUFFER[CURSOR+1,-1]%%[[:space:]]*}"
+    local query="${word_left}${word_right}"
+  fi
+
   local find_opts="-maxdepth 1 -mindepth 1 -printf '%M %3n %u %g %5s %TY-%Tm-%Td %TR %p\n'"
   local selected=$(
     eval "find . ${find_opts}" | sort -k8,8 \
       | fzf --prompt="$(pwd)> " \
+            --query "$query" \
+            --select-1 \
             --nth 8 \
             --accept-nth 8 \
             --preview 'realpath {8}; echo; [[ -d {8} ]] && ls -l --almost-all --si --time-style=long-iso {8} || bat --color=always {8}' \
@@ -73,126 +96,96 @@ function insert-filepath-to-linebuf-fzf {
                       || find \$(realpath -s --relative-to=. \$(dirname {8}))    ${find_opts} | sort -k8,8 \
                     )+clear-query+top" \
             --bind "ctrl-l:reload(find \$(realpath -s --relative-to=. \$(dirname {8})/..) ${find_opts} | sort -k8,8)+clear-query+top" \
+            --bind "enter:accept" \
+            --bind "alt-enter:become(realpath {8})" \
+            --bind "ctrl-y:execute(echo {8} | pbcopy)+abort" \
+            --bind "alt-y:execute(realpath {8} | pbcopy)+abort" \
   )
   [[ -z "$selected" ]] && return
 
-  LBUFFER+="$selected"
+  if [ -n "$is_typing_word" ]; then
+    LBUFFER+="$selected"
+  else
+    local start=$(( CURSOR - ${#word_left} ))
+    local end=$(( CURSOR + ${#word_right} ))
+    BUFFER="${BUFFER[1,start]}${selected}${BUFFER[end+1,-1]}"
+    CURSOR=$(( start + ${#selected} ))
+  fi
+}
+zle -N select-file-fzf && bindkey '^x^f' $_
+
+
+function zsh-snippets-fzf() {
+  local snippets="$HOME/.dotfiles/zsh/snippets.txt"
+  if [ ! -e "$snippets" ]; then
+    echo "$snippets is not found." >&2
+    return 1
+  fi
+
+  local line="$(grep -v -e "^\s*#" -e "^\s*$" "$snippets"  | fzf --query "$LBUFFER")"
+  if [ -z "$line" ]; then
+    return 1
+  fi
+
+  local command="$(echo "$line" | sed "s/^\[[^]]*\] *//g")"
+  if [ -z "$command" ]; then
+    return 1
+  fi
+
+  BUFFER="$command"
+  CURSOR=$#BUFFER
+}
+zle -N zsh-snippets-fzf && bindkey '^x^x' $_
+
+
+function kill-fzf() {
+  local command="ps aux --sort=-pid"
+  local pid=($(
+    eval "$command" \
+      | fzf --multi \
+            --nth 2,11.. \
+            --accept-nth 2 \
+            --header-lines=1 \
+            --preview 'ps -p {2} -o pid,ppid,etime,%cpu,%mem,cmd; echo; pstree -p {2}' \
+            --bind "ctrl-r:reload($command)" \
+            --bind "tab:preview:cat /proc/{2}/environ | tr '\0' '\n'" \
+  ))
+
+  if [ -n "$pid" ]; then
+    echo 'kill processes (SIGTERM):'
+    ps u "${pid[@]}"
+    kill "${pid[@]}"
+  fi
+
   zle reset-prompt
 }
-zle -N insert-filepath-to-linebuf-fzf && bindkey '^x^f' $_
+alias pka="kill-fzf"
+zle -N kill-fzf && bindkey '^xp' $_
 
 
+function kill-force-fzf() {
+  local command="ps aux --sort=-pid"
+  local pid=($(
+    eval "$command" \
+      | fzf --multi \
+            --nth 2,11.. \
+            --accept-nth 2 \
+            --header-lines=1 \
+            --preview 'ps -p {2} -o pid,ppid,etime,%cpu,%mem,cmd; echo; pstree -p {2}' \
+            --bind "ctrl-r:reload($command)" \
+            --bind "tab:preview:cat /proc/{2}/environ | tr '\0' '\n'" \
+  ))
 
-# peco snippet
-function peco-snippets()
-{
-    local snippets="$HOME/.dotfiles/zsh/snippets.txt"
+  if [ -n "$pid" ]; then
+    echo 'kill processes (SIGKILL):'
+    ps u "${pid[@]}"
+    kill -9 "${pid[@]}"
+  fi
 
-    if [ ! -e "$snippets" ]; then
-        echo "$snippets is not found." >&2
-        return 1
-    fi
-
-    local line="$(grep -v -e "^\s*#" -e "^\s*$" "$snippets"  | peco --query "$LBUFFER")"
-    if [ -z "$line" ]; then
-        return 1
-    fi
-
-    local snippet="$(echo "$line" | sed "s/^\[[^]]*\] *//g")"
-    if [ -z "$snippet" ]; then
-        return 1
-    fi
-
-    BUFFER=$snippet
-    CURSOR="$#BUFFER"
+  zle reset-prompt
 }
-zle -N peco-snippets && bindkey '^x^x' $_
-
-
-# peco cheatsheet
-function peco-sni-cs()
-{
-    local cspath="$HOME/works/cheatsheet/.snip-peco-cheatsheet"
-
-    if [ ! -e "$cspath" ]; then
-        echo "$cspath is not found." >&2
-        return 1
-    fi
-
-    local line="$(grep -v "^#" $cspath | peco --query "$LBUFFER")"
-    if [ -z "$line" ]; then
-        return 1
-    fi
-
-    local snippet="$(echo "$line" | sed "s/^\[[^]]*\] *//g")"
-    if [ -z "$snippet" ]; then
-        return 1
-    fi
-
-    BUFFER=$snippet
-    zle clear-screen
-}
-
-zle -N peco-sni-cs
-bindkey '^xc' peco-sni-cs
-
-
-
-# peco-process-kill
-function peco-pkill()
-{
-    for pid in `ps u | peco | awk '{ print $2 }'`
-    do
-        kill $pid
-        echo "killed ${pid}"
-    done
-}
-alias pk="peco-pkill"
-
-
-# peco-process-kill-all
-function peco-pkill-all()
-{
-    for pid in `ps aux | peco | awk '{ print $2 }'`
-    do
-        kill $pid
-        echo "killed ${pid}"
-    done
-}
-alias pka="peco-pkill-all"
-
-
-# peco-process-kill-all
-function peco-pkill-all-force()
-{
-    for pid in `ps aux | peco | awk '{ print $2 }'`
-    do
-        sudo kill -9 $pid
-        echo "killed ${pid}"
-    done
-}
-alias pka9="peco-pkill-all-force"
-
-
-
-# peco-get-fullpath
-function peco-get-fullpath()
-{
-    local fullpath
-    if [ ! -z "$1" ]; then
-        if [ -f $1 ]; then
-            fullpath=`pwd`/$1
-        else
-            fullpath=$(find `pwd`/$1 -maxdepth 1 -mindepth 1 | peco --query "$LBUFFER")
-        fi
-    else
-        fullpath=$(find `pwd` -maxdepth 1 -mindepth 1 | peco --query "$LBUFFER")
-    fi
-    echo "${fullpath}" | pbcopy
-    echo ${fullpath}
-}
-alias fullpath="peco-get-fullpath"
-
+alias pka9=kill-force-fzf
+zle -N kill-force-fzf && bindkey '^xP' $_
 
 
 # 再帰的にディレクトリを選択して cd する
@@ -244,41 +237,6 @@ function ssh-fzf () {
   fi
 }
 zle -N ssh-fzf && bindkey '^\' $_
-
-
-function peco-file() {
-    ls -l --almost-all --si --time-style=long-iso $1 \
-        | grep -P -v 'total [^ ]*' \
-        | peco \
-        | perl -alE 'say $F[7]'
-}
-
-
-# peco todo
-function peco-open-todo()
-{
-    local snippets="$HOME/.dotfiles/zsh/note-files.txt"
-
-    if [ ! -e "$snippets" ]; then
-        echo "$snippets is not found." >&2
-        return 1
-    fi
-
-    local line="$(grep -v "^#" "$snippets" | peco --query "$LBUFFER")"
-    if [ -z "$line" ]; then
-        return 1
-    fi
-
-    local snippet="$(echo "$line" | sed "s/^\[[^]]*\] *//g")"
-    if [ -z "$snippet" ]; then
-        return 1
-    fi
-
-    BUFFER=$snippet
-    zle clear-screen
-}
-zle -N peco-open-todo
-bindkey '^xt' peco-open-todo
 
 
 # Makefile の recipe を選択して実行する
@@ -351,9 +309,9 @@ function ghq-clone-fzf() {
 # インクリメンタルに ripgrep する
 # - preview: 対象ファイルの該当行
 function rg-fzf() {
-  INITIAL_QUERY="${1:-}"
+  local INITIAL_QUERY="${1:-}"
+  local RG_PREFIX="rg --line-number --no-heading --color=always --smart-case "
 
-  RG_PREFIX="rg --line-number --no-heading --color=always --smart-case "
   FZF_DEFAULT_COMMAND="$RG_PREFIX '$INITIAL_QUERY'" \
     fzf --bind "change:reload:$RG_PREFIX {q} || true" \
         --ansi --phony --query "$INITIAL_QUERY" \
