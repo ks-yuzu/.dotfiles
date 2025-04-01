@@ -10,9 +10,9 @@ function select-history-fzf {
   BUFFER=$(
     history -nr 1 \
       | fzf --query "$LBUFFER" \
-            --preview 'echo {}' \
+            --preview 'echo -e {} | perl -pe "s/\\\\n/\n/g"' \
             --no-sort \
-      | perl -pe 's/\\n/\n/g'
+      | perl -pe 's/\\n/\n/g' \
   )
   CURSOR="$#BUFFER"
   zle reset-prompt
@@ -34,7 +34,7 @@ function reload-zshrc-fzf {
   fi
 
   local command=$(
-    find ~/.dotfiles/zsh/src/ -mindepth 1 \
+    find ~/.dotfiles/zsh/src -mindepth 1 | sort \
       | fzf --query "$LBUFFER" \
             --preview 'bat --color=always {}' \
             --bind 'enter:become(echo source {})' \
@@ -308,15 +308,31 @@ zle -N make-fzf && bindkey '^[m' $_
 # ghq 管理のリポジトリを選択して cd する
 # - preview: リポジトリのブランチとファイル一覧
 function  ghq-fzf() {
+  local ghq_root=$(ghq root)
+  local with_icon=$(which ghq-dirty-repo.zsh > /dev/null 2>&1 && echo 1)
+  local _LIST=$([ -n "$with_icon" ] && echo 'ghq-dirty-repo.zsh -l' || echo 'ghq list -p')
+
+  local preview_commands=(
+    'dir={};'
+    'echo -n "\e[38;5;202m\e[m "; cut -d/ -f2- <<<"${dir#*'"$ghq_root"'/}";'
+    'builtin cd ${dir#* };'
+    'echo -n "\e[38;5;202m\e[m "; git branch --show-current;'
+    'echo; git -c color.status=always status -sb | head -n10;'
+    'echo; ls -l --almost-all --si --time-style=long-iso'
+  )
+
   local selected_dir=$(
-    ghq list -p \
-      | fzf --prompt='repo> ' \
+    eval "$_LIST" \
+      | fzf --ansi \
+            --prompt='repo> ' \
             --query "$LBUFFER" \
-            --preview 'builtin cd {}; echo -n "branch: "; git branch --show-current; echo; ls -l --almost-all --si --time-style=long-iso {}' \
+            --preview-label='' \
+            --preview "${preview_commands[*]}" \
             --select-1
   )
 
   if [ -n "$selected_dir" ]; then
+    [ -n "$with_icon" ] && selected_dir=${selected_dir#* }
     BUFFER=" cd ${selected_dir}"
     zle accept-line
   fi

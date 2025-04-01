@@ -266,10 +266,9 @@ function rprompt
     # local repo_status="%{$color%}${branch}%{$reset_color%}@%{$color%}${repo}%{$reset_color%} ${vcs_info_msg_2_}${vcs_info_msg_3_}%{$reset_color%}"
     # echo "[${repo_status} /${dir}${ahead_count}]"
 
-    local branch_status="%{$color%}${branch}%F{#ccc}@${commit_date}%{$reset_color%}"
-
+    local branch_status="${branch}%F{#ccc}@${commit_date}"
     local author="$(git config user.name)($(git config user.email))"
-    echo "[ ${branch_status} ${vcs_info_msg_2_}${vcs_info_msg_3_}%{$reset_color%} ${ahead_count}][${author}]"
+    echo "[%{$color%} ${branch_status}%{$reset_color%} ${vcs_info_msg_2_}${vcs_info_msg_3_}%{$reset_color%} ${ahead_count}][${author}]"
 }
 
 RPROMPT='$(rprompt)'
