@@ -268,7 +268,8 @@ zle -N make-fzf && bindkey '^[m' $_
 function  ghq-fzf() {
   local ghq_root=$(ghq root)
   local with_icon=$(which ghq-dirty-repo.zsh > /dev/null 2>&1 && echo 1)
-  local _LIST=$([ -n "$with_icon" ] && echo 'ghq-dirty-repo.zsh -l' || echo 'ghq list -p')
+  local GHQ_LIST=$([ -n "$with_icon" ] && echo 'ghq-dirty-repo.zsh -l' || echo 'ghq list -p')
+  local GHQ_LIST_NO_CACHE=$([ -n "$with_icon" ] && echo 'ghq-dirty-repo.zsh -l -f' || echo 'ghq list -p')
 
   local preview_commands=(
     'dir={};'
@@ -280,12 +281,13 @@ function  ghq-fzf() {
   )
 
   local selected_dir=$(
-    eval "$_LIST" \
+    eval "$GHQ_LIST" \
       | fzf --ansi \
             --prompt='repo> ' \
             --query "$LBUFFER" \
             --preview-label='' \
             --preview "${preview_commands[*]}" \
+            --bind "ctrl-r:reload:$GHQ_LIST_NO_CACHE" \
             --select-1
   )
 
@@ -317,7 +319,7 @@ function rg-fzf() {
         --ansi --phony --query "$INITIAL_QUERY" \
         --delimiter : \
         --preview 'bat --color=always {1} --highlight-line {2}' \
-        --preview-window='+{2}+3/2,~3'
+        --preview-window='+{2}+3/2,~3' \
 }
 alias rgi=rg-fzf
 

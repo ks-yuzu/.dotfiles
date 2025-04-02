@@ -62,9 +62,9 @@ function run() {
 parse_options $@
 
 cache_file=/tmp/ghq-dirty-repos.${OPT_ALL+a}${OPT_COUNT+c}${OPT_LIST+l}.cache
-cache_exists=$(find $cache_file -mmin +30 2> /dev/null || true)
+cache_exists=$(find $cache_file -mmin -30 2> /dev/null || true)
 
-if [ -z "${cache_exists}" ] || [ "${OPT_FORCE:-}" ] ||  ; then
+if [ -z "${cache_exists}" ] || [ -n "${OPT_FORCE:-}" ] ||  ; then
   run > $cache_file
   cat $cache_file
 else

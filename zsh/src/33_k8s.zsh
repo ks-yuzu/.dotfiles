@@ -160,6 +160,33 @@ function __k8s-switch-kustomize-dir()
 }
 zle -N __k8s-switch-kustomize-dir && bindkey "^[^o" $_
 
+function kustomize-diff-fzf() {
+  generated=/tmp/kustomize-diff-fzf.generated.yaml
+  kustomize build . > $generated
+
+  local ignore_fields_list=(
+    .status
+    .metadata.uid
+    .metadata.creationTimestamp
+    .metadata.generation
+    .metadata.resourceVersion
+    .metadata.selfLink
+    .metadata.annotations\[\"kubectl.kubernetes.io/last-applied-configuration\"\]
+    .metadata.annotations\[\"deployment.kubernetes.io/revision\"\]
+  )
+  local ignore_fields=$(IFS=, ; echo "${ignore_fields_list[*]}")
+  local preview_command=(
+    "colordiff -u"
+    "<(kubectl get {2} {3} -n {1} -o yaml | yq 'del(${ignore_fields})')"
+    "<(cat $generated | yq 'select(.metadata.namespace == \"{1}\" and .kind == \"{2}\" and .metadata.name == \"{3}\")')"
+  )
+
+  resources=$(cat "$generated" | yq '"\(.metadata.namespace) \(.kind) \(.metadata.name)"' | column -t)
+  echo "$resources" \
+    | fzf --ansi \
+          --preview "${preview_command[*]}" \
+}
+
 function kear() {
   if [ $# -gt 0 ]; then
     targets="$@"
