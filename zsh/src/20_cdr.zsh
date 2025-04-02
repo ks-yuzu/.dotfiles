@@ -12,14 +12,18 @@ if is-at-least 4.3.11; then
     zstyle ':chpwd:*' recent-dirs-pushd true
 
 
-    function peco-cdr {
-        local dir=$(cdr -l | peco | perl -pe 's/^\d+\s+//')
-        if [ -n "$dir" ]; then
-            BUFFER="cd ${dir}"
-            zle accept-line
-        fi
-        zle clear-screen
+    function cdr-fzf {
+      local dir=$(
+        cdr -l \
+          | fzf --nth 2.. \
+                --accept-nth 2 \
+                --preview 'ls -l --almost-all --si --time-style=long-iso $(sed "s|^~|$HOME|" <<<{2..})' \
+                --preview-window=bottom \
+      )
+      if [ -n "$dir" ]; then
+        BUFFER="cd ${dir}"
+        zle accept-line
+      fi
     }
-    zle -N peco-cdr
-    bindkey '^v' peco-cdr
+    zle -N cdr-fzf && bindkey '^v' $_
 fi
