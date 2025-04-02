@@ -138,6 +138,11 @@ function zsh-snippets-fzf() {
 zle -N zsh-snippets-fzf && bindkey '^x^x' $_
 
 
+# プロセスを選択して kill する
+# - preview: プロセスの詳細
+# - bind:
+#   - tab:    プロセスの環境変数を表示
+#   - ctrl-r: プロセスリストを再読み込み
 function kill-fzf() {
   local command="ps aux --sort=-pid"
   local pid=($(
@@ -163,6 +168,11 @@ alias pka="kill-fzf"
 zle -N kill-fzf && bindkey '^xp' $_
 
 
+# プロセスを選択して kill -9 する
+# - preview: プロセスの詳細
+# - bind:
+#   - tab:    プロセスの環境変数を表示
+#   - ctrl-r: プロセスリストを再読み込み
 function kill-force-fzf() {
   local command="ps aux --sort=-pid"
   local pid=($(
@@ -265,7 +275,9 @@ zle -N make-fzf && bindkey '^[m' $_
 
 # ghq 管理のリポジトリを選択して cd する
 # - preview: リポジトリのブランチとファイル一覧
-function  ghq-fzf() {
+# - bind:
+#   - ctrl-r: リストを再読み込み
+function ghq-fzf() {
   local ghq_root=$(ghq root)
   local with_icon=$(which ghq-dirty-repo.zsh > /dev/null 2>&1 && echo 1)
   local GHQ_LIST=$([ -n "$with_icon" ] && echo 'ghq-dirty-repo.zsh -l' || echo 'ghq list -p')

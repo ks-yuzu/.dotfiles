@@ -160,6 +160,9 @@ function __k8s-switch-kustomize-dir()
 }
 zle -N __k8s-switch-kustomize-dir && bindkey "^[^o" $_
 
+# 選択したリソースの未 apply 差分を表示
+# (個別に確認したい場合や、イミュータブルなフィールドを変更する時用)
+# - preview: kustomize build の結果と actual state の差分
 function kustomize-diff-fzf() {
   generated=/tmp/kustomize-diff-fzf.generated.yaml
   kustomize build . > $generated
