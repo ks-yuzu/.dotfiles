@@ -62,6 +62,19 @@ zle -N reload-zshrc-fzf && bindkey '^x^z' $_ && bindkey '^xz' $_
 #   - ctrl-y:    選択 - ファイルパスをコピー (相対パス)
 #   - alt-y:     選択 - ファイルパスをコピー (絶対パス)
 function select-file-fzf {
+  local usage=(
+    'usage:'
+    '- tab        go to subdirectory'
+    '- ctrl-j     go to subdirectory'
+    '- ctrl-l     go to parent directory'
+    '- enter      insert relative path'
+    '- alt-enter  insert absolute path'
+    '- ctrl-y     copy relative path'
+    '- alt-y      copy absolute path'
+    '- ?          help'
+  )
+  usage=$(IFS=$'\n'; echo "${usage[*]}")
+
   # カーソルの直前の文字が空白でなければ単語を入力中と判定
   local prev_char="${BUFFER[$CURSOR]}"
   local next_char="${BUFFER[$CURSOR+1]}"
@@ -100,6 +113,7 @@ function select-file-fzf {
             --bind "alt-enter:become(realpath {8})" \
             --bind "ctrl-y:execute(echo {8} | pbcopy)+abort" \
             --bind "alt-y:execute(realpath {8} | pbcopy)+abort" \
+            --bind "?:preview:echo '${usage}'"
   )
   [[ -z "$selected" ]] && return
 
