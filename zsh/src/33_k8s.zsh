@@ -1,5 +1,9 @@
-function __peco-kubectx {
-  local ctx=$(kubectx | peco)
+function __kubectx-fzf {
+  local ctx=$(
+    #| xargs -I{} bash -c 'cut -d: -f5 <<<{} | xargs get-aws-account-name-from-id 2>/dev/null | tr "\n" " "; echo {}' | column -t \
+    kubectx \
+      | fzf --preview 'kubectl config view --minify --context={}' \
+  )
   [ -z "$ctx" ] && return
 
   # BUFFER=" kubectx $ctx"
@@ -17,29 +21,35 @@ function __peco-kubectx {
   BUFFER=""
   zle accept-line
 }
-zle -N __peco-kubectx
+zle -N __kubectx-fzf
 bindkey '^[k'  $_
 bindkey '^[^k' $_
 
-function __peco-k9s {
+function __k9s {
+  k9s
+}
+zle -N __k9s && bindkey '^[9' $_
+
+function __k9s-fzf {
   #               $(kubectx -c)
-  : ${PECO_QUERY:=$(grep -Po '(?<=current-context: ).*' ~/.kube/config)}
-  local ctx=$(kubectx | peco --query "$PECO_QUERY")
+  # : ${PECO_QUERY:=$(grep -Po '(?<=current-context: ).*' ~/.kube/config)}
+  local ctx=$(
+    kubectx \
+      | fzf --query "$PECO_QUERY" \
+            --preview 'kubectl config view --minify --context={}'
+  )
   [ -z "$ctx" ] && return
 
   BUFFER=" KUBECONFIG='$KUBECONFIG' k9s --context $ctx"
   [ -n "$WIDGET" ] && zle accept-line
 }
-zle -N __peco-k9s
-bindkey '^[9' $_
-bindkey '^[^t' $_
+zle -N __k9s-fzf && bindkey '^[(' $_
 
-function __peco-k9s-with-default-kubeconfig {
-  KUBECONFIG= PECO_QUERY=' ' __peco-k9s
+function __k9s-with-default-kubeconfig-fzf {
+  KUBECONFIG= PECO_QUERY=' ' __k9s-fzf
   [ -n "$WIDGET" ] && zle accept-line
 }
-zle -N __peco-k9s-with-default-kubeconfig
-bindkey '^u^[9' $_
+zle -N __k9s-with-default-kubeconfig-fzf && bindkey '^u^[9' $_
 
 KUSTOMIZA_SNAPSHOT_FILE=.kustomize-snapshot.yaml
 HELMFILE_SNAPSHOT_FILE=.helmfile-snapshot.yaml

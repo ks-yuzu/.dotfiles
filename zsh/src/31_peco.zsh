@@ -61,7 +61,7 @@ zle -N reload-zshrc-fzf && bindkey '^x^z' $_ && bindkey '^xz' $_
 #   - alt-enter: 選択 - バッファにファイルパスを挿入 (絶対パス)
 #   - ctrl-y:    選択 - ファイルパスをコピー (相対パス)
 #   - alt-y:     選択 - ファイルパスをコピー (絶対パス)
-function select-file-fzf {
+function find-file-fzf {
   local usage=(
     'usage:'
     '- tab        go to subdirectory'
@@ -91,24 +91,28 @@ function select-file-fzf {
     local query="${word_left}${word_right}"
   fi
 
-  local find_opts="-maxdepth 1 -mindepth 1 -printf '%M %3n %u %g %5s %TY-%Tm-%Td %TR %p\n'"
+  # local find_opts="-maxdepth 1 -mindepth 1 -printf '%M %3n %u %g %5s %TY-%Tm-%Td %TR %p\n'"
+  local find_opts="-maxdepth 1 -mindepth 1 "
   local selected=$(
-    eval "find . ${find_opts}" | sort -k8,8 \
-      | fzf --prompt="$(pwd)> " \
+    eval "find . ${find_opts}" | sort -k8,8 | xargs ls --color -ld --almost-all --si --time-style=long-iso \
+      | fzf --ansi \
+            --prompt="$(pwd)> " \
             --query "$query" \
             --select-1 \
             --nth 8 \
             --accept-nth 8 \
-            --preview 'realpath {8}; echo; [[ -d {8} ]] && ls -l --almost-all --si --time-style=long-iso {8} || bat --color=always {8}' \
+            --preview 'realpath {8}; echo; [[ -d {8} ]] && ls --color -l --almost-all --si --time-style=long-iso {8} || bat --color=always {8}' \
             --bind "tab:reload(test -d {8} \
-                      && find \$(realpath -s --relative-to=. {8})                ${find_opts} | sort -k8,8 \
-                      || find \$(realpath -s --relative-to=. \$(dirname {8}))    ${find_opts} | sort -k8,8 \
+                      && find \$(realpath -s --relative-to=. {8})                ${find_opts} | sort -k8,8 | xargs ls --color -ld --almost-all --si --time-style=long-iso \
+                      || find \$(realpath -s --relative-to=. \$(dirname {8}))    ${find_opts} | sort -k8,8 | xargs ls --color -ld --almost-all --si --time-style=long-iso \
                     )+clear-query+top" \
             --bind "ctrl-j:reload(test -d {8} \
-                      && find \$(realpath -s --relative-to=. {8})                ${find_opts} | sort -k8,8 \
-                      || find \$(realpath -s --relative-to=. \$(dirname {8}))    ${find_opts} | sort -k8,8 \
+                      && find \$(realpath -s --relative-to=. {8})                ${find_opts} | sort -k8,8 | xargs ls --color -ld --almost-all --si --time-style=long-iso \
+                      || find \$(realpath -s --relative-to=. \$(dirname {8}))    ${find_opts} | sort -k8,8 | xargs ls --color -ld --almost-all --si --time-style=long-iso \
                     )+clear-query+top" \
-            --bind "ctrl-l:reload(find \$(realpath -s --relative-to=. \$(dirname {8})/..) ${find_opts} | sort -k8,8)+clear-query+top" \
+            --bind "ctrl-l:reload( \
+                      find \$(realpath -s --relative-to=. \$(dirname {8})/..) ${find_opts} | sort -k8,8 | xargs ls --color -ld --almost-all --si --time-style=long-iso \
+                    )+clear-query+top" \
             --bind "enter:accept" \
             --bind "alt-enter:become(realpath {8})" \
             --bind "ctrl-y:execute(echo {8} | pbcopy)+abort" \
@@ -126,7 +130,7 @@ function select-file-fzf {
     CURSOR=$(( start + ${#selected} ))
   fi
 }
-zle -N select-file-fzf && bindkey '^x^f' $_
+zle -N find-file-fzf && bindkey '^x^f' $_
 
 
 function zsh-snippets-fzf() {
@@ -224,8 +228,8 @@ function cd-recursively-fzf() {
         | fzf --prompt="$(pwd)> " \
               --nth 8 \
               --accept-nth 8 \
-              --preview="ls -l --almost-all --si --time-style=long-iso {8}" \
-              --bind "tab:preview:ls -l --almost-all --si --time-style=long-iso {8}*/" \
+              --preview="ls --color -l --almost-all --si --time-style=long-iso {8}" \
+              --bind "tab:preview:ls --color -l --almost-all --si --time-style=long-iso {8}*/" \
               --bind "ctrl-l:become(echo ..)"
     )
 
@@ -303,7 +307,7 @@ function ghq-fzf() {
     'builtin cd ${dir#* };'
     'echo -n "\e[38;5;202m\e[m "; git branch --show-current;'
     'echo; git -c color.status=always status -sb | head -n10;'
-    'echo; ls -l --almost-all --si --time-style=long-iso'
+    'echo; ls --color -l --almost-all --si --time-style=long-iso'
   )
 
   local selected_dir=$(
