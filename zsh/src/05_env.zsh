@@ -22,6 +22,7 @@ FZF_DEFAULT_OPTS_ARRAY=(
   '--color=16'
   '--bind="ctrl-v:page-down,alt-v:page-up,ctrl-d:delete-char,ctrl-j:accept,ctrl-k:kill-line,ctrl-space:toggle+down"'
   '--bind="tab:preview:[ -d {} ] && ls -l --almost-all --si --time-style=long-iso {} || bat --color=always {}"'
+  '--bind="ctrl-t:change-preview-window:right|bottom"'
   '--marker="✅"'
   '--color=fg:#d0d0d0,fg+:#d0d0d0,bg:#121212,bg+:#005470'
   '--color=hl:#5f87af,hl+:#5fd7ff,info:#afaf87,marker:#87ff00'
