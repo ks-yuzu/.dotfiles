@@ -23,11 +23,6 @@ set -g status-interval 1
 set-option -g status-left "#[fg=colour255,bg=colour241] S#S(#(tmux ls | grep -n \"^$(tmux display -p '#S')\" | cut -d: -f1)/#(tmux list-sessions | wc -l)) #[default]"
 
 # status bar - middle
-# set-window-option -g window-status-format " #I: #(\
-#   set -o pipefail;\
-#   tmux list-panes -F '#{pane_pid}' | xargs pgrep -flaP | tail -n1 | cut -d' ' -f2-\
-#     || ([ \"#W\" = $HOME ] && echo HOME || basename #W)\
-# ) "
 set-window-option -g window-status-format '#(\
   _TMUX_IS_CURRENT_PANE=false\
   _TMUX_WINDOW_ID="#{window_id}"\
@@ -46,18 +41,6 @@ set-window-option -g window-status-current-format '#(\
   _TMUX_PANE_CURRENT_COMMAND="#{pane_current_command}"\
   bash $TMUX_CONF_DIR/scripts/get-window-status-format\
 )'
-# set-window-option -g window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #(\
-#   if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
-#     echo '#W';\
-#   elif [ #{pane_current_path} = '$HOME' ]; then\
-#     echo 'HOME';\
-#   else\
-#     : basename '#{pane_current_path}';\
-#     repo_name=$(basename \"$(git rev-parse --show-toplevel 2> /dev/null)\");\
-#     [ -n \"$repo_name\" ] && repo_name=\" ($repo_name)\";\
-#     echo '#{b:pane_current_path}$repo_name' | perl -pe 's|^$HOME|~|';\
-#   fi\
-# ) "
 
 # status bar - right
 set-option -g status-right "#[fg=colour255,bg=colour241] %m/%d %H:%M:%S #[default]"

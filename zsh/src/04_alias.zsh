@@ -55,23 +55,7 @@ alias -g NL='>/dev/null 2>&1 &'
 function cd() { builtin cd $@ && ls --color; }
 function pr-select { gh pr list| peco | awk '{print $1}' }
 
-
 function ssh() {
-# if [ -n "$TMUX" ]; then
-#   tmux set automatic-rename off
-#   tmux rename-window "ssh $@"
-#   tmux set-window-option window-status-current-format "#[fg=colour255,bg=#00aa22,bold] #I: #(\
-#     if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
-#       echo '#W';\
-#     elif [ #{pane_current_path} = '$HOME' ]; then\
-#       echo 'HOME';\
-#     else\
-#       : basename '#{pane_current_path}';\
-#       echo '#{pane_current_path}' | perl -pe 's|^$HOME|~|';\
-#     fi\
-#   ) "
-# fi
-
   timestamp=$(date --iso-8601=seconds); echo $timestamp
   joined_args=$(perl -e '$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); print ${args}' $@)
   logfile="$HOME/works/ssh-log/ssh-${timestamp}-${joined_args}.log"
@@ -81,20 +65,6 @@ function ssh() {
   else
       script $logfile /usr/bin/ssh $@      # for BSD
   fi
-
-# if [ -n "$TMUX" ]; then
-#   tmux set-window-option window-status-current-format "#[fg=colour255,bg=#cc4400,bold] #I: #(\
-#     if [ '#W' != 'zsh' -a '#W' != 'reattach-to-user-namespace' ]; then\
-#       echo '#W';\
-#     elif [ #{pane_current_path} = '$HOME' ]; then\
-#       echo 'HOME';\
-#     else\
-#       : basename '#{pane_current_path}';\
-#       echo '#{pane_current_path}' | perl -pe 's|^$HOME|~|';\
-#     fi\
-#   ) "
-#   tmux set automatic-rename on
-# fi
 }
 
 ## clipboard
