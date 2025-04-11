@@ -11,6 +11,7 @@ function select-history-fzf {
     history -nr 1 \
       | fzf --query "$LBUFFER" \
             --preview 'echo -e {} | perl -pe "s/\\\\n/\n/g"' \
+            --preview-window=wrap \
             --no-sort \
       | perl -pe 's/\\n/\n/g' \
   )
@@ -256,6 +257,8 @@ function ssh-fzf () {
       | fzf --query "$LBUFFER" \
             --nth 2 \
             --accept-nth 2 \
+            --preview 'ssh-add -l; echo; \
+                       ssh -ttG {2} | grep -E "^(user|host|port|identityfile|forward|control|proxycommand|remotecommand|sendenv)"' \
   )
 
   if [ -n "$selected_host" ]; then
