@@ -16,7 +16,7 @@ if is-at-least 4.3.11; then
       local dir=$(
         cdr -l \
           | fzf --nth 2.. \
-                --accept-nth 2 \
+                --accept-nth 2.. \
                 --preview 'ls --color -l --almost-all --si --time-style=long-iso $(sed "s|^~|$HOME|" <<<{2..})' \
                 --preview-window=bottom \
       )
