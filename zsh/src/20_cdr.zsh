@@ -21,7 +21,7 @@ if is-at-least 4.3.11; then
                 --preview-window=bottom \
       )
       if [ -n "$dir" ]; then
-        BUFFER="cd ${dir}"
+        BUFFER=" cd ${dir}"
         zle accept-line
       fi
     }
