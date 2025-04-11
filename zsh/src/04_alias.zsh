@@ -16,7 +16,7 @@ alias mv='mv -i'
 alias cp='cp -i'
 alias rm='rm -i'
 
-alias tmux='tmux -2'
+# alias tmux='tmux -2'
 
 alias e='emacsclient -n'
 alias ekill="emacsclient -e '(kill-emacs)'"
@@ -56,9 +56,10 @@ function cd() { builtin cd $@ && ls --color; }
 function pr-select { gh pr list| peco | awk '{print $1}' }
 
 function ssh() {
-  timestamp=$(date --iso-8601=seconds); echo $timestamp
+  timestamp=$(date --iso-8601=seconds)
   joined_args=$(perl -e '$args = join "_", (grep { $_ !~ /^\-/ } @ARGV); print ${args}' $@)
-  logfile="$HOME/works/ssh-log/ssh-${timestamp}-${joined_args}.log"
+  filename=$(sed 's|[/:]|_|g' <<< $joined_args)
+  logfile="$HOME/works/ssh-log/ssh-${timestamp}-${filename}.log"
 
   if script /dev/null -c : > /dev/null; then
       script $logfile -c "/usr/bin/ssh $@" # for linux
@@ -119,7 +120,8 @@ abbreviations=(
   "k"     "kubectl"
   "t"     "terraform"
   "tg"    "terragrunt"
-  "awksum" "awk '{ for (i=1; i<=NF; i++) { sum+=$i } } END { print sum }'"
+  "awksum" "awk '{ for (i=1; i<=NF; i++) { sum+=\$i } } END { print sum }'"
+  "dyff"  "dyff -c on between -bi"
 )
 
 magic-abbrev-expand() {
