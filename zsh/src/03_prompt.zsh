@@ -175,7 +175,8 @@ function update-prompt()
     if [[ $(( $(tput cols) - 110 )) -gt $(pwd | wc -c) ]]; then
         local cdir=" %F{yellow}%~%f"
     else
-        local cdir=" %F{yellow}\$(shorten-path $(pwd) 4)%f"
+        local short_path=$(shorten-path "$(pwd)" 4)
+        local cdir=" %F{yellow}${short_path}%f"
     fi
     local endl=$'\n'
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "

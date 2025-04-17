@@ -17,10 +17,10 @@ function show-window-status {
 
   # zsh
   if [[ "$_TMUX_WINDOW_NAME" = 'zsh' || "$_TMUX_WINDOW_NAME" = 'reattach-to-user-namespace' ]]; then
-    if [[ $_TMUX_PANE_CURRENT_PATH = "$HOME" ]]; then
+    if [[ "$_TMUX_PANE_CURRENT_PATH" = "$HOME" ]]; then
       echo -n 'HOME';
     else
-      basename $_TMUX_PANE_CURRENT_PATH | perl -pe "chomp; s|^$HOME|~|"
+      basename "$_TMUX_PANE_CURRENT_PATH" | perl -pe "chomp; s|^$HOME|~|"
 
       repo_name="$(cd $_TMUX_PANE_CURRENT_PATH && basename "$(git rev-parse --show-toplevel 2> /dev/null)")"
       [ -n "$repo_name" ] && echo -n " ($repo_name)"

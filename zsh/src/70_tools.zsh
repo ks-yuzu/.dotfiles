@@ -123,13 +123,14 @@ function lock()
 
 function shorten-path()
 {
-  length=${2:-3}
-  focused_path=
-  short_path=
+  local length=${2:-3}
+  local focused_path=
+  local short_path=
 
-  set -- $(echo ${1:-$(pwd)} | sed -e "s|^${HOME}|~|; s|/| |g")
+  IFS=/ read -rA DIRS <<<$(echo ${1:-$(pwd)} | sed -e "s|^${HOME}|~|")
+  set -- $DIRS
   while [ $# -gt 0 ]; do
-    dir=$1
+    dir="$1"
     shift
 
     if [[ "$dir" = '~' ]]; then
