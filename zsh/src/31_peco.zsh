@@ -7,7 +7,7 @@
 # ヒストリからコマンドを選択して実行する
 # - preview: コマンドの内容
 function select-history-fzf {
-  BUFFER=$(
+  output=$(
     history -nr 1 \
       | fzf --query "$LBUFFER" \
             --preview 'echo -e {} | perl -pe "s/\\\\n/\n/g"' \
@@ -15,8 +15,12 @@ function select-history-fzf {
             --no-sort \
       | perl -pe 's/\\n/\n/g' \
   )
-  CURSOR="$#BUFFER"
-  zle reset-prompt
+
+  if [ -n "$output" ]; then
+    BUFFER=" $output"
+    CURSOR="$#BUFFER"
+    # zle accept-line
+  fi
 }
 zle -N select-history-fzf && bindkey '^r' $_
 
@@ -330,12 +334,14 @@ function ghq-fzf() {
     zle accept-line
   fi
 }
-zle -N ghq-fzf && bindkey '^[g' $_
+zle -N ghq-fzf && bindkey '^x^g' $_
 
 # リポジトリを選択して ghq get する
 function ghq-clone-fzf() {
   local org=$(gh repo list | gh org list | fzf)
-  local repo=$(NO_COLOR=true unbuffer gh repo list gree-main --limit 10 | tail -n +5 | fzf --accept-nth 1)
+  [ -z "$org" ] && return 1
+  local repo=$(NO_COLOR=true unbuffer gh repo list $org --limit 1000 | tail -n +4 | fzf --accept-nth 1 --header-lines=1)
+  [ -z "$repo" ] && return 1
 
   ghq get $repo
   cd $(ghq list -p $repo | fzf --select-1)
@@ -356,3 +362,16 @@ function rg-fzf() {
 }
 alias rgi=rg-fzf
 
+
+function gcloud-secrets-fzf() {
+  result=$(
+    gcloud secrets list \
+      | fzf --nth=1 \
+            --accept-nth=1 \
+            --header-lines=1 \
+            --preview 'gcloud secrets versions access --secret {1} latest' \
+            --bind 'alt-enter:become(echo -n '{1}: '; gcloud secrets versions access --secret {1} latest)' \
+  )
+
+  echo "$result"
+}
