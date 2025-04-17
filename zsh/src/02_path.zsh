@@ -87,6 +87,7 @@ fi
 eval "$(direnv hook zsh)"
 
 ## fzf
+export FZF_ALT_C_COMMAND=
 source <(fzf --zsh)
 
 ## krew
