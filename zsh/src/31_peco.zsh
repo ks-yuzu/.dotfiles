@@ -347,6 +347,44 @@ function ghq-clone-fzf() {
   cd $(ghq list -p $repo | fzf --select-1)
 }
 
+# docker コンテナを選択
+# - preview: docker ps
+# - bind:
+#   - ctrl-r: 再読み込み
+#   - ctrl-s: コンテナに接続
+function docker-fzf() {
+  # (test -f docker-compose.yml && (docker-compose ps | tail -n +3) || (docker ps | tail -n +2))
+  local selected=$(
+    docker ps \
+      | fzf --nth 1,2 \
+            --accept-nth 1 \
+            --header-lines=1 \
+            --preview 'docker inspect {1}' \
+            --bind 'ctrl-s:execute(docker exec -it {1} bash)' \
+            --bind 'ctrl-r:reload(docker ps)' \
+  )
+
+  [ -n "$selected" ] && BUFFER+="$selected"
+}
+zle -N docker-fzf && bindkey '^xd' $_
+zle -N docker-fzf && bindkey '^x^dc' $_
+
+function docker-images-fzf() {
+  local selected=$(
+    docker images \
+      | fzf --ansi \
+            --nth 1,2,3 \
+            --accept-nth 3 \
+            --header-lines=1 \
+            --preview 'docker inspect {3}' \
+            --bind 'ctrl-s:execute(docker run -it --rm {3} bash)' \
+            --bind 'tab:execute(dive {3})' \
+  )
+
+  [ -n "$selected" ] && BUFFER+="$selected"
+}
+zle -N docker-images-fzf && bindkey '^x^di' $_
+
 # インクリメンタルに ripgrep する
 # - preview: 対象ファイルの該当行
 function rg-fzf() {
