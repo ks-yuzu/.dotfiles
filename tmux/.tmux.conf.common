@@ -134,6 +134,19 @@ bind S command-prompt -p "send pane to:"  "join-pane -t '%%'"
 unbind ]
 
 
+# bind -T copy-mode M-f send-keys -X next-space
+# bind -T copy-mode M-b send-keys -X previous-space
+bind -T copy-mode C-M-w send-keys -X end-of-line \; \
+                        send-keys -X previous-space \; \
+                        send-keys -X previous-space \; \
+                        send-keys -X previous-space \; \
+                        send-keys -X next-word-end \; \
+                        send-keys -X begin-selection \; \
+                        send-keys -X start-of-line \; \
+                        send-keys -X copy-pipe "$COPY_COMMAND" \; \
+                        display 'Copied command!'
+
+
 # -- クリップボード ----------------
 bind -T copy-mode-emacs M-w send-keys -X copy-pipe "$COPY_COMMAND"
 bind -T copy-mode-emacs C-w send-keys -X copy-pipe "$COPY_COMMAND"
@@ -168,13 +181,6 @@ bind 9 run-shell 'echo 9 > /tmp/tmux-n-copy-commands'
 bind 0 run-shell 'echo 10 > /tmp/tmux-n-copy-commands'
 
 
-# -- スクリプト拡張 ----------------
-bind -T copy-mode-emacs j   send -X copy-pipe '$TMUX_CONF_DIR/scripts/parse-json'
-bind                    C-s run '$TMUX_CONF_DIR/scripts/snippet'
-bind -T copy-mode-emacs C   send -X copy-pipe '$TMUX_CONF_DIR/scripts/stdin-vim'
-bind                    C   run '$TMUX_CONF_DIR/scripts/capture-pane'
-
-
 # ========================================
 #  MISC
 # ========================================
@@ -189,3 +195,18 @@ set-hook -g pane-exited "save-buffer /tmp/last-pane"
 #  INCLUDE FILES
 # ========================================
 if -b '[ "$CURRENT_OS" = "mac" ]' "source $TMUX_CONF_DIR/.tmux.conf.mac"
+
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+run '~/.tmux/plugins/tpm/tpm'
+
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @resurrect-capture-pane-contents 'on'
+
+# -- スクリプト拡張 ----------------
+bind -T copy-mode-emacs j   send -X copy-pipe '$TMUX_CONF_DIR/scripts/parse-json'
+bind                    C-s run '$TMUX_CONF_DIR/scripts/snippet'
+bind -T copy-mode-emacs V   send -X copy-pipe '$TMUX_CONF_DIR/scripts/stdin-vim'
+bind                    V   run '$TMUX_CONF_DIR/scripts/capture-pane'
+
+
