@@ -92,7 +92,7 @@ function __k8s-manifest-diff()
   if [[ -f kustomization.yaml ]]; then
     BUFFER=" (kustomize build --enable-alpha-plugins --enable-exec --enable-helm --load-restrictor LoadRestrictionsNone . | kubectl diff ${KUBECTL_DIFF_OPTIONS} -f -) 2>&1 | less"
   elif [[ -f helmfile.yaml || -f helmfile.yml ]]; then
-    BUFFER=" helmfile diff | less"
+    BUFFER=" helmfile template | kubectl diff ${KUBECTL_DIFF_OPTIONS} -f - | less"
   fi
   zle accept-line
 }
@@ -138,7 +138,7 @@ function __k8s-switch-kustomize-overlay()
   BUFFER=" builtin cd '$dir'"
   zle accept-line
 }
-zle -N __k8s-switch-kustomize-overlay && bindkey "^[o" $_
+# zle -N __k8s-switch-kustomize-overlay && bindkey "^[o" $_
 
 # kustomize のディレクトリを選択して移動
 # - preview: ディレクトリ内のファイル一覧, kustomization.yaml の中身
@@ -146,12 +146,15 @@ zle -N __k8s-switch-kustomize-overlay && bindkey "^[o" $_
 #   - tab: 選択中のディレクトリで kustomize build
 function __k8s-switch-kustomize-dir()
 {
-  if ! (pwd | grep -P '/(base|overlay|component)s?') > /dev/null; then
+  if (pwd | grep -P '/(base|overlay|component)s?') > /dev/null; then
+    KUSTOMIZE_ROOT_DIR=$(pwd | grep -Po '.*/(base|overlay|component)s?' | xargs dirname)
+  elif =ls base* overlays > /dev/null; then
+    KUSTOMIZE_ROOT_DIR=.
+  else
     echo "Error: Not in kustomize directory" >&2
     return 1
   fi
 
-  KUSTOMIZE_ROOT_DIR=$(pwd | grep -Po '.*/(base|overlay|component)s?' | xargs dirname)
   dir=$(
     find $KUSTOMIZE_ROOT_DIR -name kustomization.yaml \
       | xargs dirname \
@@ -168,6 +171,7 @@ function __k8s-switch-kustomize-dir()
   BUFFER=" builtin cd '$dir'"
   zle accept-line
 }
+zle -N __k8s-switch-kustomize-dir && bindkey "^[o" $_
 zle -N __k8s-switch-kustomize-dir && bindkey "^[^o" $_
 
 # 選択したリソースの未 apply 差分を表示
@@ -175,7 +179,7 @@ zle -N __k8s-switch-kustomize-dir && bindkey "^[^o" $_
 # - preview: kustomize build の結果と actual state の差分
 function kustomize-diff-fzf() {
   generated=/tmp/kustomize-diff-fzf.generated.yaml
-  kustomize build . > $generated
+  kustomize build --enable-alpha-plugins --enable-exec --enable-helm --load-restrictor LoadRestrictionsNone . > $generated
 
   local ignore_fields_list=(
     .status

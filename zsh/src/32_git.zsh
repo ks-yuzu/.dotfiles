@@ -114,8 +114,20 @@ zle -N __git-fetch-master && bindkey "^gf" $_
 
 function __git-checkout-pullrequest()
 {
-  BUFFER=" gh pr checkout"
-  zle accept-line
+  # BUFFER=" gh pr checkout"
+  # zle accept-line
+  pr=$(
+    gh pr list | column -s $'\t' -t \
+      | fzf --accept-nth=1 \
+            --preview 'unbuffer gh pr view -c {1}; echo -e "\n\n---"; unbuffer gh pr diff {1}' \
+            --bind "alt-a:reload(gh pr list -s all -L 1000 | column -s $'\t' -t)" \
+            --bind 'alt-c:execute(gh pr checkout {1})+abort' \
+            --bind 'alt-w:execute(gh pr view -w {1})+abort' \
+  )
+  [[ -z "$pr" ]] && return
+
+  BUFFER=" gh pr view $pr"
+  CURSOR=$#BUFFER
 }
 zle -N __git-checkout-pullrequest && bindkey "^gp" $_
 

@@ -58,12 +58,16 @@ if [[ `uname -a` =~ "Linux.*microsoft" ]]; then
 
   # launch ssh-agent
   SSH_AGENT_FILE="/tmp/ssh_agent"
-  if ! ssh-add -l > /dev/null ; then
-      echo 'start ssh-agent'
-      ssh-agent > $SSH_AGENT_FILE
-      cat $SSH_AGENT_FILE
-  fi
   [ -f $SSH_AGENT_FILE ] && source $SSH_AGENT_FILE > /dev/null
+
+  if [[ -e $SSH_AUTH_SOCK ]] && ps ${SSH_AGENT_PID} > /dev/null; then
+    echo 'found ssh-agent.'
+  else
+    echo 'start ssh-agent.'
+    ssh-agent > $SSH_AGENT_FILE
+    cat $SSH_AGENT_FILE
+    [ -f $SSH_AGENT_FILE ] && source $SSH_AGENT_FILE > /dev/null
+  fi
 
   function mount-another-distribution-filesystem {
     DISTRIBUTION=$(wsl.exe -l -v | iconv -fUTF16LE | cut -b3- | peco | awk '{print $1}')

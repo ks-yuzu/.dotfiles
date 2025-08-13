@@ -321,3 +321,5 @@ LINK 00;38;5;37 # symbolic link. (If you set this to 'target' instead of a
 .anx 00;38;5;166
 .ogv 00;38;5;166
 .ogx 00;38;5;166
+
+.sql			 	00;38;5;117

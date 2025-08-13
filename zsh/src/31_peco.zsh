@@ -127,7 +127,7 @@ function find-file-fzf {
   [[ -z "$selected" ]] && return
 
   if [ -n "$is_typing_word" ]; then
-    LBUFFER+="$selected"
+    LBUFFER+=$(echo "$selected" | xargs)
   else
     local start=$(( CURSOR - ${#word_left} ))
     local end=$(( CURSOR + ${#word_right} ))
@@ -287,11 +287,12 @@ function make-fzf() {
           --preview 'bat --color=always --highlight-line {1} Makefile' \
           --preview-window='+{1}+3/2,~3,80%' \
           --accept-nth=2 \
-          --bind 'tab:preview:make -n {2}'
+          --bind 'tab:preview:make -n {2}' \
+    | xargs
   )
 
   if [ -n "$recipe" ]; then
-    BUFFER="make $recipe"
+    BUFFER=" make $recipe"
     # zle accept-line
   fi
   zle reset-prompt
@@ -305,14 +306,14 @@ zle -N make-fzf && bindkey '^[m' $_
 function ghq-fzf() {
   local ghq_root=$(ghq root)
   local with_icon=$(which ghq-dirty-repo.zsh > /dev/null 2>&1 && echo 1)
-  local GHQ_LIST=$([ -n "$with_icon" ] && echo 'ghq-dirty-repo.zsh -l' || echo 'ghq list -p')
-  local GHQ_LIST_NO_CACHE=$([ -n "$with_icon" ] && echo 'ghq-dirty-repo.zsh -l -f' || echo 'ghq list -p')
+  local GHQ_LIST=$([ -n "$with_icon" ] && echo 'ghq-dirty-repo.zsh -l' || echo 'ghq list')
+  local GHQ_LIST_NO_CACHE=$([ -n "$with_icon" ] && echo 'ghq-dirty-repo.zsh -l -f' || echo 'ghq list')
 
   local preview_commands=(
     'dir={};'
-    'echo -n "\e[38;5;202m\e[m "; cut -d/ -f2- <<<"${dir#*'"$ghq_root"'/}";'
-    'builtin cd ${dir#* };'
-    'echo -n "\e[38;5;202m\e[m "; git branch --show-current;'
+    'echo "\e[38;5;202m\e[m  ${dir#* }";'
+    "builtin cd ${ghq_root}/\${dir#* };"
+    'echo -n "\e[38;5;202m\e[m  "; git branch --show-current;'
     'echo; git -c color.status=always status -sb | head -n10;'
     'echo; ls --color -l --almost-all --si --time-style=long-iso'
   )
@@ -324,17 +325,24 @@ function ghq-fzf() {
             --query "$LBUFFER" \
             --preview-label='' \
             --preview "${preview_commands[*]}" \
+            --preview-window=bottom \
             --bind "ctrl-r:reload:$GHQ_LIST_NO_CACHE" \
             --select-1
   )
 
   if [ -n "$selected_dir" ]; then
     [ -n "$with_icon" ] && selected_dir=${selected_dir#* }
-    BUFFER=" cd ${selected_dir}"
+    BUFFER=" cd ${ghq_root}/${selected_dir}"
     zle accept-line
   fi
 }
 zle -N ghq-fzf && bindkey '^x^g' $_
+
+function ghq-no-cache-fzf() {
+  rm -f /tmp/ghq-dirty-repos.l.cache
+  ghq-fzf
+}
+zle -N ghq-no-cache-fzf && bindkey '^u^x^g' $_
 
 # リポジトリを選択して ghq get する
 function ghq-clone-fzf() {
@@ -401,6 +409,44 @@ function rg-fzf() {
 alias rgi=rg-fzf
 
 
+# インクリメンタルに jq する
+# - preview: jq の結果
+# - bind:
+#   - enter: jq のクエリを stdout に表示
+#   - alt-enter: jq の出力を stdout に表示
+#   - ctrl-y: jq のクエリをコピー
+#   - alt-y: jq の出力をコピー
+# - usage:
+#   - echo <json> | jq-fzf
+function jq-fzf() {
+  local JSON=$(mktemp ${TMPDIR:-/tmp}/jq-fzf.XXXXXXXXXX.json)
+  cat - > $JSON
+  local LAST_KEYS=$(mktemp ${TMPDIR:-/tmp}/jq-fzf.XXXXXXXXXX.last_keys)
+
+  local INITIAL_QUERY=.
+  local ON_CHANGE=(
+    "keys=\$(jq -r {q}' | keys[]' $JSON | sort | uniq);"
+    '[ -n "$keys" ]'
+    "&& (echo \"\$keys\" && echo \"\$keys\" > $LAST_KEYS)"
+    "|| cat $LAST_KEYS"
+  )
+
+  jq -r "$INITIAL_QUERY | keys[]" $json \
+    | sort | uniq \
+    | tee $LAST_KEYS \
+    | fzf --disabled \
+          --print-query \
+          --sync \
+          --query=$INITIAL_QUERY \
+          --preview "jq -C {q} $json" \
+          --bind "change:reload:$ON_CHANGE" \
+          --bind "enter:become(echo {q})" \
+          --bind "alt-enter:become(jq -C {q} $json)" \
+          --bind "ctrl-y:become(echo {q} | pbcopy)" \
+          --bind "alt-y:become(jq -C {q} $json | pbcopy)" \
+}
+
+
 function gcloud-secrets-fzf() {
   result=$(
     gcloud secrets list \
@@ -412,4 +458,84 @@ function gcloud-secrets-fzf() {
   )
 
   echo "$result"
+}
+
+
+function cvm-fzf() {
+  tccli cvm DescribeInstances \
+    | jq -r '.InstanceSet[] | "\(.InstanceId)\t\(.InstanceName)\t\(.PublicIpAddresses[0])\t\(.PrivateIpAddresses[0])\t\(.InstanceType)\t\(.Placement.Zone)\t\(.DefaultLoginUser)\t\(.OsName)"' \
+    | column -s $'\t' -t \
+    | fzf \
+      --bind 'ctrl-s:become(ssh -i ~/.ssh/inf-dev-gateway.pem {7}@{3})' \
+      --bind 'alt-i:become(pbcopy <<<{1})' \
+      --bind 'alt-n:become(pbcopy <<<{2})' \
+      --bind 'alt-P:become(pbcopy <<<{3})' \
+      --bind 'alt-p:become(pbcopy <<<{4})' \
+      --bind 'alt-t:become(pbcopy <<<{5})' \
+      --bind 'alt-z:become(pbcopy <<<{6})'
+}
+
+
+function tke-fzf() {
+  : ${KUBECONFIG:=/tmp/$CLUSTER_ID-kubeconfig.yaml}
+  export KUBECONFIG
+
+  if [ ! -f $KUBECONFIG ] || _confirm "$KUBECONFIG already exists. Do you want to overwrite it?"; then
+    echo "Creating $KUBECONFIG ..."
+  else
+    return 1
+  fi
+
+  SELECTED=($(
+    tccli tke DescribeClusters \
+      | jq -r '.Clusters[] | "\(.ClusterId)\t\(.ClusterName)\t\(.ClusterVersion)\t\(.ClusterType)\t\(.ClusterLevel)\t\(.AutoUpgradeClusterLevel)"' \
+      | column -s $'\t' -t \
+      | fzf #\
+        # --bind 'ctrl-k:become(tccli tke DescribeClusterKubeconfig --ClusterId {1} | jq -r .Kubeconfig > /tmp/{1}-kubeconfig.yaml; echo export KUBECONFIG=/tmp/{1}-kubeconfig.yaml)'
+  ))
+
+  CLUSTER_ID=${SELECTED[1]}
+  CLUSTER_NAME=${SELECTED[2]}
+  tccli tke DescribeClusterKubeconfig --ClusterId $CLUSTER_ID --IsExtranet True | jq -r .Kubeconfig > ${KUBECONFIG}
+
+  CURRENT_CONTEXT_NAME=$(kubectl config current-context)
+  NEW_CONTEXT_NAME="tke/eval/$CLUSTER_NAME"
+  if _confirm "Do you want to rename context from '$CURRENT_CONTEXT_NAME' to '$NEW_CONTEXT_NAME'?"; then
+    kubectl config rename-context "$CURRENT_CONTEXT_NAME" "$NEW_CONTEXT_NAME"
+  fi
+}
+
+function tke-get-context-local-fzf() {
+  export KUBECONFIG="$HOME/.kube/config.d/$(pwd | sed 's/\//!/g')"
+  tke-fzf
+
+  if [ ! -f .envrc ] || _confirm ".envrc already exists. Do you want to update it?"; then
+    echo "Creating .envrc ..."
+    echo 'export KUBECONFIG="$HOME/.kube/config.d/$(pwd | tr / !)"' >> .envrc
+  fi
+
+  cat .envrc
+  _confirm "Do you want to allow direnv in $(pwd)?" \
+    && direnv allow
+}
+
+function tke-get-context-global-fzf() {
+  GLOBAL_KUBECONFIG="$HOME/.kube/config"
+  TMP_KUBECONFIG="/tmp/tke-kubeconfig-$(date +%s).yaml"
+  KUBECONFIG="$TMP_KUBECONFIG" tke-fzf
+
+  NEW_KUBECONFIG="/tmp/new-kubeconfig.yaml"
+  KUBECONFIG=$GLOBAL_KUBECONFIG:$TMP_KUBECONFIG kubectl config view --flatten > $NEW_KUBECONFIG
+  mv -i $GLOBAL_KUBECONFIG ${GLOBAL_KUBECONFIG}.bak
+  mv -i $NEW_KUBECONFIG $GLOBAL_KUBECONFIG
+}
+
+function _confirm() {
+  local message="$1"
+
+  echo -n "$message [y/N] "
+  read -r answer
+  if [[ ! "$answer" =~ ^[Yy]$ ]]; then
+    return 1
+  fi
 }

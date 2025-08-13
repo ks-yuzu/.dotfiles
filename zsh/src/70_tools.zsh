@@ -121,33 +121,87 @@ function lock()
     dm-tool loack
 }
 
+
+# linux のディレクトリパスを短縮する
+# - 各階層のディレクトリ名を指定した文字数で truncate する
+# - git リポジトリルート (直下に .git がある) の場合は truncate しない
+# - kustomize 用のディレクトリ内 (bases/, components/, overlays/ の配下) では truncate しない
 function shorten-path()
 {
+  local input=${1:-$(pwd)}
   local length=${2:-3}
-  local focused_path=
-  local short_path=
+  # focused_path=
+  # short_path=
 
-  IFS=/ read -rA DIRS <<<$(echo ${1:-$(pwd)} | sed -e "s|^${HOME}|~|")
-  set -- $DIRS
-  while [ $# -gt 0 ]; do
-    dir="$1"
-    shift
+  # IFS=/ read -rA DIRS <<<$(echo ${1:-$(pwd)} | sed -e "s|^${HOME}|~|")
+  # set -- $DIRS
+  # while [ $# -gt 0 ]; do
+  #   dir="$1"
+  #   shift
 
-    if [[ "$dir" = '~' ]]; then
-      focused_path="${HOME}"
-      short_path='~'
-    else
-      focused_path="${focused_path}/${dir}"
+  #   if [[ "$dir" = '~' ]]; then
+  #     focused_path="${HOME}"
+  #     short_path='~'
+  #   else
+  #     focused_path="${focused_path}/${dir}"
 
-      if [[ -e "${focused_path}/.git" || $# -eq 0 ]]; then
-        short_path="${short_path}/${dir}"
-      else
-        short_path="${short_path}/${dir:0:${length}}"
-      fi
+  #     if [[ -e "${focused_path}/.git" || $# -eq 0 ]]; then
+  #       short_path="${short_path}/${dir}"
+  #     else
+  #       short_path="${short_path}/${dir:0:${length}}"
+  #     fi
+  #   fi
+
+  #   # echo "$focused_path - $short_path"
+  # done
+
+  # echo "$short_path"
+
+
+  ## Split the path into segments
+  local abs=${input:A}
+  local rest=$abs
+  local prefix=''
+  if [[ "$abs" == "$HOME" || "$abs" == "${HOME}/"* ]]; then
+    prefix='~'
+    rest="${abs#$HOME}"
+  fi
+  rest="${rest#/}" # remove leading slash
+  local segs=("$prefix" ${(s:/:)rest})
+
+  local git_root_abs=""
+  if (( $+commands[git] )); then
+    if command git -C "$abs" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      git_root_abs="$(command git -C "$abs" rev-parse --show-toplevel 2>/dev/null)"
+      git_root_abs="${git_root_abs:A}"
+    fi
+  fi
+
+  ## Build short path
+  local -a result
+  local keep_recursive=0
+
+  local seg
+  local curr
+  for seg in "${segs[@]}"; do
+    curr="${curr}/${seg}"
+
+    local keep=${keep_recursive}
+    if [[ "$seg" == 'bases' || "$seg" == 'components' || "$seg" == 'overlays' ]]; then
+      keep=1
+      keep_recursive=1
     fi
 
-    # echo "$focused_path - $short_path"
+    if [[ -n "$git_root_abs" && "${curr:A}" == "$git_root_abs" ]]; then
+      keep=1
+    fi
+
+    if (( keep )); then
+      result+=("$seg")
+    else
+      result+=("${seg:0:$length}")
+    fi
   done
 
-  echo "$short_path"
+  echo "${(j:/:)result}"
 }

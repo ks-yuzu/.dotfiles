@@ -47,7 +47,7 @@ function get-kube-cluster-info() {
 
   # local kube_context=$(kubectl config current-context 2> /dev/null)
     local kube_context=$(grep current-context ${KUBECONFIG:-~/.kube/config} | cut -d' ' -f2)
-    local color="${KUBECONFIG+\e[38;5;192m}"
+    local value_color="${KUBECONFIG+\e[38;5;192m}"
     local colorclear="\e[m"
 
     if [[ "$_KUBE_CONTEXT" == "$kube_context" ]]; then
@@ -59,27 +59,28 @@ function get-kube-cluster-info() {
 
     local label="⎈" # gke:
     if [[ $_KUBE_CONTEXT =~ gke ]]; then
-      # _K8S_CLUSTER_INFO=" $(imgcat ~/.dotfiles/zsh/icons/gke-icon.png; echo -n -e "\033[2C")$(echo $_KUBE_CONTEXT | cut -d_ -f4-)"
       local cluster_name=$(echo $_KUBE_CONTEXT | cut -d_ -f2,4 --output-delimiter '/')
-      # local label=gke
-      _K8S_CLUSTER_INFO=" \e[38;5;33m${label}\e[m${color}${cluster_name}${colorclear}"
+      # label=gke
+      label="\e[38;5;33m${label}${colorclear}"
+      value="${cluster_name}"
     elif [[ $_KUBE_CONTEXT =~ aws ]]; then
-        local product=$(get-aws-account-name-from-id $(echo $_KUBE_CONTEXT | cut -d: -f5))
-        # sts token のアカウントとクラスタのアカウントが違っていれば色を変える
-        if [[ -z "$AWS_PROFILE" ]]; then
-            :
-        elif [[ "$AWS_PROFILE" == "$product" ]]; then
-            product="${product}"
-        else
-            product="%F{red}${product}"
-        fi
-        # local label=eks:
-        _K8S_CLUSTER_INFO=" \e[38;5;202m${label}:\e[m${color}${product}${color}/$(echo $_KUBE_CONTEXT | cut -d/ -f2)${colorclear}"
-      # _K8S_CLUSTER_INFO=" $(imgcat ~/.dotfiles/zsh/icons/eks-icon.png; echo -n -e "\033[2C")${product}:$(echo $_KUBE_CONTEXT | cut -d/ -f2)"
+      local product=$(get-aws-account-name-from-id $(echo $_KUBE_CONTEXT | cut -d: -f5))
+      # sts token のアカウントとクラスタのアカウントが違っていれば色を変える
+      if [[ -z "$AWS_PROFILE" ]]; then
+        :
+      elif [[ "$AWS_PROFILE" == "$product" ]]; then
+        product="${product}"
+      else
+        product="%F{red}${product}"
+      fi
+      # label=eks:
+      label="\e[38;5;202m${label}${colorclear}"
+      value="${product}/$(echo $_KUBE_CONTEXT | cut -d/ -f2)"
     else
-        _K8S_CLUSTER_INFO=" ${label}:$_KUBE_CONTEXT"
+      value="$_KUBE_CONTEXT"
     fi
 
+    _K8S_CLUSTER_INFO=" ${label}\e[m${value_color}${value}${colorclear}"
     #echo -n "${fg[cyan]}\xE2\x8E\x88${reset_color}"
     echo $_K8S_CLUSTER_INFO
 }

@@ -15,6 +15,7 @@ function usage() {
     -a  show all (default)
     -c  show count dirty repos only
     -l  show list dirty repos only
+    -p  show full paths
     -f  update cache
     -h  show help
 EOF
@@ -27,6 +28,7 @@ function parse_options() {
       # a) OPT_COUNT=1; OPT_LIST=1 ;;
       c) OPT_COUNT=1 ;;
       l) OPT_LIST=1 ;;
+      p) OPT_FULLPATH=1 ;;
       f) OPT_FORCE=1 ;;
       h) usage ;;
     esac
@@ -41,8 +43,9 @@ function parse_options() {
 
 function run() {
   local count=0
-  for repo in $(ghq list -p); do
-    if git -C $repo status --porcelain | grep . > /dev/null; then
+  for repo in $(ghq list ${OPT_FULLPATH:+-p}); do
+    repo_prefix=${${OPT_FULLPATH:+ }:-$(ghq root)/}
+    if git -C ${repo_prefix}$repo status --porcelain | grep . > /dev/null; then
       count=$((count + 1))
       [ -n "${OPT_LIST:-}" ] && echo "\e[38;5;160m■\e[m ${repo}"
     else
