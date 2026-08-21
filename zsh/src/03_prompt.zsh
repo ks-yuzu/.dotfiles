@@ -99,9 +99,11 @@ function get-kube-ns-info() {
 
 function get-argocd-info() {
     which argocd > /dev/null || return
+    which yq > /dev/null || return
     [ -f ~/.argocd/config ] || return
-  # local ARGOCD_CONTEXT=$(argocd context | grep '^*' | awk '{print $2}' | cut -d. -f1 | sed -E 's/-?argo-?cd//')
-    local ARGOCD_CONTEXT=$(grep '^current-context' ~/.argocd/config | cut -d' ' -f2 | cut -d. -f1 | sed -E 's/-?argo-?cd//')
+    #local ARGOCD_CONTEXT=$(argocd context | grep '^*' | awk '{print $2}' | cut -d. -f1 | sed -E 's/-?argo-?cd//')
+    #local ARGOCD_CONTEXT=$(grep '^current-context' ~/.argocd/config | cut -d' ' -f2 | cut -d. -f1 | sed -E 's/-?argo-?cd//')
+    local ARGOCD_CONTEXT=$(yq .current-context ~/.argocd/config | cut -d. -f1,2)
 
     local label="🐙" # argocd:
     echo " \e[38;5;202m${label}\e[m${ARGOCD_CONTEXT}"
@@ -146,13 +148,13 @@ function _update_gcloud_context() {
     return 0
 }
 
-function get-grizzly-info() {
+function get-grafana-info() {
   which yq > /dev/null || return
   yq --version >/dev/null 2>&1 || return
-  [ -f ~/.config/grizzly/settings.yaml ] || return
+  [ -f ~/.config/grafanactl/config.yaml ] || return
 
-  local GRIZZLY_CONTEXT=$(yq .current-context ~/.config/grizzly/settings.yaml)
-  echo "${GRIZZLY_CONTEXT}"
+  local GRAFANA_CONTEXT=$(yq .current-context ~/.config/grafanactl/config.yaml)
+  echo "${GRAFANA_CONTEXT}"
 }
 
 
@@ -218,14 +220,14 @@ function update-prompt()
       local gcloudinfo=$' \e[38;5;33m \e[m'${_GCLOUD_PROJECT:--}
     fi
 
-    local grizzlyinfo=$' \e[38;5;130m🐻\e[m'$(get-grizzly-info)
+    local grafanainfo=$' \e[38;5;130m🐻\e[m'$(get-grafana-info)
 
     # if is-linux; then
     #   local os_version="[$(=cat /etc/os-release | grep VERSION_CODENAME | cut -d= -f2)]"
     # fi
 
-    # PROMPT="${name}${os_version}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${argocdinfo}${grizzlyinfo}${cdir}${endl}${mark}"
-    PROMPT="${name}${os_version}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${argocdinfo}${grizzlyinfo}${cdir}${endl}${mark}"
+    # PROMPT="${name}${os_version}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${argocdinfo}${grafanainfo}${cdir}${endl}${mark}"
+    PROMPT="${name}${os_version}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${argocdinfo}${grafanainfo}${cdir}${endl}${mark}"
 }
 # add-zsh-hook precmd update-prompt
 

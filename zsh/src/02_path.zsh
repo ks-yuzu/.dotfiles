@@ -101,3 +101,6 @@ append-path-if-exists "$HOME/bin"
 append-path-if-exists "$HOME/opt"
 append-path-if-exists "$HOME/.cargo/bin"
 append-path-if-exists "${AQUA_ROOT_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/aquaproj-aqua}/bin"
+## Kiro
+# wslvar が 1 回 2 秒強かかるため、使うときはパスをキャッシュする
+# append-path-if-exists "$(wslpath $(wslvar USERPROFILE))/AppData/Local/Programs/Kiro/bin"
