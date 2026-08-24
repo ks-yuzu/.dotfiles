@@ -2,7 +2,7 @@
 # https://gist.github.com/ABCanG/11bfcff22a0633600aefbb01550b8e38
 
 #if [[ -n "${REMOTEHOST}${SSH_CONNECTION}" && -z "$TMUX" && -z "$STY" ]] && type tmux >/dev/null 2>&1; then
-if [[ -z "$TMUX" && -z "$STY" ]] && type tmux >/dev/null 2>&1; then
+if [[ -z "$TMUX" && -z "$STY" && -z "$ORCA_CLI_COMMAND" ]] && type tmux >/dev/null 2>&1; then
     function confirm {
         MSG=$1
         while :
