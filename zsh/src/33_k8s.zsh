@@ -109,6 +109,92 @@ function __k8s-manifest-dyff()
 }
 zle -N __k8s-manifest-dyff && bindkey "^u^[^d" $_
 
+
+# function __k8s-manifest-apply-selectively()
+# {
+#   if [[ -f kustomization.yaml ]]; then
+#     COMMANDS=(
+#       'echo'
+#       ';'
+#       'MANIFEST="$(kustomize build --enable-alpha-plugins --enable-exec --enable-helm --load-restrictor LoadRestrictionsNone . | fzf-yaml-filter)"'
+#       ';'
+#       'DIFF="$(echo "$MANIFEST" | kubectl diff ${KUBECTL_DIFF_OPTIONS} -f -)"'
+#       ';'
+#       '[ -n "$DIFF" ] || {echo "no changes detected"; return}'
+#       ';'
+#       'echo "$DIFF" | less -F'
+#       '&&'
+#       'read -q "?Enter \"y\" to apply the above changes: "'
+#       '&&'
+#       'echo'
+#       '&&'
+#       'echo "$MANIFEST" | kubectl apply ${KUBECTL_DIFF_OPTIONS} -f -'
+#     )
+#     BUFFER=" ${COMMANDS[*]}"
+#   elif [[ -f helmfile.yaml || -f helmfile.yml ]]; then
+#     BUFFER=" helmfile template | fzf-yaml-filter | kubectl diff ${KUBECTL_DIFF_OPTIONS} -f - | less"
+#   else
+#     echo "Error: No kustomization.yaml or helmfile.yaml found" >&2
+#     return 1
+#   fi
+#   zle accept-line
+# }
+function __k8s-manifest-apply-selectively() {
+  emulate -L zsh
+  setopt pipefail
+
+  local manifest diff status answer opts_str diff_status
+  local -a kubectl_diff_options
+
+  opts_str=${KUBECTL_DIFF_OPTIONS-}
+  kubectl_diff_options=("${(@Q)${(z)opts_str}}")
+
+  manifest=$(mktemp "${TMPDIR:-/tmp}/k8s-manifest.XXXXXX") || return
+  diff=$(mktemp "${TMPDIR:-/tmp}/k8s-diff.XXXXXX") || {
+    rm -f -- "$manifest"
+    return 1
+  }
+
+  echo building manifest...
+
+  {
+    kustomize build \
+      --enable-alpha-plugins \
+      --enable-exec \
+      --enable-helm \
+      --load-restrictor LoadRestrictionsNone \
+      . \
+      | fzf-yaml-filter > "$manifest" || return
+
+    kubectl diff "${kubectl_diff_options[@]}" -f "$manifest" > "$diff"
+    diff_status=$status
+
+    case "$diff_status" in
+      0)
+        echo "no changes detected"
+        ;;
+      1)
+        less -RF -- "$diff" || return
+        read -q 'answer?Apply the above changes? [y/N]: '
+        echo
+        if [[ "$answer" == y ]]; then
+          kubectl apply "${kubectl_diff_options[@]}" -f "$manifest"
+        fi
+        ;;
+      *)
+        echo "kubectl diff failed with status $diff_status" >&2
+        return "$diff_status"
+        ;;
+    esac
+  } always {
+    rm -f -- "$manifest" "$diff"
+  }
+
+  echo "\n"
+  zle reset-prompt
+}
+zle -N __k8s-manifest-apply-selectively && bindkey "^kA" $_
+
 # kustomize の overlay を選択して移動
 # - preview: ディレクトリ内のファイル一覧, kustomization.yaml の中身
 # - bind:
