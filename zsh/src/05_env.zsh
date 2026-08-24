@@ -8,7 +8,7 @@ export SVN_EDITOR="${EDITOR}"
 export GIT_EDITOR="${EDITOR}"
 
 #export VISUAL='emacsclient -t'
-export LESS='-N -M -R -s +Gg'
+export LESS='-M -R -s -F' #  +Gg
 export BAT_PAGER="less -n"
 FZF_DEFAULT_OPTS_ARRAY=(
   '--exact'
