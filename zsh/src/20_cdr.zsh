@@ -10,7 +10,7 @@ if is-at-least 4.3.11; then
     zstyle ':chpwd:*' recent-dirs-default true
     zstyle ':chpwd:*' recent-dirs-file "$HOME/.cache/shell/chpwd-recent-dirs"
     zstyle ':chpwd:*' recent-dirs-pushd true
-
+    #zstyle ':chpwd:*' recent-dirs-prune 'pattern:/tmp(|/*)'
 
     function cdr-fzf {
       local dir=$(
