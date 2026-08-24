@@ -67,10 +67,8 @@ append-path-if-exists "$HOME/.cabal/bin"
 ## go
 if [ -d "$HOME/.goenv" ]; then
   export GOENV_ROOT=$HOME/.goenv
-  export PATH=$GOENV_ROOT/bin:$PATH
+  export PATH="$GOENV_ROOT/bin:$PATH"
   eval "$(goenv init -)"
-  export PATH="$GOROOT/bin:$PATH"
-  export PATH="$PATH:$GOPATH/bin"
 elif [ -d "$HOME/.go" ]; then
   export GOPATH=~/.go
   export PATH=$GOPATH/bin:$PATH
