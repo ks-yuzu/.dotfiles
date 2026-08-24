@@ -16,7 +16,7 @@ FZF_DEFAULT_OPTS_ARRAY=(
   '--cycle'
   '--multi'
   '--no-mouse'
-  '--tmux 98%,90%'
+  # '--tmux 98%,90%'
   '--reverse'
   '--prompt="query> "'
   '--color=16'
@@ -28,7 +28,8 @@ FZF_DEFAULT_OPTS_ARRAY=(
   '--color=hl:#5f87af,hl+:#5fd7ff,info:#afaf87,marker:#87ff00'
   '--color=prompt:#0039d6,spinner:#af5fff,pointer:#0032d8,header:#87afaf'
   '--color=gutter:#121212,border:#262626'
-  '--border="rounded" --border-label="" --preview-window="border-rounded"'
+  '--border="rounded" --border-label=""'
+  '--preview-window="bottom:border-rounded"'
 )
 export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS_ARRAY[*]}"
 export FZF_DEFAULT_COMMAND='which rgi && rgi || ls'
