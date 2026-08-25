@@ -103,7 +103,6 @@ function find-file-fzf {
       | fzf --ansi \
             --prompt="$(pwd)> " \
             --query "$query" \
-            --select-1 \
             --nth 8 \
             --accept-nth 8 \
             --preview 'realpath {8}; echo; [[ -d {8} ]] && ls --color -l --almost-all --si --time-style=long-iso {8} || bat --color=always {8}' \
@@ -119,9 +118,9 @@ function find-file-fzf {
                       find \$(realpath -s --relative-to=. \$(dirname {8})/..) ${find_opts} | sort -k8,8 | xargs ls --color -ld --almost-all --si --time-style=long-iso \
                     )+clear-query+top" \
             --bind "enter:accept" \
-            --bind "alt-enter:become(realpath {8})" \
-            --bind "ctrl-y:execute(echo {8} | pbcopy)+abort" \
-            --bind "alt-y:execute(realpath {8} | pbcopy)+abort" \
+            --bind 'alt-enter:become(realpath {8})' \
+            --bind 'ctrl-y:execute(echo {8} | pbcopy)+abort' \
+            --bind 'alt-y:execute(realpath {8} | pbcopy)+abort' \
             --bind "?:preview:echo '${usage}'"
   )
   [[ -z "$selected" ]] && return
