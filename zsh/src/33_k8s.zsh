@@ -26,7 +26,9 @@ bindkey '^[k'  $_
 bindkey '^[^k' $_
 
 function __k9s {
-  k9s
+  # workaround: column select key bindings
+  # https://github.com/derailed/k9s/issues/3768#issuecomment-4660516023
+  TERM=xterm-256color k9s
 }
 zle -N __k9s && bindkey '^[9' $_
 
@@ -40,7 +42,7 @@ function __k9s-fzf {
   )
   [ -z "$ctx" ] && return
 
-  BUFFER=" KUBECONFIG='$KUBECONFIG' k9s --context $ctx"
+  BUFFER=" KUBECONFIG='$KUBECONFIG' TERM=xterm-256color k9s --context $ctx"
   [ -n "$WIDGET" ] && zle accept-line
 }
 zle -N __k9s-fzf && bindkey '^[(' $_
