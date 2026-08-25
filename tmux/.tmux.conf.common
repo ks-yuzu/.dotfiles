@@ -49,7 +49,7 @@ set-option -g status-right "#[fg=colour255,bg=colour241] %m/%d %H:%M:%S #[defaul
 # ========================================
 #  SCROLL
 # ========================================
-set-option -g history-limit 200000
+set-option -g history-limit 400000
 setw -g mouse on
 
 unbind -T copy-mode MouseDragEnd1Pane
