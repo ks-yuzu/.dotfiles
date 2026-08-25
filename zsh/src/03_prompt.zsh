@@ -265,6 +265,10 @@ setopt prompt_subst
 
 function rprompt
 {
+    if [ -n "$SKIP_RPROMPT" ]; then
+      return
+    fi
+
     STY= LANG=en_US.UTF-8 vcs_info
 
     local branch="$vcs_info_msg_0_"
