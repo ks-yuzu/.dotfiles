@@ -498,7 +498,7 @@ function tke-fzf() {
   tccli tke DescribeClusterKubeconfig --ClusterId $CLUSTER_ID --IsExtranet True | jq -r .Kubeconfig > ${KUBECONFIG}
 
   CURRENT_CONTEXT_NAME=$(kubectl config current-context)
-  NEW_CONTEXT_NAME="tke/eval/$CLUSTER_NAME"
+  NEW_CONTEXT_NAME="tke/${TCCLI_PROFILE:-default}/$CLUSTER_NAME"
   if _confirm "Do you want to rename context from '$CURRENT_CONTEXT_NAME' to '$NEW_CONTEXT_NAME'?"; then
     kubectl config rename-context "$CURRENT_CONTEXT_NAME" "$NEW_CONTEXT_NAME"
   fi
