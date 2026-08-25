@@ -75,7 +75,7 @@ zle -N __git-fetch-and-switch-fzf && bindkey "^gO" $_
 ## git graph
 function __git-graph()
 {
-    BUFFER=" git log --graph --all --pretty=format:'%C(green)%cd%C(reset) %C(red)%h%C(reset) %C(yellow bold)%d%C(reset) %C(bold)%s%C(reset) %C(blue bold)<%an>%C(reset)' --abbrev-commit --date=format:'%Y-%m-%d %H:%M'"
+    BUFFER=" git log --graph --pretty=format:'%C(green)%cd%C(reset) %C(red)%h%C(reset) %C(yellow bold)%d%C(reset) %C(bold)%s%C(reset) %C(blue bold)<%an>%C(reset)' --abbrev-commit --date=format:'%Y-%m-%d %H:%M' --exclude=refs/remotes/origin/gh-pages --all"
     zle accept-line
 }
 zle -N __git-graph && bindkey "^gg" $_
