@@ -169,64 +169,41 @@ function zsh-snippets-fzf() {
 zle -N zsh-snippets-fzf && bindkey '^x^x' $_
 
 
-# プロセスを選択して kill する
+# プロセスの一覧を表示
 # - preview: プロセスの詳細
 # - bind:
-#   - tab:    プロセスの環境変数を表示
-#   - ctrl-r: プロセスリストを再読み込み
-function kill-fzf() {
-  local command="ps aux --sort=-pid"
-  local pid=($(
-    eval "$command" \
-      | fzf --multi \
-            --nth 2,11.. \
-            --accept-nth 2 \
-            --header-lines=1 \
-            --preview 'ps -p {2} -o pid,ppid,etime,%cpu,%mem,cmd; echo; pstree -p {2}' \
-            --bind "ctrl-r:reload($command)" \
-            --bind "tab:preview:cat /proc/{2}/environ | tr '\0' '\n'" \
-  ))
+#   - ctrl-r:     プロセスリストを再読み込み
+#   - alt-k:      プロセスを kill (SIGTERM)
+#   - ctrl-alt-k: プロセスを kill (SIGKILL)
+#   - tab:        プロセスの環境変数を表示
+#   - ?:          ヘルプ
+function ps-fzf() {
+  local usage=(
+    'usage:'
+    '- ctrl-r     reload process list'
+    '- alt-k      kill process (SIGTERM)'
+    '- ctrl-alt-k kill process (SIGKILL)'
+    '- tab        preview envvars'
+    '- ?          help'
+  )
+  usage=$(IFS=$'\n'; echo "${usage[*]}")
 
-  if [ -n "$pid" ]; then
-    echo 'kill processes (SIGTERM):'
-    ps u "${pid[@]}"
-    kill "${pid[@]}"
-  fi
+  local command="ps aux --sort=-pid"
+  eval "$command" \
+    | fzf --multi \
+          --nth 2,11.. \
+          --header-lines=1 \
+          --preview 'ps -p {2} -o pid,ppid,etime,%cpu,%mem,cmd; echo; pstree -p {2}' \
+          --bind "ctrl-r:reload($command)" \
+          --bind "alt-k:become(kill {+2})" \
+          --bind "ctrl-alt-k:become(kill -9 {+2})" \
+          --bind "tab:preview:cat /proc/{2}/environ | tr '\0' '\n'" \
+          --bind "?:preview:echo '${usage}'"
 
   zle reset-prompt
 }
-alias pka="kill-fzf"
-zle -N kill-fzf && bindkey '^xp' $_
-
-
-# プロセスを選択して kill -9 する
-# - preview: プロセスの詳細
-# - bind:
-#   - tab:    プロセスの環境変数を表示
-#   - ctrl-r: プロセスリストを再読み込み
-function kill-force-fzf() {
-  local command="ps aux --sort=-pid"
-  local pid=($(
-    eval "$command" \
-      | fzf --multi \
-            --nth 2,11.. \
-            --accept-nth 2 \
-            --header-lines=1 \
-            --preview 'ps -p {2} -o pid,ppid,etime,%cpu,%mem,cmd; echo; pstree -p {2}' \
-            --bind "ctrl-r:reload($command)" \
-            --bind "tab:preview:cat /proc/{2}/environ | tr '\0' '\n'" \
-  ))
-
-  if [ -n "$pid" ]; then
-    echo 'kill processes (SIGKILL):'
-    ps u "${pid[@]}"
-    kill -9 "${pid[@]}"
-  fi
-
-  zle reset-prompt
-}
-alias pka9=kill-force-fzf
-zle -N kill-force-fzf && bindkey '^xP' $_
+alias pka="ps-fzf"
+zle -N ps-fzf && bindkey '^xp' $_
 
 
 # 再帰的にディレクトリを選択して cd する
