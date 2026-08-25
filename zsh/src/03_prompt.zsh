@@ -39,6 +39,10 @@ function get-tmux-info-for-prompt()
     echo -n "[" $(get-tmux-info-mini) "] "
 }
 
+function get-tccli-info() {
+  echo $' \e[38;5;81m \e[m'"${TCCLI_PROFILE:--}"
+}
+
 
 # k8s
 function get-kube-cluster-info() {
@@ -76,6 +80,11 @@ function get-kube-cluster-info() {
       # label=eks:
       label="\e[38;5;202m${label}${colorclear}"
       value="${product}/$(echo $_KUBE_CONTEXT | cut -d/ -f2)"
+    elif [[ $_KUBE_CONTEXT =~ ^tke/ ]]; then
+      local cluster_name=$(echo $_KUBE_CONTEXT | awk -F/ '{print $NF}')
+      # label=tke:
+      label="\e[38;5;81m${label}${colorclear}"
+      value="${cluster_name}"
     else
       value="$_KUBE_CONTEXT"
     fi
@@ -185,6 +194,10 @@ function update-prompt()
     local mark="%B%(?,%F{green},%F{red})%(!,#,>)%f%b "
     # local mark="%B%(?,%F{green} ,%F{red} )%f%b "
 
+    if [ -n "$SHOW_TCCLIINFO_IN_PROMPT" ]; then
+      local tccliinfo="$(get-tccli-info)"
+    fi
+
     if [ -n "$SHOW_KUBEINFO_IN_PROMPT" ]; then
       # local kubeinfo="$(get-kube-cluster-info)$(get-kube-ns-info)"
         local kubeinfo="$(get-kube-cluster-info)"
@@ -227,7 +240,7 @@ function update-prompt()
     # fi
 
     # PROMPT="${name}${os_version}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${argocdinfo}${grafanainfo}${cdir}${endl}${mark}"
-    PROMPT="${name}${os_version}${tmuxinfo}${stsinfo}${gcloudinfo}${kubeinfo}${argocdinfo}${grafanainfo}${cdir}${endl}${mark}"
+    PROMPT="${name}${os_version}${tmuxinfo}${stsinfo}${gcloudinfo}${tccliinfo}${kubeinfo}${argocdinfo}${grafanainfo}${cdir}${endl}${mark}"
 }
 # add-zsh-hook precmd update-prompt
 
