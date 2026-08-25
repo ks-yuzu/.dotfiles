@@ -22,7 +22,10 @@ alias e='emacsclient -n'
 alias ekill="emacsclient -e '(kill-emacs)'"
 #alias ed='emacs --daemon'
 
-if which xdg-open >/dev/null 2>&1 ; then
+if which wsl-open >/dev/null 2>&1 ; then
+  alias op='wsl-open'
+  alias open='wsl-open'
+elif which xdg-open >/dev/null 2>&1 ; then
   alias op='xdg-open'
   alias open='xdg-open'
 fi
