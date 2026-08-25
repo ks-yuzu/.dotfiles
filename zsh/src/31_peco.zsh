@@ -32,6 +32,15 @@ zle -N select-history-fzf && bindkey '^r' $_
 #   - ctrl-r: 反映
 #   - ctrl-e: 編集
 function reload-zshrc-fzf {
+  local usage=(
+    'usage:'
+    '- enter:  load file'
+    '- ctrl-r: load file'
+    '- ctrl-e: edit file'
+    '- ?:      help'
+  )
+  usage=$(IFS=$'\n'; echo "${usage[*]}")
+
   if ps aux | grep emacs >/dev/null; then
     local editor='emacsclient -n'
   else
@@ -45,7 +54,7 @@ function reload-zshrc-fzf {
             --bind 'enter:become(echo source {})' \
             --bind 'ctrl-r:become(echo source {})' \
             --bind "ctrl-e:become(echo $editor {})" \
-            --bind '?:preview:echo "usage:\n- enter: reload\n- ctrl-r: reload- ctrl-e: edit\n"' \
+            --bind "?:preview:echo '${usage}'"
   )
   BUFFER=" $command"
   zle accept-line
