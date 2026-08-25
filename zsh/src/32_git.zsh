@@ -133,7 +133,8 @@ zle -N __git-checkout-pullrequest && bindkey "^gp" $_
 
 function __git-browse()
 {
-  BUFFER=" gh browse"
+  # BUFFER=" gh browse $(git rev-parse --show-prefix)"
+  BUFFER=" gh browse ."
   zle accept-line
 }
 zle -N __git-browse && bindkey "^gb" $_
