@@ -21,9 +21,9 @@ function __kubectx-fzf {
   BUFFER=""
   zle accept-line
 }
-zle -N __kubectx-fzf
-bindkey '^[k'  $_
-bindkey '^[^k' $_
+zle -N __kubectx-fzf && bindkey '^k^k' $_
+# bindkey '^[k'  $_
+# bindkey '^[^k' $_
 
 function __k9s {
   # workaround: column select key bindings
@@ -51,7 +51,7 @@ function __k9s-with-default-kubeconfig-fzf {
   KUBECONFIG= PECO_QUERY=' ' __k9s-fzf
   [ -n "$WIDGET" ] && zle accept-line
 }
-zle -N __k9s-with-default-kubeconfig-fzf && bindkey '^u^[9' $_
+zle -N __k9s-with-default-kubeconfig-fzf && bindkey '^u^[9' $_ && bindkey '^k^9' $_
 
 KUSTOMIZA_SNAPSHOT_FILE=.kustomize-snapshot.yaml
 HELMFILE_SNAPSHOT_FILE=.helmfile-snapshot.yaml
@@ -98,7 +98,7 @@ function __k8s-manifest-diff()
   fi
   zle accept-line
 }
-zle -N __k8s-manifest-diff && bindkey "^[^d" $_
+zle -N __k8s-manifest-diff && bindkey "^[^d" $_ && bindkey "^kd" $_
 
 function __k8s-manifest-dyff()
 {
