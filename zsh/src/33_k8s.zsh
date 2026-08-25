@@ -45,7 +45,7 @@ function __k9s-fzf {
   BUFFER=" KUBECONFIG='$KUBECONFIG' TERM=xterm-256color k9s --context $ctx"
   [ -n "$WIDGET" ] && zle accept-line
 }
-zle -N __k9s-fzf && bindkey '^[(' $_
+# zle -N __k9s-fzf && bindkey '^[(' $_
 
 function __k9s-with-default-kubeconfig-fzf {
   KUBECONFIG= PECO_QUERY=' ' __k9s-fzf
