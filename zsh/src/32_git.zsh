@@ -10,7 +10,7 @@ zle -N __git-status && bindkey "^gs" $_
 
 ## git diff
 function __git-diff-fzf() {
-  local files=$(_fzf_git_files | xargs)
+  local files=$(_fzf_git_files | xargs -I{} echo "'{}'" | tr '\n' ' ')
   if [[ -n "$files" ]]; then
     BUFFER=" git diff -- $files"
     zle accept-line
@@ -27,7 +27,7 @@ zle -N __git-diff-cached && bindkey "^gD" $_
 
 
 function __git-add-fzf() {
-  local files=$(_fzf_git_files | xargs)
+  local files=$(_fzf_git_files | xargs -I{} echo "'{}'" | tr '\n' ' ')
   if [[ -n "$files" ]]; then
     BUFFER=" git add $files"
     zle accept-line
