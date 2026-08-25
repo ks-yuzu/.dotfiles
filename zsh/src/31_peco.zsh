@@ -510,7 +510,12 @@ function tke-get-context-local-fzf() {
 
   if [ ! -f .envrc ] || _confirm ".envrc already exists. Do you want to update it?"; then
     echo "Creating .envrc ..."
-    echo 'export KUBECONFIG="$HOME/.kube/config.d/$(pwd | tr / !)"' >> .envrc
+    cat <<'EOF' >> .envrc
+export KUBECONFIG="$HOME/.kube/config.d/$(pwd | tr / !)"
+export KUBECTL_DIFF_OPTIONS='--server-side --force-conflicts'
+export KUBECTL_APPLY_OPTIONS=--server-side
+EOF
+    cat .envrc
   fi
 
   cat .envrc
