@@ -140,6 +140,101 @@ function __git-browse()
 zle -N __git-browse && bindkey "^gb" $_
 
 
+# git リポジトリ内の任意ディレクトリを選択して移動
+# - dependency: fd, fzf, eza
+# - preview:
+#   - ディレクトリ内の一覧
+#   - tab で配下を再帰表示
+function __git-switch-dir()
+{
+  local usage=(
+    'usage:'
+    '- enter      chdir to selected directory'
+    '- tab        set query to selected directory'
+    '- ctrl-l     set query to parent directory'
+    '- ctrl-y     copy relative path'
+    '- alt-y      copy absolute path'
+    '- ctrl-space preview directory contents recursively'
+    '- ?          help'
+  )
+  usage=$(IFS=$'\n'; echo "${usage[*]}")
+
+  local repo_root current_rel selected dir
+
+  repo_root="$(git rev-parse --show-toplevel)"
+  if [ -z "$repo_root" ]; then
+    echo "Error: Not in a git repository" >&2
+    return 1
+  fi
+
+  current_rel="$(realpath --relative-to="$repo_root" "$PWD")"
+  [ "$current_rel" = "." ] && current_rel=""
+
+  [[ -v FD_OPTIONS ]] || FD_OPTIONS=()
+  [[ -v FZF_OPTIONS ]] || FZF_OPTIONS=()
+
+  selected=$(
+    fd . "$repo_root" \
+      --type d \
+      --exclude node_modules \
+        ${FD_OPTIONS[@]} \
+      | sed "s|^$repo_root||" \
+      | sed '/^$/d' \
+      | sort \
+      | USAGE="$usage" \
+        REPO_ROOT="$repo_root" \
+        fzf \
+          --prompt="repo dirs> " \
+          --query="$current_rel" \
+          --preview '
+            rel={}
+            target="${REPO_ROOT}${rel}"
+            echo "[path] $target"
+            echo
+            eza -la --group-directories-first --color=always "$target" || ls -lah "$target"
+          ' \
+          --bind 'ctrl-space:preview(
+            rel={}
+            target="${REPO_ROOT}${rel}"
+            cd "$target"
+            fd | head -n 500
+          )' \
+          --bind 'ctrl-i:transform-query(printf "%s" {})' \
+          --bind 'ctrl-l:transform-query(printf "%s" {q} | sed -E "s#/+\$##; s#[^/]+\$##")' \
+          --bind 'ctrl-y:execute(echo {} | pbcopy)+abort' \
+          --bind 'alt-y:execute(realpath "${REPO_ROOT}"{} | pbcopy)+abort' \
+          --bind '?:preview:echo "$USAGE"' \
+          ${FZF_OPTIONS[@]} \
+  )
+
+  if [ -z "$selected" ]; then
+    return 1
+  fi
+
+  dir="${repo_root}${selected}"
+
+  [ $#BUFFER -gt 0 ] && zle push-line-or-edit
+  BUFFER=" builtin cd '$dir'"
+  zle accept-line
+}
+zle -N __git-switch-dir && bindkey "^u^[o" $_
+
+# ^u^u^[o で隠しディレクトリも表示するようにする
+function __git-switch-dir-with-hidden() {
+  FD_OPTIONS="--hidden" __git-switch-dir
+}
+zle -N __git-switch-dir-with-hidden && bindkey "^u^u^[o" $_
+
+
+function __git-switch-worktree() {
+  local WORKTREE="$(_fzf_git_worktrees)"
+  [ -z "$WORKTREE" ] && return 1
+
+  builtin cd "$WORKTREE/$(git rev-parse --show-prefix)"
+}
+zle -N __git-switch-worktree && bindkey '^gw' $_
+
+
 ## utils
 function __cd-git-root
 {
