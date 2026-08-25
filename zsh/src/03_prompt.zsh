@@ -199,11 +199,12 @@ function update-prompt()
     fi
 
     if [ -n "$SHOW_KUBEINFO_IN_PROMPT" ]; then
-      # local kubeinfo="$(get-kube-cluster-info)$(get-kube-ns-info)"
-        local kubeinfo="$(get-kube-cluster-info)"
+      local kubeinfo="$(get-kube-cluster-info)"
     fi
 
-    local argocdinfo="$(get-argocd-info)"
+    if [ -n "$SHOW_ARGOINFO_IN_PROMPT" ]; then
+      local argocdinfo="$(get-argocd-info)"
+    fi
 
     if [ -n "$SHOW_STSINFO_IN_PROMPT" ]; then
       local stsface=''
