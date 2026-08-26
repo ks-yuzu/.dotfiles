@@ -1,3 +1,16 @@
+# delta
+[core]
+  pager = delta
+[interactive]
+  diffFilter = delta --color-only
+[delta]
+  navigate = true  # use n and N to move between diff sections
+  dark = true      # or `light = true`, or omit for auto-detection
+[init]
+  defaultBranch = main
+
+
+
 [user]
   name = yuzu
   email = yuzu6120@gmail.com
@@ -5,6 +18,7 @@
 [core]
   # editor = /usr/local/bin/emacsclient -n --alternate-editor /usr/local/bin/emacs
   attributesfile = ~/.gitattributes_global
+  quotepath = false
 
 [push]
   default = current
@@ -19,6 +33,7 @@
   compactionHeuristic = true
 
 [alias]
+  #fix-permission = git diff --numstat | awk '{if (($1 == "0" && $2 == "0") || ($1 == "-" && $2 == "-")) print $3}' | xargs git checkout HEAD
   graph = log --graph --all --pretty=format:'%C(green)%cd%C(reset) %C(red)%h%C(reset) %C(yellow bold)%d%C(reset) %C(bold)%s%C(reset) %C(blue bold)<%an>%C(reset)' --abbrev-commit --date=format:'%Y-%m-%d %H:%M'
   graph-rich = log --graph --all --pretty=format:'%C(red reverse)%d%Creset%C(white reverse) %h% Creset %C(green reverse) %an %Creset %C(cyan bold)%ad (%ar)%Creset%n%C(white bold)%w(80)%s%Creset%n%n%w(80,2,2)%b' --abbrev-commit --date=format:'%Y-%m-%d %H:%M:%S' --name-status
   show-current-hash = !git --no-pager show --format='%h' --no-patch
@@ -32,8 +47,9 @@
 [url "git@github.com:"]
   insteadOf = https://github.com/
 
-[ghq]
-  root = ~/repo
-
 [rebase]
   autostash = true
+
+# マシン固有の設定は commit しない
+[include]
+  path = ~/.gitconfig.local
