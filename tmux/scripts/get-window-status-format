@@ -1,96 +1,51 @@
 #!/usr/bin/env bash
+#
+# tmux の window-status-format / window-status-current-format に埋めるラベルを組み立てる。
+#
+# 入力は .tmux.conf.common が渡す次の環境変数と $HOME。他には依存しない。
+#   _TMUX_IS_CURRENT_PANE       true / false
+#   _TMUX_WINDOW_NAME           #{window_name}
+#   _TMUX_PANE_ID               #{pane_id}               例: %5
+#   _TMUX_PANE_PID              #{pane_pid}
+#   _TMUX_PANE_CURRENT_PATH     #{pane_current_path}
+#   _TMUX_PANE_CURRENT_COMMAND  #{pane_current_command}
+#
+# 出力は tmux が再展開する。#[...] や #{...} をそのまま埋め込める。値が刻々と変わるもの
+# (エージェントの状態) は解決せず format のまま渡す。#() の出力は status-interval まで
+# キャッシュされるため、ここで解決すると再描画に追従できない。
+#
+# status-interval ごとに全ウィンドウ分が実行される。1 プロセスの起動コストが支配的なので、
+# 外部コマンドの呼び出し回数を増やさないこと。特に perl は plenv の shim 経由で 1 秒近く
+# かかるため使わない。
 
-function show-current-path {
-  if [[ "$_TMUX_PANE_CURRENT_PATH" = "$HOME" ]]; then
-    echo -n 'HOME';
-  else
-    path_label="$(perl -MFile::Spec -e '
-      my $path = shift;
-      my @parts = grep { length } File::Spec->splitdir($path);
-      #@parts = @parts > 3 ? @parts[-3..-1] : @parts;
-      @parts = @parts[-1];
-      print join("/", @parts);
-    ' "$_TMUX_PANE_CURRENT_PATH")"
-    echo -n "$path_label"
-  fi
+# ========== 設定 ==========
+
+readonly SESSION_NAME_WIDTH=20        # 表示幅。全角は 2 桁として数える
+readonly PATH_DEPTH_AGENT=3           # エージェントのウィンドウで出す path の要素数
+readonly PATH_DEPTH_SHELL=1           # シェルのウィンドウで出す path の要素数
+
+# Nerd Font の cod-claude / cod-openai。tmux は 1 桁として数えるが実際の描画は
+# それより広いため、後続を潰さないよう空白を 1 つ足す。色を付ける場合は #[fg=...] で挟む
+readonly ICON_CLAUDE=$' '
+#readonly ICON_CLAUDE=$'#[fg=color174]\uec82#[fg=default] '
+readonly ICON_CODEX=$' '
+
+readonly CLAUDE_SESSIONS_DIR="$HOME/.claude/sessions"
+
+# ========== ペインの状態 ==========
+
+# 条件式で pgrep を直接呼ぶと、その出力がそのままラベルに混入する。必ず変数に取る
+function find-ssh-processes {
+  pgrep -flaP "$_TMUX_PANE_PID" ssh 2> /dev/null
 }
 
-function show-repo-name {
-  cd "$_TMUX_PANE_CURRENT_PATH" && basename "$(git rev-parse --show-toplevel 2> /dev/null)"
+function is-ssh-pane {
+  [ -n "$SSH_PROCESSES" ]
 }
 
-function current-path-label {
-  if [[ "$_TMUX_PANE_CURRENT_PATH" = "$HOME" ]]; then
-    echo -n 'HOME'
-  else
-    perl -MFile::Spec -e '
-      my $path = shift;
-      my @parts = grep { length } File::Spec->splitdir($path);
-      @parts = @parts > 3 ? @parts[-3..-1] : @parts;
-      print join("/", @parts);
-    ' "$_TMUX_PANE_CURRENT_PATH"
-  fi
-}
-
-function current-repo-name {
-  cd "$_TMUX_PANE_CURRENT_PATH" && basename "$(git rev-parse --show-toplevel 2> /dev/null)"
-}
-
-function ai-session-icon {
-  # Nerd Font の cod-claude / cod-openai。グリフは 1 桁として数えられるが実際の描画は
-  # それより広いため、後続を潰さないよう空白を 1 つ足す
-  case "$1" in
-    #claude) printf '#[fg=color174]\uec82#[fg=default] ' ;;
-    claude) printf '\uec82 ' ;;
-    codex)  printf '\uec81 ' ;;
-    *)      echo -n "$1" ;;
-  esac
-}
-
-# 明示名が無い場合の扱いは別途検討する。それまでは従来どおり path と repo 名を出す
-function show-path-and-repo {
-  local repo_name
-
-  echo -n " ["
-  current-path-label
-  echo -n "]"
-
-  repo_name="$(current-repo-name)"
-  [ -n "$repo_name" ] && echo -n " ($repo_name)"
-}
-
-# 状態は値を解決せず tmux の format のまま渡す。#() の出力は status-interval まで
-# キャッシュされるため、ここで解決すると hook の refresh-client -S に追従できない
-function show-claude-state {
-  echo -n '#{?#{==:#{@claude_state},busy},#[fg=yellow] ⏳#[fg=default] ,}'
-  echo -n '#{?#{==:#{@claude_state},waiting},#[fg=red] 🔔#[fg=default] ,}'
-  echo -n '#{?#{==:#{@claude_state},idle},#[fg=green] ✔#[fg=default] ,}'
-}
-
-function show-ai-window-status {
-  local ai_session_name session_name
-
-  ai_session_name="$1"
-  ai-session-icon "$ai_session_name"
-
-  # @claude_state は claude 専用。codex のウィンドウでは前の claude の値が残りうる
-  if [[ "$ai_session_name" != 'claude' ]]; then
-    show-path-and-repo
-    return
-  fi
-
-  # 明示名にはタスク ID と表題が入るため、path や repo 名より状況を特定できる
-  session_name="$(claude-session-name | truncate-width 20)"
-  if [ -n "$session_name" ]; then
-    echo -n " $session_name"
-  else
-    show-path-and-repo
-  fi
-
-  show-claude-state
-}
-
-function pane-processes {
+# ペイン配下のプロセスを再帰的に列挙する。1 プロセスあたり ps と pgrep を起動するため
+# 高価。エージェントの判定で他の手段が尽きた場合だけ使う
+function pane-command-tree {
   local pids pid children child_pid
 
   pids=("$_TMUX_PANE_PID")
@@ -100,7 +55,7 @@ function pane-processes {
 
     ps -p "$pid" -o pid= -o args= 2> /dev/null
 
-    children="$(pgrep -flaP "$pid")"
+    children="$(pgrep -flaP "$pid" 2> /dev/null)"
     [ -z "$children" ] && continue
 
     echo "$children"
@@ -110,214 +65,208 @@ function pane-processes {
   done
 }
 
-function truncate-label {
-  perl -MEncode -e '
-    binmode STDIN;
-    binmode STDOUT, ":encoding(UTF-8)";
-    my $limit = 20;
-    my $text = decode("UTF-8", join("", <>), Encode::FB_DEFAULT);
-    $text =~ s/\s+/ /g;
-    $text =~ s/^\s+|\s+$//g;
-    print length($text) > $limit ? substr($text, 0, $limit - 1) . "..." : $text;
-  '
-}
+# ========== claude のセッション ==========
 
-function truncate-width {
-  local limit="${1:-20}"
+# このペインで動いている claude の session ファイルを返す。claude 自身が tmux の
+# ペインを記録しているため、プロセスツリーを走査せずに引ける。
+# 終了したセッションのファイルは残るので、pid の生存で除く
+function find-claude-session-file {
+  local pid file
 
-  # 全角を 2 桁として数える (tasks name --width と同じ規則)
-  perl -MEncode -e '
-    binmode STDOUT, ":encoding(UTF-8)";
-    my $limit = shift;
-    my $text = decode("UTF-8", join("", <STDIN>), Encode::FB_DEFAULT);
-    $text =~ s/\s+/ /g;
-    $text =~ s/^\s+|\s+$//g;
-
-    my @chars = split //, $text;
-    my $width = 0;
-    $width += /[\x20-\x7e]/ ? 1 : 2 for @chars;
-    if ($width <= $limit) { print $text; exit }
-
-    my ($out, $used) = ("", 0);
-    for my $c (@chars) {
-      my $w = $c =~ /[\x20-\x7e]/ ? 1 : 2;
-      last if $used + $w > $limit - 2;
-      $out .= $c;
-      $used += $w;
-    }
-    print "$out\x{2026}";
-  ' "$limit"
-}
-
-function codex-session-id {
-  local session_file
-
-  session_file="$(find "$HOME/.codex/sessions" -type f -name 'rollout-*.jsonl' -printf '%T@ %p\n' 2> /dev/null \
-    | sort -nr \
-    | awk 'NR <= 20 {print $2}' \
-    | while read -r file; do
-        jq -er --arg cwd "$_TMUX_PANE_CURRENT_PATH" '
-          select(.type == "session_meta" and .payload.cwd == $cwd) | .payload.id
-        ' "$file" 2> /dev/null && break
-      done)"
-  [ -n "$session_file" ] && echo -n "$session_file"
-}
-
-function codex-session-label {
-  local session_id
-
-  session_id="$(codex-session-id)"
-  [ -z "$session_id" ] && return
-
-  jq -r --arg session_id "$session_id" '
-    select(.session_id == $session_id) | .text
-  ' "$HOME/.codex/history.jsonl" 2> /dev/null | tail -n 1 | truncate-label
-}
-
-function claude-session-file {
-  local pid session_file
-
-  session_file="$HOME/.claude/sessions/$_TMUX_PANE_PID.json"
-  if jq -e '.sessionId' "$session_file" > /dev/null 2>&1; then
-    echo -n "$session_file"
+  while IFS=$'\t' read -r pid file; do
+    kill -0 "$pid" 2> /dev/null || continue
+    printf '%s' "$file"
     return
-  fi
-
-  pane-processes | while read -r pid _; do
-    session_file="$HOME/.claude/sessions/$pid.json"
-    jq -e '.sessionId' "$session_file" > /dev/null 2>&1 || continue
-
-    echo -n "$session_file"
-    break
-  done
+  done < <(jq -r --arg pane "$_TMUX_PANE_ID" '
+    select($pane != "" and ((.tmux // "") | endswith(".\($pane)")))
+    | [.pid, input_filename] | @tsv
+  ' "$CLAUDE_SESSIONS_DIR"/*.json 2> /dev/null)
 }
 
-function claude-session-id {
-  local session_file
-
-  session_file="$(claude-session-file)"
-  [ -n "$session_file" ] && jq -r '.sessionId' "$session_file" 2> /dev/null
-}
-
-# 明示的に設定された名前だけを返す。作業ディレクトリからの導出名は nameSource
-# (derived / collision) を持つため、その有無で区別できる
+# 明示的に設定された名前を SESSION_NAME_WIDTH 桁に収めて返す。作業ディレクトリからの
+# 導出名は nameSource (derived / collision) を持つため、その有無で区別できる。
+# 打ち切りも jq でやる。プロセスを増やさず、locale にも依存しない
 function claude-session-name {
-  local session_file
+  [ -z "$CLAUDE_SESSION_FILE" ] && return
 
-  session_file="$(claude-session-file)"
-  [ -z "$session_file" ] && return
+  jq -r --argjson limit "$SESSION_NAME_WIDTH" '
+    def char_width: if . >= 32 and . <= 126 then 1 else 2 end;
 
-  jq -r 'select(.nameSource == null) | .name // empty' "$session_file" 2> /dev/null
+    # 幅が収まらない場合は末尾を … に替える。… も 2 桁を占める
+    def fit:
+      explode
+      | if (map(char_width) | add // 0) <= $limit then implode
+        else
+          reduce .[] as $c ({ chars: [], used: 0, done: false };
+            if .done or .used + ($c | char_width) > $limit - 2 then .done = true
+            else .chars += [$c] | .used += ($c | char_width)
+            end)
+          | (.chars | implode) + "…"
+        end;
+
+    select(.nameSource == null)
+    | .name // empty
+    | gsub("\\s+"; " ") | sub("^ +"; "") | sub(" +$"; "")
+    | select(. != "")
+    | fit
+  ' "$CLAUDE_SESSION_FILE" 2> /dev/null
 }
 
-function claude-session-label {
-  local session_id
+# ========== エージェントの判定 ==========
 
-  session_id="$(claude-session-id)"
-  [ -z "$session_id" ] && return
+# claude / codex / 空文字列 のいずれかを返す。安い順に試す
+function detect-agent {
+  local tree
 
-  find "$HOME/.claude/projects" -type f -name '*.jsonl' -printf '%T@ %p\n' 2> /dev/null \
-    | sort -nr \
-    | awk 'NR <= 50 {print $2}' \
-    | while read -r file; do
-        jq -r --arg session_id "$session_id" '
-          select(.sessionId == $session_id and .type == "user")
-          | .message.content
-          | if type == "string" then . else map(select(.type == "text") | .text) | join(" ") end
-        ' "$file" 2> /dev/null
-      done \
-    | tail -n 1 \
-    | truncate-label
-}
-
-function ai-session-name {
-  local processes
-
-  if [[ "$_TMUX_WINDOW_NAME" = 'claude' || "$_TMUX_PANE_CURRENT_COMMAND" = 'claude' ]]; then
-    echo -n 'claude'
-    return
-  elif [[ "$_TMUX_WINDOW_NAME" = 'codex' || "$_TMUX_PANE_CURRENT_COMMAND" = 'codex' ]]; then
-    echo -n 'codex'
-    return
-  fi
-
-  processes="$(pane-processes)"
-  if echo "$processes" | grep -Eiq '(^|[ /])claude([[:space:]]|$)'; then
-    echo -n 'claude'
-  elif echo "$processes" | grep -Eiq '(^|[ /])codex([[:space:]]|$)|@openai/codex'; then
-    echo -n 'codex'
-  fi
-}
-
-function ai-session-label {
-  local ai_session_name cache_file cache_age label now
-
-  ai_session_name="$1"
-  cache_file="/tmp/tmux-ai-session-label-v2-${ai_session_name}-${_TMUX_PANE_PID}"
-  now="$(date +%s)"
-
-  if [ -f "$cache_file" ]; then
-    cache_age="$((now - $(stat -c %Y "$cache_file" 2> /dev/null || echo 0)))"
-    if [ "$cache_age" -lt 5 ]; then
-      cat "$cache_file"
-      return
-    fi
-  fi
-
-  case "$ai_session_name" in
-    codex) label="$(codex-session-label)" ;;
-    claude) label="$(claude-session-label)" ;;
+  # ウィンドウ名は明示的な宣言として最優先で扱う
+  case "$_TMUX_WINDOW_NAME" in
+    claude | codex) echo -n "$_TMUX_WINDOW_NAME"; return ;;
   esac
 
-  echo -n "$label" > "$cache_file"
+  case "$_TMUX_PANE_CURRENT_COMMAND" in
+    claude | codex) echo -n "$_TMUX_PANE_CURRENT_COMMAND"; return ;;
+  esac
+
+  # session ファイルがあれば claude が動いている。走査より安く、確実
+  [ -n "$CLAUDE_SESSION_FILE" ] && { echo -n 'claude'; return; }
+
+  tree="$(pane-command-tree)"
+  if grep -Eiq '(^|[ /])claude([[:space:]]|$)' <<< "$tree"; then
+    echo -n 'claude'
+  elif grep -Eiq '(^|[ /])codex([[:space:]]|$)|@openai/codex' <<< "$tree"; then
+    echo -n 'codex'
+  fi
+}
+
+# ========== ラベルの部品 ==========
+
+function emit-agent-icon {
+  case "$1" in
+    claude) printf '%s' "$ICON_CLAUDE" ;;
+    codex)  printf '%s' "$ICON_CODEX" ;;
+    *)      printf '%s' "$1" ;;
+  esac
+}
+
+# $HOME なら HOME、それ以外は path の末尾 $1 要素を出す
+function emit-path-label {
+  local depth="$1" rest part label=''
+
+  if [ "$_TMUX_PANE_CURRENT_PATH" = "$HOME" ]; then
+    echo -n 'HOME'
+    return
+  fi
+
+  rest="${_TMUX_PANE_CURRENT_PATH%/}"
+  while [ "$depth" -gt 0 ] && [ -n "$rest" ] && [ "$rest" != '/' ]; do
+    part="${rest##*/}"
+    rest="${rest%/*}"
+    label="$part${label:+/$label}"
+    depth=$((depth - 1))
+  done
+
   echo -n "$label"
 }
 
-function show-window-status {
-  # ========== background color ==========
-  if pgrep -flaP $_TMUX_PANE_PID ssh; then
-    IS_SSH=true
+function emit-repo-suffix {
+  local toplevel
+
+  toplevel="$(git -C "$_TMUX_PANE_CURRENT_PATH" rev-parse --show-toplevel 2> /dev/null)"
+  [ -n "$toplevel" ] && echo -n " (${toplevel##*/})"
+}
+
+function emit-ssh-label {
+  grep -Po '(?<=/usr/bin/)?ssh\s.*$' <<< "$SSH_PROCESSES" | tail -n 1 | tr -d '\n'
+}
+
+# 状態は claude の hook が @claude_state に書き、refresh-client -S で再描画させる。
+# 値をここで解決すると #() のキャッシュに阻まれて追従できないため format のまま渡す
+function emit-claude-state {
+  echo -n '#{?#{==:#{@claude_state},busy},#[fg=yellow] ⏳#[fg=default] ,}'
+  echo -n '#{?#{==:#{@claude_state},waiting},#[fg=red] 🔔#[fg=default] ,}'
+  echo -n '#{?#{==:#{@claude_state},idle},#[fg=green] ✔#[fg=default] ,}'
+}
+
+function emit-current-pane-style {
+  [ "$_TMUX_IS_CURRENT_PANE" = true ] || return
+
+  if is-ssh-pane; then
+    echo -n '#[fg=colour255,bg=#00aa22,bold]'
+  else
+    echo -n '#[fg=colour255,bg=#cc4400,bold]'
   fi
+}
 
-  if [[ "$_TMUX_IS_CURRENT_PANE" = true ]]; then
-    if [ -n "$IS_SSH" ]; then
-      echo -n '#[fg=colour255,bg=#00aa22,bold]'
-    else
-      echo -n '#[fg=colour255,bg=#cc4400,bold]'
-    fi
-  fi
+# ========== ラベルの組み立て ==========
 
-  # ========== window index ==========
-  echo -n " #I: "
+# 明示名が無い場合の扱いは別途検討する。それまでは従来どおり path と repo 名を出す
+function emit-location-label {
+  echo -n ' ['
+  emit-path-label "$PATH_DEPTH_AGENT"
+  echo -n ']'
+  emit-repo-suffix
+}
 
-  # ========== window name ==========
+function emit-agent-label {
+  local agent="$1" session_name
 
-  ai_session_name="$(ai-session-name)"
-  # AI セッションは repo 名までを show-ai-window-status が組み立てる
-  if [ -n "$ai_session_name" ]; then
-    show-ai-window-status "$ai_session_name"
-    echo -n ' '
+  emit-agent-icon "$agent"
+
+  # @claude_state は claude 専用。codex のウィンドウには前の claude の値が残りうる
+  if [ "$agent" != 'claude' ]; then
+    emit-location-label
     return
   fi
 
-  # zsh
-  if [[ "$_TMUX_WINDOW_NAME" = 'zsh' || "$_TMUX_WINDOW_NAME" = 'reattach-to-user-namespace' ]]; then
-    show-current-path
-  # ssh
-  elif [ -n "$IS_SSH" ]; then
-    ssh_command_line="$(pgrep -flaP $_TMUX_PANE_PID ssh | grep -Po '(?<=/usr/bin/)?ssh\s.*$' | tail -n1)"
-    #ps -o command -p $_TMUX_PANE_PID | grep -Po '(?<=/usr/bin/)?ssh\s.*$'
-    echo -n "$ssh_command_line"
+  # 明示名にはタスク ID と表題が入るため、path や repo 名より状況を特定できる
+  session_name="$(claude-session-name)"
+  if [ -n "$session_name" ]; then
+    echo -n " $session_name"
   else
-    echo -n '#W';
+    emit-location-label
   fi
 
-  # ========== git repo ==========
-  repo_name="$(show-repo-name)"
-  [ -n "$repo_name" ] && echo -n " ($repo_name)"
+  emit-claude-state
+}
 
+function emit-window-label {
+  local agent
+
+  agent="$(detect-agent)"
+  if [ -n "$agent" ]; then
+    emit-agent-label "$agent"
+    return
+  fi
+
+  case "$_TMUX_WINDOW_NAME" in
+    zsh | reattach-to-user-namespace)
+      emit-path-label "$PATH_DEPTH_SHELL"
+      ;;
+    *)
+      if is-ssh-pane; then
+        emit-ssh-label
+      else
+        echo -n '#W'
+      fi
+      ;;
+  esac
+
+  emit-repo-suffix
+}
+
+function window-status {
+  emit-current-pane-style
+  echo -n " #I: "
+  emit-window-label
   echo -n ' '
 }
 
-# output all at once
-echo -n "$(show-window-status)"
+# ========== 実行 ==========
+
+# 同じ情報を複数の分岐で使う。関数内でキャッシュしてもコマンド置換のサブシェルを
+# 跨げないため、ここで 1 度だけ集めて以降は参照するだけにする
+SSH_PROCESSES="$(find-ssh-processes)"
+CLAUDE_SESSION_FILE="$(find-claude-session-file)"
+
+# 改行が混ざるとステータス行が崩れるため、まとめてから出す
+echo -n "$(window-status)"

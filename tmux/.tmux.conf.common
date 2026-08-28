@@ -25,7 +25,7 @@ set-option -g status-left "#[fg=colour255,bg=colour241] S#S(#(tmux ls | grep -n 
 # status bar - middle
 set-window-option -g window-status-format '#(\
   _TMUX_IS_CURRENT_PANE=false\
-  _TMUX_WINDOW_ID="#{window_id}"\
+  _TMUX_PANE_ID="#{pane_id}"\
   _TMUX_WINDOW_NAME="#{window_name}"\
   _TMUX_PANE_PID="#{pane_pid}"\
   _TMUX_PANE_CURRENT_PATH="#{pane_current_path}"\
@@ -34,7 +34,7 @@ set-window-option -g window-status-format '#(\
 )'
 set-window-option -g window-status-current-format '#(\
   _TMUX_IS_CURRENT_PANE=true\
-  _TMUX_WINDOW_ID="#{window_id}"\
+  _TMUX_PANE_ID="#{pane_id}"\
   _TMUX_WINDOW_NAME="#{window_name}"\
   _TMUX_PANE_PID="#{pane_pid}"\
   _TMUX_PANE_CURRENT_PATH="#{pane_current_path}"\
