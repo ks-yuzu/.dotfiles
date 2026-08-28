@@ -83,8 +83,10 @@ function find-claude-session-file {
   ' "$CLAUDE_SESSIONS_DIR"/*.json 2> /dev/null)
 }
 
-# 明示的に設定された名前を SESSION_NAME_WIDTH 桁に収めて返す。作業ディレクトリからの
-# 導出名は nameSource (derived / collision) を持つため、その有無で区別できる。
+# 明示的に設定された名前を SESSION_NAME_WIDTH 桁に収めて返す。自動で付いた名前は
+# nameSource で判別する。値ではなく除外側を列挙するのは、明示側の値が増えても
+# 名前が消えないようにするため (claude 2.1.250 で user / hook / peer が追加された)。
+# フィールド自体が無いのは 2.1.246 以前の明示名。
 # 打ち切りも jq でやる。プロセスを増やさず、locale にも依存しない
 function claude-session-name {
   [ -z "$CLAUDE_SESSION_FILE" ] && return
@@ -104,7 +106,9 @@ function claude-session-name {
           | (.chars | implode) + "…"
         end;
 
-    select(.nameSource == null)
+    def is_auto_name: . == "derived" or . == "auto" or . == "collision";
+
+    select((.nameSource // "user") | is_auto_name | not)
     | .name // empty
     | gsub("\\s+"; " ") | sub("^ +"; "") | sub(" +$"; "")
     | select(. != "")
