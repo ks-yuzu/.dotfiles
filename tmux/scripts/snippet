@@ -7,12 +7,13 @@ set -ueo pipefail
 
 DOTFILES_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 SELECT="$DOTFILES_DIR/snippets/select"
+SNIPPET_PANE_HEIGHT=15
 
 # TMUX_PANE は run-shell 経由だと実際のアクティブペインと食い違うことがあるため使わない
 PANE=$(tmux display-message -p '#{pane_id}')
 
-# 選択は popup 内で行い、結果をそのまま元のペインへ送る。
+# 選択用のペインを開き、結果を元のペインへ送ってから閉じる。
 # send-keys -l はキー名解決を行わないため、バックスラッシュを含む
 # スニペットもそのまま渡る。実行はせず、入力しただけの状態にする。
-tmux display-popup -E -w 80% -h 50% \
+tmux split-window -l "$SNIPPET_PANE_HEIGHT" \
   "cmd=\$('$SELECT' remote) && tmux send-keys -t '$PANE' -l -- \"\$cmd\""
