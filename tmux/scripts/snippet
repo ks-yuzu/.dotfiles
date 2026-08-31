@@ -7,7 +7,7 @@ set -ueo pipefail
 
 DOTFILES_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 SELECT="$DOTFILES_DIR/snippets/select"
-SNIPPET_PANE_HEIGHT=15
+SNIPPET_PANE_HEIGHT=20
 
 # TMUX_PANE は run-shell 経由だと実際のアクティブペインと食い違うことがあるため使わない
 PANE=$(tmux display-message -p '#{pane_id}')
