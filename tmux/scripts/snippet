@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
+# スニペットを選んでアクティブなペインへ送り込む。
+#
+# 送り先は ssh 先やコンテナ内のシェルなど「zsh 以外」でもありうるため、
+# scope は remote を使う。手元の zsh で使う場合は zsh 側の ^x^x を使う。
 set -ueo pipefail
 
-# config
-SNIPPETS=~/.dotfiles/tmux/snippets.txt
-SNIPPET_PANE_HEIGHT=15
+DOTFILES_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+SELECT="$DOTFILES_DIR/snippets/select"
 
-# create named pipe
-PIPE=/tmp/_tmux_snippet_command_pipe
-[ -p $PIPE ] || mkfifo $PIPE
+# TMUX_PANE は run-shell 経由だと実際のアクティブペインと食い違うことがあるため使わない
+PANE=$(tmux display-message -p '#{pane_id}')
 
-# generate command executed in another pane
-ACTIVE_PANE_ID=`tmux list-panes -F '#{pane_active},#{pane_index}' | grep '^1' | cut -d, -f2-`
-COMMAND="(egrep -v '^\s*(#.*)?$' $SNIPPETS | peco | sed 's/^\[[^]]*\] *//' > $PIPE &) && tmux send-key -t $ACTIVE_PANE_ID \"\$(cat $PIPE)\""
-
-# execute
-tmux split-window -l${SNIPPET_PANE_HEIGHT} "$COMMAND"
-
+# 選択は popup 内で行い、結果をそのまま元のペインへ送る。
+# send-keys -l はキー名解決を行わないため、バックスラッシュを含む
+# スニペットもそのまま渡る。実行はせず、入力しただけの状態にする。
+tmux display-popup -E -w 80% -h 50% \
+  "cmd=\$('$SELECT' remote) && tmux send-keys -t '$PANE' -l -- \"\$cmd\""

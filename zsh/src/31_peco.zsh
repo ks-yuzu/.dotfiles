@@ -147,18 +147,13 @@ zle -N find-file-fzf && bindkey '^x^f' $_
 
 
 function zsh-snippets-fzf() {
-  local snippets="$HOME/.dotfiles/zsh/snippets.txt"
-  if [ ! -e "$snippets" ]; then
-    echo "$snippets is not found." >&2
+  local selector="$HOME/.dotfiles/snippets/select"
+  if [ ! -x "$selector" ]; then
+    echo "$selector is not found." >&2
     return 1
   fi
 
-  local line="$(grep -v -e "^\s*#" -e "^\s*$" "$snippets"  | fzf --query "$LBUFFER")"
-  if [ -z "$line" ]; then
-    return 1
-  fi
-
-  local command="$(echo "$line" | sed "s/^\[[^]]*\] *//g")"
+  local command="$("$selector" local "$LBUFFER")"
   if [ -z "$command" ]; then
     return 1
   fi

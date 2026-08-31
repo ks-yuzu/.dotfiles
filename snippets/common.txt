@@ -1,0 +1,8 @@
+# k8s
+[K8S:     get pod wide               ]  kubectl get pods -o wide -A | perl -alne 'print join "\t", @F[0..7]' | column -t
+[K8S:     get pod short              ]  kubectl get pod -o=custom-columns=NAMESPACE:.metadata.namespace,NODE:.spec.nodeName,NAME:.metadata.name -A
+[K8S:     uid to name                ]  kubectl get pod --all-namespaces -o json | jq '.items[] | select(.metadata.uid == "<uid>") | .metadata.name' -r
+
+# etc
+[ETC:     grep with header           ]  sed -n -e1p -e//p
+[ETC:     mysql pwd                  ]  read -sp 'MySQL Password: ' MYSQL_PWD && export $_; echo

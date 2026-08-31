@@ -1,0 +1,9 @@
+# この環境では動かないもの。select が読むのは *.txt のみなので候補には出ない。
+# 使える環境に移ったら該当行を local.txt へ戻す。
+
+# etc
+[ETC:     VNC                        ]  remmina
+[ETC:     scanner                    ]  scangearmp2
+[ETC:     tcpdump                    ]  sudo tcpdump -i lo0 -s0 -X src port 22 or dst port 22
+[ETC:     network                    ]  sudo nethogs wlp2s0
+[ETC:     start xkeysnail            ]  xhost +SI:localuser:root && sudo xkeysnail .xkeysnail-config.py

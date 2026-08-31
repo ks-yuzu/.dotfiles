@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# スニペットを選択し、コマンド文字列を標準出力へ返す。
+#
+#   usage: select <scope> [initial-query]
+#     scope: local  ... 手元のシェルで実行するもの
+#            remote ... ssh 先やコンテナ内で実行するもの
+#
+# 読み込むのは common.txt と <scope>.txt、およびそれぞれの .private.txt。
+# private は追跡対象外 (このリポジトリは public のため)。
+set -ueo pipefail
+
+SNIPPET_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+scope=${1:-}
+query=${2:-}
+
+case "$scope" in
+  local|remote) ;;
+  *) echo "usage: $(basename "$0") <local|remote> [initial-query]" >&2; exit 64 ;;
+esac
+
+files=()
+for name in common "$scope"; do
+  for file in "$SNIPPET_DIR/$name.txt" "$SNIPPET_DIR/$name.private.txt"; do
+    [ -f "$file" ] && files+=("$file")
+  done
+done
+
+if [ ${#files[@]} -eq 0 ]; then
+  echo "no snippet file found in $SNIPPET_DIR" >&2
+  exit 1
+fi
+
+# コメント行と空行を落とし、選択後にラベルを剥がす。
+# コマンド末尾の空白は入力位置の調整に使うため保持する。
+grep -hv -e '^\s*#' -e '^\s*$' -- "${files[@]}" \
+  | fzf --query "$query" \
+  | sed 's/^\[[^]]*\][[:space:]]*//'
