@@ -91,9 +91,16 @@ source <(fzf --zsh)
 ## krew
 append-path-if-exists "${KREW_ROOT:-$HOME/.krew}/bin"
 
+# cuda
+if [ -d '/usr/local/cuda/bin' ]; then
+  export PATH="/usr/local/cuda/bin:$PATH"
+  export LD_LIBRARY_PATH="/usr/local/cuda/lib64:$LD_LIBRARY_PATH"
+fi
+
 ## others
 # export PATH=$PATH:$HOME/.local/lib/python2.7/site-packages/powerline
 # export PATH=$PATH:/opt/ibm/ILOG/CPLEX_Studio1261/cplex/bin/x86-64_linux
+
 append-path-if-exists "$HOME/.local/bin/"
 append-path-if-exists "$HOME/bin"
 append-path-if-exists "$HOME/opt"
