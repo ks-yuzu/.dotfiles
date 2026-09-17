@@ -18,6 +18,7 @@ set -g automatic-rename on
 set -g status-fg white
 set -g status-bg colour238
 set -g status-interval 1
+set -sg escape-time 500
 
 # status bar - left
 set-option -g status-left "#[fg=colour255,bg=colour241] S#S(#(tmux ls | grep -n \"^$(tmux display -p '#S')\" | cut -d: -f1)/#(tmux list-sessions | wc -l)) #[default]"
