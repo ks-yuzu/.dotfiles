@@ -13,17 +13,20 @@
 
 ## symlink
 
+symlink を貼る。再実行しても既存の link を作り直さない。
+
 ```sh
-test -e ~/.agents           || ln -s ~/.dotfiles/.agents ~/.agents
-test -e ~/.claude/CLAUDE.md || ln -s ~/.agents/claude/CLAUDE.md ~/.claude/CLAUDE.md
-test -e ~/.codex/AGENTS.md  || ln -s ~/.agents/codex/AGENTS.md  ~/.codex/AGENTS.md
+mkdir -p ~/.agents ~/.claude ~/.codex
+test -L ~/.agents/AGENTS.md || ln -s ~/.dotfiles/.agents/AGENTS.md        ~/.agents/AGENTS.md
+test -L ~/.claude/CLAUDE.md || ln -s ~/.dotfiles/.agents/claude/CLAUDE.md ~/.claude/CLAUDE.md
+test -L ~/.codex/AGENTS.md  || ln -s ~/.dotfiles/.agents/codex/AGENTS.md  ~/.codex/AGENTS.md
 ```
 
-`~/.claude` と `~/.codex` はディレクトリごと symlink しない。認証情報 (`.credentials.json`,
-`auth.json`)、会話履歴、セッション状態を含むため、public リポジトリへ入れられない。
+symlink はディレクトリではなくファイル単位で貼る。
 
-共通ルールの参照パスを `~/.dotfiles/.agents/` ではなく `~/.agents/` に統一しているのは、
-リポジトリの物理配置から参照を独立させるためである。
+- `~/.agents` は skill の置き場として別に使う。ディレクトリごと貼ると skill が見えなくなる
+- `~/.claude` と `~/.codex` は認証情報 (`.credentials.json`, `auth.json`)、会話履歴、
+  セッション状態を含む。public リポジトリへ入れられない
 
 ## 共通ルールの取り込み方がツールごとに異なる理由
 
@@ -34,3 +37,6 @@ test -e ~/.codex/AGENTS.md  || ln -s ~/.agents/codex/AGENTS.md  ~/.codex/AGENTS.
     文体などのルールが適用されない
   - 「いかなる応答よりも先に必ず読む。会話のみの応答であっても読まずに回答してはならない」
     と書けば、会話的なプロンプトでも 1 手目に読み取りが実行される
+  - 再測する場合は、検出できる規則 (回答末尾に固定文字列を書かせる等) を置いた共通ルールを
+    隔離した CODEX_HOME に用意し、`CODEX_HOME=<dir> codex exec -s read-only "<会話的な質問>"`
+    で読み取りの有無と規則の適用を見る
