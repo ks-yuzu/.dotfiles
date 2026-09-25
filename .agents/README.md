@@ -19,6 +19,15 @@
 test -L ~/.agents && rm ~/.agents
 ```
 
+参照先を失った symlink を外す。旧構成のツール別 link は `~/.agents/` 配下を指しており、
+上の手順でリンク切れになる。初回のみ必要。
+
+```sh
+for f in ~/.agents/AGENTS.md ~/.claude/CLAUDE.md ~/.codex/AGENTS.md; do
+  test -L "$f" && ! test -e "$f" && rm "$f"
+done
+```
+
 既存の実ファイルを退避する。初回のみ必要。
 
 ```sh
@@ -53,6 +62,9 @@ symlink を貼らずに終わる。
 
 退避先が埋まっている場合はタイムスタンプ付きの名前にする。同名へ上書きすると前回の退避内容が
 失われる。
+
+リンク切れの symlink は外してから貼る。`test -L` は参照先の有無を見ないため、外さずに進めると
+新しい link が作られず、ツールが指示ファイルを読めない状態で残る。
 
 再測する場合は HOME を隔離したディレクトリへ向け、同じ初期条件 (skill 入りの `~/.agents`、
 実ファイルの `~/.claude/CLAUDE.md`) を作って手順を 2 回実行する。
