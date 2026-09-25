@@ -13,28 +13,11 @@
 
 ## symlink
 
-旧構成から移行する場合は、先に `~/.agents` のディレクトリ symlink を外す。初回のみ必要。
-
-```sh
-test -L ~/.agents && rm ~/.agents
-```
-
-参照先を失った symlink を外す。旧構成のツール別 link は `~/.agents/` 配下を指しており、
-上の手順でリンク切れになる。初回のみ必要。
-
-```sh
-for f in ~/.agents/AGENTS.md ~/.claude/CLAUDE.md ~/.codex/AGENTS.md; do
-  test -L "$f" && ! test -e "$f" && rm "$f"
-done
-```
-
 既存の実ファイルを退避する。初回のみ必要。
 
 ```sh
 for f in ~/.agents/AGENTS.md ~/.claude/CLAUDE.md ~/.codex/AGENTS.md; do
-  test -f "$f" && ! test -L "$f" || continue
-  bak="$f.bak"; test -e "$bak" && bak="$f.$(date +%Y%m%d%H%M%S).bak"
-  mv "$f" "$bak"
+  test -f "$f" && ! test -L "$f" && mv "$f" "$f.bak"
 done
 ```
 
@@ -54,17 +37,8 @@ symlink はディレクトリではなくファイル単位で貼る。
   セッション状態を含む。public リポジトリへ入れられない
 
 判定に `test -e` ではなく `test -L` を使う。`test -e` は退避前の実ファイルを既設と見なし、
-symlink を貼らずに終わる。
-
-`~/.agents` がディレクトリ symlink の場合は、配下のファイルを触る前に外す。`test -L` は
-最終要素しか見ないため、symlink 経由で届いた `~/.agents/AGENTS.md` を実ファイルと判定し、
-リポジトリの実体を `.bak` へ改名する。link を外してもリポジトリ側の実体は残る。
-
-退避先が埋まっている場合はタイムスタンプ付きの名前にする。同名へ上書きすると前回の退避内容が
-失われる。
-
-リンク切れの symlink は外してから貼る。`test -L` は参照先の有無を見ないため、外さずに進めると
-新しい link が作られず、ツールが指示ファイルを読めない状態で残る。
+symlink を貼らずに終わる。退避の判定に `! test -L` を入れるのも同じ理由である。
+これが無いと 2 回目の実行で symlink 自体を `.bak` へ移し、退避しておいた内容が失われる。
 
 再測する場合は HOME を隔離したディレクトリへ向け、同じ初期条件 (skill 入りの `~/.agents`、
 実ファイルの `~/.claude/CLAUDE.md`) を作って手順を 2 回実行する。
