@@ -61,7 +61,7 @@ function get-kube-cluster-info() {
 
     _KUBE_CONTEXT=$kube_context
 
-    local label="⎈" # gke:
+    local label='"' # "⎈" # gke:
     if [[ $_KUBE_CONTEXT =~ gke ]]; then
       local cluster_name=$(echo $_KUBE_CONTEXT | cut -d_ -f2,4 --output-delimiter '/')
       # label=gke
@@ -231,7 +231,7 @@ function update-prompt()
     fi
 
     if [ -n "$SHOW_GCLOUDINFO_IN_PROMPT" ]; then
-      local gcloudinfo=$' \e[38;5;33m \e[m'${_GCLOUD_PROJECT:--}
+      local gcloudinfo=$' \e[38;5;33m \e[m'${_GCLOUD_PROJECT:--}
     fi
 
     local grafanainfo=$' \e[38;5;130m🐻\e[m'$(get-grafana-info)
