@@ -55,7 +55,8 @@ alias -s pdf='evince'
 alias -g NL='>/dev/null 2>&1 &'
 
 
-function cd() { builtin cd $@ && ls --color; }
+#function cd() { builtin cd $@ && ls --color; }
+function chpwd() { [[ -t 1 ]] && ls --color }
 function pr-select { gh pr list| peco | awk '{print $1}' }
 
 function ssh() {
