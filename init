@@ -1,0 +1,42 @@
+# sudo apt update -y && sudo apt upgrade -y
+which claude || (curl -fsSL https://claude.ai/install.sh | bash)
+which zsh || (sudo apt install -y zsh && chsh -s $(which zsh))
+which tmux || sudo apt install -y tmux
+which aqua || (curl -sSfL https://raw.githubusercontent.com/aquaproj/aqua-installer/v4.0.2/aqua-installer | bash)
+
+test -e ~/.dotfiles || \
+  ln -s /mnt/wsl/Ubuntu/home/yuzu/repo/github.com/ks-yuzu/.dotfiles/ ~
+test -e ~/.zshrc || \
+  ln -s /mnt/d/wsl-home/.zshrc ~
+test -e ~/.tmux || \
+  ln -s /mnt/d/wsl-home/.tmux ~
+test -e ~/.tmux.conf || \
+  ln -s ~/.dotfiles/tmux/.tmux.conf.startup ~/.tmux.conf
+test -e ~/repo || \
+  ln -s /mnt/wsl/Ubuntu/home/yuzu/repo ~
+test -e ~/aqua.yaml || \
+  ln -s /mnt/d/wsl-home/aqua.yaml ~
+test -e ~/.gitconfig || \
+  ln -s ~/.dotfiles/.gitconfig ~/.gitconfig
+
+# 移行期間の一時措置。運用切り替え時に実体をコピーして置き換える
+test -e ~/.gitconfig.local || \
+  ln -s /mnt/d/wsl-home/.gitconfig.local ~
+test -e ~/.kube || \
+  ln -s /mnt/d/wsl-home/.kube ~
+
+# aqua.yaml に列挙されたツール (fd 含む) を一括インストール
+aqua install -a
+
+
+
+## for orca: 下記を追加する
+# -rwxr-xr-x 1 root root 110 Sep  9 16:07 /usr/local/bin/aqua*
+# lrwxrwxrwx 1 root root  26 Sep  9 16:10 /usr/local/bin/claude -> /mnt/d/wsl-home/bin/claude*
+# lrwxrwxrwx 1 root root  53 Sep  9 16:06 /usr/local/bin/codex -> /mnt/d/wsl-home/.nvm/versions/node/v18.12.1/bin/codex*
+# lrwxrwxrwx 1 root root  49 Sep  9 16:06 /usr/local/bin/gh -> /mnt/d/wsl-home/.local/share/aquaproj-aqua/bin/gh*
+# 
+# $ cat /usr/local/bin/aqua
+# #!/usr/bin/env bash
+# export AQUA_GLOBAL_CONFIG=$HOME/aqua.yaml
+# $HOME/.local/share/aquaproj-aqua/bin/aqua "$@"
